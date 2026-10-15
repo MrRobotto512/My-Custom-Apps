@@ -1,0 +1,5 @@
+{"blockdevices": [
+  {"name":"nvme0n1","path":"/dev/nvme0n1","type":"disk","size":500107862016,"model":"Samsung SSD 970 EVO 500GB","serial":"S466NX0M123456","tran":"nvme","rota":"0","rm":"0"},
+  {"name":"sda","path":"/dev/sda","type":"disk","size":1000204886016,"model":"WDC WD10EZEX-08WN4A0","serial":"WD-WCC6Y4123456","tran":"sata","rota":"1","rm":"0"},
+  {"name":"sdb","path":"/dev/sdb","type":"disk","size":15931539456,"model":"USB Flash Disk","serial":"070B7X8","tran":"usb","rota":"1","rm":"1"}
+]}

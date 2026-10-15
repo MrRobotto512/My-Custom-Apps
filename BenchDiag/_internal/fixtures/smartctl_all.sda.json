@@ -1,0 +1,20 @@
+{
+  "json_format_version": [1, 0],
+  "device": {"name": "/dev/sda", "type": "sat", "protocol": "ATA"},
+  "model_name": "WDC WD10EZEX-08WN4A0",
+  "serial_number": "WD-WCC6Y4123456",
+  "firmware_version": "01.01A01",
+  "smart_status": {"passed": true},
+  "temperature": {"current": 34},
+  "power_on_time": {"hours": 31207},
+  "power_cycle_count": 2210,
+  "ata_smart_attributes": {
+    "table": [
+      {"id": 1, "name": "Raw_Read_Error_Rate", "value": 200, "worst": 200, "thresh": 51, "when_failed": "", "raw": {"value": 0, "string": "0"}},
+      {"id": 5, "name": "Reallocated_Sector_Ct", "value": 197, "worst": 197, "thresh": 140, "when_failed": "", "raw": {"value": 24, "string": "24"}},
+      {"id": 9, "name": "Power_On_Hours", "value": 58, "worst": 58, "thresh": 0, "when_failed": "", "raw": {"value": 31207, "string": "31207"}},
+      {"id": 197, "name": "Current_Pending_Sector", "value": 200, "worst": 200, "thresh": 0, "when_failed": "", "raw": {"value": 16, "string": "16"}},
+      {"id": 198, "name": "Offline_Uncorrectable", "value": 200, "worst": 200, "thresh": 0, "when_failed": "", "raw": {"value": 3, "string": "3"}}
+    ]
+  }
+}

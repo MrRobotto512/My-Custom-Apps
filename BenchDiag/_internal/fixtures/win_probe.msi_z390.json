@@ -1,0 +1,2785 @@
+{
+ "schema": 1,
+ "collected": "2026-10-05T13:21:16.4004309-05:00",
+ "errors": [
+  "net: Cannot find an overload for \"ToString\" and the argument count: \"1\"."
+ ],
+ "system": {
+  "manufacturer": "Micro-Star International Co., Ltd.",
+  "model": "MS-7B18",
+  "serial": "Default string",
+  "bios": "1.60",
+  "bios_date": "2019-08-20",
+  "bios_vendor": "American Megatrends Inc.",
+  "baseboard": "Micro-Star International Co., Ltd. MAG Z390 TOMAHAWK (MS-7B18)",
+  "os_caption": "Microsoft Windows 11 Home",
+  "os_build": "26100",
+  "os_version": "10.0.26100",
+  "os_arch": "64-bit",
+  "installed_on": "2025-10-30",
+  "last_boot": "2026-10-01T13:20:49.5000000-05:00",
+  "computer": "DESKTOP-BENCH01"
+ },
+ "cpu": {
+  "name": "Intel(R) Core(TM) i5-9600K CPU @ 3.70GHz",
+  "cores": 6,
+  "threads": 6,
+  "mhz": 3696,
+  "arch": "AMD64",
+  "l2_kb": 1536,
+  "l3_kb": 9216,
+  "sockets": 1,
+  "features": [
+   "sse2",
+   "sse3",
+   "avx",
+   "sse4_1",
+   "avx2",
+   "sse4_2",
+   "sse",
+   "popcnt"
+  ]
+ },
+ "memory": {
+  "total_kb": 33488424,
+  "free_kb": 10583104,
+  "available_kb": 10583104,
+  "modules": [
+   {
+    "bank": "BANK 0",
+    "slot": "ChannelA-DIMM0",
+    "size": 8589934592,
+    "speed": 3200,
+    "mfr": "029E",
+    "part": "CMH16GX4M2E3200C16  "
+   },
+   {
+    "bank": "BANK 1",
+    "slot": "ChannelA-DIMM1",
+    "size": 8589934592,
+    "speed": 3200,
+    "mfr": "04CD",
+    "part": "F4-2666C18-8GTZR    "
+   },
+   {
+    "bank": "BANK 2",
+    "slot": "ChannelB-DIMM0",
+    "size": 8589934592,
+    "speed": 3200,
+    "mfr": "029E",
+    "part": "CMH16GX4M2E3200C16  "
+   },
+   {
+    "bank": "BANK 3",
+    "slot": "ChannelB-DIMM1",
+    "size": 8589934592,
+    "speed": 3200,
+    "mfr": "04CD",
+    "part": "F4-2666C18-8GTZR    "
+   }
+  ]
+ },
+ "cpu_load": [
+  {
+   "id": "0",
+   "pct": 57
+  },
+  {
+   "id": "1",
+   "pct": 69
+  },
+  {
+   "id": "2",
+   "pct": 9
+  },
+  {
+   "id": "3",
+   "pct": 33
+  },
+  {
+   "id": "4",
+   "pct": 63
+  },
+  {
+   "id": "5",
+   "pct": 51
+  }
+ ],
+ "disks": [
+  {
+   "index": 0,
+   "device": "\\\\.\\PHYSICALDRIVE0",
+   "model": "ST5000LM000-2AN170",
+   "serial": "SN0000000000",
+   "size": 5000978465280,
+   "bus": "SATA",
+   "media": "HDD",
+   "spindle": "Unknown",
+   "health": "Healthy",
+   "removable": false,
+   "partitions": [
+    {
+     "index": 0,
+     "size": 5000979808256,
+     "type": "GPT: Basic Data",
+     "bootable": false,
+     "letter": "E:"
+    }
+   ]
+  },
+  {
+   "index": 3,
+   "device": "\\\\.\\PHYSICALDRIVE3",
+   "model": "NORELSYS 1081CS0 USB Device",
+   "serial": "SN0000000001",
+   "size": null,
+   "bus": "USB",
+   "media": null,
+   "spindle": null,
+   "health": null,
+   "removable": false,
+   "partitions": []
+  },
+  {
+   "index": 2,
+   "device": "\\\\.\\PHYSICALDRIVE2",
+   "model": "CT1000P1SSD8",
+   "serial": "SN0000000002",
+   "size": 1000202273280,
+   "bus": "NVMe",
+   "media": "SSD",
+   "spindle": 0,
+   "health": "Healthy",
+   "removable": false,
+   "partitions": [
+    {
+     "index": 0,
+     "size": 523239424,
+     "type": "GPT: Unknown",
+     "bootable": false,
+     "letter": null
+    },
+    {
+     "index": 1,
+     "size": 103809024,
+     "type": "GPT: System",
+     "bootable": true,
+     "letter": null
+    },
+    {
+     "index": 2,
+     "size": 998510690304,
+     "type": "GPT: Basic Data",
+     "bootable": false,
+     "letter": "C:"
+    },
+    {
+     "index": 3,
+     "size": 1047527424,
+     "type": "GPT: Unknown",
+     "bootable": false,
+     "letter": null
+    }
+   ]
+  },
+  {
+   "index": 1,
+   "device": "\\\\.\\PHYSICALDRIVE1",
+   "model": "SPCC M.2 PCIe SSD",
+   "serial": "SN0000000003",
+   "size": 2048407280640,
+   "bus": "NVMe",
+   "media": "SSD",
+   "spindle": 0,
+   "health": "Healthy",
+   "removable": false,
+   "partitions": [
+    {
+     "index": 0,
+     "size": 2048407182848,
+     "type": "GPT: Basic Data",
+     "bootable": false,
+     "letter": "D:"
+    }
+   ]
+  },
+  {
+   "index": 4,
+   "device": "\\\\.\\PHYSICALDRIVE4",
+   "model": "NORELSYS 1081CS1 USB Device",
+   "serial": "SN0000000004",
+   "size": null,
+   "bus": "USB",
+   "media": null,
+   "spindle": null,
+   "health": null,
+   "removable": false,
+   "partitions": []
+  },
+  {
+   "index": 6,
+   "device": "\\\\.\\PHYSICALDRIVE6",
+   "model": "Kingston DataTraveler 3.0 USB Device",
+   "serial": "SN0000000005",
+   "size": 124012546560,
+   "bus": "USB",
+   "media": "Unspecified",
+   "spindle": 0,
+   "health": "Healthy",
+   "removable": true,
+   "partitions": [
+    {
+     "index": 0,
+     "size": 1452277760,
+     "type": "GPT: System",
+     "bootable": true,
+     "letter": null
+    },
+    {
+     "index": 1,
+     "size": 122563837440,
+     "type": "GPT: Basic Data",
+     "bootable": false,
+     "letter": "I:"
+    }
+   ]
+  },
+  {
+   "index": 5,
+   "device": "\\\\.\\PHYSICALDRIVE5",
+   "model": "Realtek RTL9210B-CG SCSI Disk Device",
+   "serial": "SN0000000006",
+   "size": 128034708480,
+   "bus": "USB",
+   "media": "SSD",
+   "spindle": 0,
+   "health": "Healthy",
+   "removable": false,
+   "partitions": [
+    {
+     "index": 0,
+     "size": 524288000,
+     "type": "GPT: System",
+     "bootable": true,
+     "letter": null
+    },
+    {
+     "index": 1,
+     "size": 114016024576,
+     "type": "GPT: Basic Data",
+     "bootable": false,
+     "letter": "H:"
+    },
+    {
+     "index": 2,
+     "size": 535822336,
+     "type": "GPT: Unknown",
+     "bootable": false,
+     "letter": null
+    },
+    {
+     "index": 3,
+     "size": 11690573824,
+     "type": "GPT: Unknown",
+     "bootable": false,
+     "letter": null
+    },
+    {
+     "index": 4,
+     "size": 1131413504,
+     "type": "GPT: Unknown",
+     "bootable": false,
+     "letter": null
+    }
+   ]
+  }
+ ],
+ "volumes": [
+  {
+   "letter": "C:",
+   "fs": "NTFS",
+   "label": "",
+   "size": 998510686208,
+   "free": 65196957696,
+   "type": 3
+  },
+  {
+   "letter": "D:",
+   "fs": "NTFS",
+   "label": "Games",
+   "size": 2048407179264,
+   "free": 985414602752,
+   "type": 3
+  },
+  {
+   "letter": "E:",
+   "fs": "NTFS",
+   "label": "Wow",
+   "size": 5000979804160,
+   "free": 4120161103872,
+   "type": 3
+  },
+  {
+   "letter": "F:",
+   "fs": null,
+   "label": null,
+   "size": null,
+   "free": null,
+   "type": 2
+  },
+  {
+   "letter": "G:",
+   "fs": null,
+   "label": null,
+   "size": null,
+   "free": null,
+   "type": 2
+  },
+  {
+   "letter": "H:",
+   "fs": "NTFS",
+   "label": "OS",
+   "size": 114016022528,
+   "free": 7631695872,
+   "type": 3
+  },
+  {
+   "letter": "I:",
+   "fs": "exFAT",
+   "label": "BENCHDIAG",
+   "size": 122558480384,
+   "free": 122553761792,
+   "type": 2
+  }
+ ],
+ "batteries": {},
+ "ac_online": true,
+ "pnp": [
+  {
+   "id": "SWD\\DRIVERENUM\\{00000000-0000-0000-0000",
+   "name": "Realtek Audio Effects Component",
+   "class": "AudioProcessingObject",
+   "service": null,
+   "problem": 0,
+   "mfr": "Realtek",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C02\\0",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C02\\0",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C02\\0",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C02\\0",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "SCSI\\DISK&VEN_NVME&PROD_SPCC_M.2_PCIE_SS\\0&00000000&0&000000",
+   "name": "SPCC M.2 PCIe SSD",
+   "class": "DiskDrive",
+   "service": "disk",
+   "problem": 0,
+   "mfr": "(Standard disk drives)",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SW\\{96E080C7-143C-11D1-B40F-00A0C9223196}\\{00000000-0000-0000-0000",
+   "name": "Microsoft Streaming Service Proxy",
+   "class": "MEDIA",
+   "service": "MSKSSRV",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\COMPUTER\\000_00000-0000_000000000",
+   "name": "Micro-Star International Co., Ltd. MS-7B18",
+   "class": "Computer",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_2725&SUBSYS_00248086&REV_1A\\0&00000000&0&0000",
+   "name": "Intel(R) Wi-Fi 6E AX210 160MHz",
+   "class": "Net",
+   "service": "Netwtw14",
+   "problem": 0,
+   "mfr": "Intel Corporation",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MMDEVAPI\\{0.0.0.00000000}.{000000",
+   "name": "Speakers (Steam Streaming Microphone)",
+   "class": "AudioEndpoint",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\GENUINEINTEL_-_INTEL64_FAMILY_6_MODEL_158_-_INTEL(R)_CORE(TM)_I5-9600K_CPU_@_3.70GHZ\\_0",
+   "name": "Intel(R) Core(TM) i5-9600K CPU @ 3.70GHz",
+   "class": "Processor",
+   "service": "intelppm",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\GENUINEINTEL_-_INTEL64_FAMILY_6_MODEL_158_-_INTEL(R)_CORE(TM)_I5-9600K_CPU_@_3.70GHZ\\_0",
+   "name": "Intel(R) Core(TM) i5-9600K CPU @ 3.70GHz",
+   "class": "Processor",
+   "service": "intelppm",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\GENUINEINTEL_-_INTEL64_FAMILY_6_MODEL_158_-_INTEL(R)_CORE(TM)_I5-9600K_CPU_@_3.70GHZ\\_0",
+   "name": "Intel(R) Core(TM) i5-9600K CPU @ 3.70GHz",
+   "class": "Processor",
+   "service": "intelppm",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\GENUINEINTEL_-_INTEL64_FAMILY_6_MODEL_158_-_INTEL(R)_CORE(TM)_I5-9600K_CPU_@_3.70GHZ\\_0",
+   "name": "Intel(R) Core(TM) i5-9600K CPU @ 3.70GHz",
+   "class": "Processor",
+   "service": "intelppm",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\GENUINEINTEL_-_INTEL64_FAMILY_6_MODEL_158_-_INTEL(R)_CORE(TM)_I5-9600K_CPU_@_3.70GHZ\\_0",
+   "name": "Intel(R) Core(TM) i5-9600K CPU @ 3.70GHz",
+   "class": "Processor",
+   "service": "intelppm",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\GENUINEINTEL_-_INTEL64_FAMILY_6_MODEL_158_-_INTEL(R)_CORE(TM)_I5-9600K_CPU_@_3.70GHZ\\_0",
+   "name": "Intel(R) Core(TM) i5-9600K CPU @ 3.70GHz",
+   "class": "Processor",
+   "service": "intelppm",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C0B\\0",
+   "name": "ACPI Fan",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C0B\\0",
+   "name": "ACPI Fan",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C0B\\0",
+   "name": "ACPI Fan",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C0B\\0",
+   "name": "ACPI Fan",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C0B\\0",
+   "name": "ACPI Fan",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\ACPI000C\\0&0000000&0",
+   "name": "ACPI Processor Aggregator",
+   "class": "System",
+   "service": "acpipagr",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\PRINTENUM\\00000000000",
+   "name": "Root Print Queue",
+   "class": "PrintQueue",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "IEEE1667\\SILO_100&PROD_ST5000LM000-2AN170&REV_0001\\____________00000000&0&0",
+   "name": "Generic IEEE 1667 Probe Silo",
+   "class": "EhStorSilo",
+   "service": null,
+   "problem": 0,
+   "mfr": "(IEEE 1667 Compatible Silos)",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\VOLMGR\\0000",
+   "name": "Volume Manager",
+   "class": "System",
+   "service": "volmgr",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\DEV_445ECD19F17A\\0&00000000&0&00000000000",
+   "name": "Razer Kaira Pro (BT)",
+   "class": "Bluetooth",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SCSI\\DISK&VEN_ST5000LM&PROD_000-2AN170\\0&00000000&0&000000",
+   "name": "ST5000LM000-2AN170",
+   "class": "DiskDrive",
+   "service": "disk",
+   "problem": 0,
+   "mfr": "(Standard disk drives)",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_3EC2&SUBSYS_7B181462&REV_0A\\0&00000000&0&00",
+   "name": "Intel(R) Host Bridge/DRAM Registers - 3EC2",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_046D&PID_C52B\\0&00000000&0&0",
+   "name": "USB Composite Device",
+   "class": "USB",
+   "service": "usbccgp",
+   "problem": 0,
+   "mfr": "(Standard USB Host Controller)",
+   "status": "OK"
+  },
+  {
+   "id": "HDAUDIO\\FUNC_01&VEN_10EC&DEV_0892&SUBSYS_1462EB18&REV_1003\\0&00000000&0&0000",
+   "name": "Realtek(R) Audio",
+   "class": "MEDIA",
+   "service": "IntcAzAudAddService",
+   "problem": 0,
+   "mfr": "Realtek",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A352&SUBSYS_7B181462&REV_10\\0&00000000&0&00",
+   "name": "Intel(R) 300 Series Chipset Family SATA AHCI Controller",
+   "class": "HDC",
+   "service": "iaStorAC",
+   "problem": 0,
+   "mfr": "Intel Corporation",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A348&SUBSYS_EB181462&REV_10\\0&00000000&0&00",
+   "name": "High Definition Audio Controller",
+   "class": "System",
+   "service": "HDAudBus",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{00001000-0000-1000-8000-00805F9B34FB}_VID&0001004C_PID&200A\\0&00000000&0&00000000000",
+   "name": "Service Discovery Service",
+   "class": "Bluetooth",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "UEFI\\RES_{00000000-0000-0000-0000-000000000000}\\0",
+   "name": "System Firmware",
+   "class": "Firmware",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL02\\0&00000000&0&0000",
+   "name": "HID-compliant system controller",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\00_0000000000000",
+   "name": "WAN Miniport (PPPOE)",
+   "class": "Net",
+   "service": "RasPppoe",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A324&SUBSYS_7B181462&REV_10\\0&00000000&0&00",
+   "name": "Intel(R) SPI (flash) Controller - A324",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\VMBUS\\0000",
+   "name": "Microsoft Hyper-V Virtual Machine Bus Provider",
+   "class": "System",
+   "service": "vmbusr",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL07\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_10DE&DEV_1AD6&SUBSYS_12A410DE&REV_A1\\0&0000000&0&0000",
+   "name": "NVIDIA USB 3.10 eXtensible Host Controller - 1.10 (Microsoft)",
+   "class": "USB",
+   "service": "USBXHCI",
+   "problem": 0,
+   "mfr": "Generic USB xHCI Host Controller",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\BASICDISPLAY\\0000",
+   "name": "Microsoft Basic Display Driver",
+   "class": "System",
+   "service": "BasicDisplay",
+   "problem": 0,
+   "mfr": "(Standard display types)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C0E\\0&0000000&0",
+   "name": "ACPI Sleep Button",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL0A\\0&00000000&0&0000",
+   "name": "HID-compliant system multi-axis controller",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0626\\0&00000000&0&00",
+   "name": "Generic SuperSpeed USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\DEV_08FF443519C7\\0&00000000&0&00000000000",
+   "name": "VALERIE\u0393\u00c7\u00d6s AirPods Max - Find My",
+   "class": "Bluetooth",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\AMDXE\\0000",
+   "name": "AMD Controller Emulation",
+   "class": "System",
+   "service": "AMDXE",
+   "problem": 0,
+   "mfr": "AMD",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\HVSERVICE\\0000",
+   "name": "Microsoft Hypervisor Service",
+   "class": "System",
+   "service": "hvservice",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "{5D624F94-8850-40C3-A3FA-A4FD2080BAF3}\\VWIFIMP_WFD\\0&0000000&0&00",
+   "name": "Microsoft Wi-Fi Direct Virtual Adapter",
+   "class": "Net",
+   "service": "vwifimp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "{5D624F94-8850-40C3-A3FA-A4FD2080BAF3}\\VWIFIMP_WFD\\0&0000000&0&00",
+   "name": "Microsoft Wi-Fi Direct Virtual Adapter #2",
+   "class": "Net",
+   "service": "vwifimp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_1462&PID_7B18\\0&00000000&0&0000",
+   "name": "HID-compliant device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "EUSBSTUB\\DEVICES\\0000",
+   "name": "Electronic USB",
+   "class": "EUsbStub",
+   "service": "eusbstub",
+   "problem": 0,
+   "mfr": "Electronic Team, Inc.",
+   "status": "OK"
+  },
+  {
+   "id": "EUSBSTUB\\DEVICES\\0000",
+   "name": "Electronic USB",
+   "class": "EUsbStub",
+   "service": "eusbstub",
+   "problem": 0,
+   "mfr": "Electronic Team, Inc.",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_1539&SUBSYS_7B181462&REV_03\\0&0000000&0&0000",
+   "name": "Intel(R) I211 Gigabit Network Connection",
+   "class": "Net",
+   "service": "e1rexpress",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\NET\\0000",
+   "name": "TAP-NordVPN Windows Adapter V9",
+   "class": "Net",
+   "service": "tapnordvpn",
+   "problem": 0,
+   "mfr": "TAP-NordVPN Windows Provider V9",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\NET\\0000",
+   "name": "OpenVPN Data Channel Offload",
+   "class": "Net",
+   "service": "ovpn-dco",
+   "problem": 0,
+   "mfr": "OpenVPN, Inc",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\PRINTENUM\\{00000000-0000-0000-0000",
+   "name": "Bluebeam PDF",
+   "class": "PrintQueue",
+   "service": null,
+   "problem": 0,
+   "mfr": "",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\THERMALZONE\\0000",
+   "name": "ACPI Thermal Zone",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_046D&PID_C52B&MI_01&COL03\\0&00000000&0&0000",
+   "name": "HID-compliant system controller",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_046D&PID_C52B&MI_01\\0&00000000&0&0000",
+   "name": "USB Input Device",
+   "class": "HIDClass",
+   "service": "HidUsb",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\{00000000-0000-0000-0000",
+   "name": "Microsoft RRAS Root Enumerator",
+   "class": "SoftwareDevice",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MMDEVAPI\\{0.0.0.00000000}.{000000",
+   "name": "Rockits (Realtek(R) Audio)",
+   "class": "AudioEndpoint",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MMDEVAPI\\{0.0.0.00000000}.{000000",
+   "name": "Speakers (Steam Streaming Speakers)",
+   "class": "AudioEndpoint",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\DRIVERENUM\\{00000000-0000-0000-0000",
+   "name": "Logi Download Assistant",
+   "class": "SoftwareComponent",
+   "service": null,
+   "problem": 0,
+   "mfr": "Logitech",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\00_000000000000",
+   "name": "WAN Miniport (PPTP)",
+   "class": "Net",
+   "service": "PptpMiniport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\DRIVERENUM\\000_000_000000000&0&0000",
+   "name": "Intel(R) Management Engine WMI Provider",
+   "class": "SoftwareComponent",
+   "service": null,
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "BTH\\MS_BTHBRB\\0&0000000&0&0",
+   "name": "Microsoft Bluetooth Enumerator",
+   "class": "Bluetooth",
+   "service": "BthEnum",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\DRIVERENUM\\000_000_000000000&0&0000",
+   "name": "Intel(R) Dynamic Application Loader Host Interface",
+   "class": "SoftwareComponent",
+   "service": null,
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\VID\\0000",
+   "name": "Microsoft Hyper-V Virtualization Infrastructure Driver",
+   "class": "System",
+   "service": "Vid",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHLEDEVICE\\{0000180F-0000-1000-8000-00805F9B34FB}_DEV_VID&02046D_PID&B35A_REV&0011_FF3300268F32\\0&0000000&0&0000",
+   "name": "Bluetooth LE Generic Attribute Service",
+   "class": "Bluetooth",
+   "service": "UmPass",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0103\\0",
+   "name": "High precision event timer",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\ROOT_HUB30\\0&00000000&0&0",
+   "name": "USB Root Hub (USB 3.0)",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHHFENUM\\BTHHFPAUDIO\\0&00000000&0&00",
+   "name": "VALERIE\u0393\u00c7\u00d6s AirPods Max - Find My Hands-Free",
+   "class": "MEDIA",
+   "service": "BthHFAud",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\00_0000000000000000",
+   "name": "WAN Miniport (IKEv2)",
+   "class": "Net",
+   "service": "RasAgileVpn",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\COMPOSITEBUS\\0000",
+   "name": "Composite Bus Enumerator",
+   "class": "System",
+   "service": "CompositeBus",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A360&SUBSYS_7B181462&REV_10\\0&00000000&0&00",
+   "name": "Intel(R) Management Engine Interface #1",
+   "class": "System",
+   "service": "MEIx64",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\VDRVROOT\\0000",
+   "name": "Microsoft Virtual Drive Enumerator",
+   "class": "System",
+   "service": "vdrvroot",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\WPDBUSENUM\\_??_0000000#0000&000_000",
+   "name": "G:\\",
+   "class": "WPD",
+   "service": "WUDFWpdFs",
+   "problem": 0,
+   "mfr": "NORELSYS",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_1462&PID_7B18\\000000000000",
+   "name": "USB Input Device",
+   "class": "HIDClass",
+   "service": "HidUsb",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{74EC2172-0BAD-4D01-8F77-997B2BE0722A}_VID&0001004C_PID&200A\\0&00000000&0&00000000000",
+   "name": "AAP Server",
+   "class": null,
+   "service": null,
+   "problem": 0,
+   "mfr": null,
+   "status": "OK"
+  },
+  {
+   "id": "BTHLEDEVICE\\{0000F200-0000-1000-8000-00805F9B34FB}_DEV_VID&02046D_PID&B35A_REV&0011_FF3300268F32\\0&0000000&0&0000",
+   "name": "Bluetooth LE Generic Attribute Service",
+   "class": "Bluetooth",
+   "service": "UmPass",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\WPDBUSENUM\\{00000000-0000-0000-0000",
+   "name": "BENCHDIAG",
+   "class": "WPD",
+   "service": "WUDFWpdFs",
+   "problem": 0,
+   "mfr": "Kingston",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\SPACEPORT\\0000",
+   "name": "Microsoft Storage Spaces Controller",
+   "class": "SCSIAdapter",
+   "service": "spaceport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_15BC&SUBSYS_7B181462&REV_10\\0&00000000&0&00",
+   "name": "Intel(R) Ethernet Connection (7) I219-V",
+   "class": "Net",
+   "service": "e1dexpress",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\WIREGUARD\\{00000000-0000-0000-0000",
+   "name": "NordLynx Tunnel",
+   "class": "Net",
+   "service": "WireGuard",
+   "problem": 0,
+   "mfr": "WireGuard LLC",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\_??_0000000#0000&000_000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0501\\0",
+   "name": "Communications Port (COM1)",
+   "class": "Ports",
+   "service": "Serial",
+   "problem": 0,
+   "mfr": "(Standard port types)",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\KDNIC\\0000",
+   "name": "Microsoft Kernel Debug Network Adapter",
+   "class": "Net",
+   "service": "kdnic",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTH\\MS_BTHLE\\0&0000000&0&0",
+   "name": "Microsoft Bluetooth LE Enumerator",
+   "class": "Bluetooth",
+   "service": "BthLEEnum",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_10DE&DEV_1E2E&SUBSYS_12A410DE&REV_A1\\0&0000000&0&0000",
+   "name": "NVIDIA GeForce GTX 2080 Ti",
+   "class": "Display",
+   "service": "nvlddmkm",
+   "problem": 0,
+   "mfr": "NVIDIA",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUMESNAPSHOT\\00000000000000000000000",
+   "name": "Generic volume shadow copy",
+   "class": "VolumeSnapshot",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUMESNAPSHOT\\00000000000000000000000",
+   "name": "Generic volume shadow copy",
+   "class": "VolumeSnapshot",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUMESNAPSHOT\\00000000000000000000000",
+   "name": "Generic volume shadow copy",
+   "class": "VolumeSnapshot",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUMESNAPSHOT\\00000000000000000000000",
+   "name": "Generic volume shadow copy",
+   "class": "VolumeSnapshot",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_0BDA&PID_9210\\000000000000000000",
+   "name": "USB Attached SCSI (UAS) Mass Storage Device",
+   "class": "SCSIAdapter",
+   "service": "UASPStor",
+   "problem": 0,
+   "mfr": "USB Attached SCSI (UAS) Compatible Device",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL03\\0&00000000&0&0000",
+   "name": "HID-compliant consumer control device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\RADIO\\000000000_000000000000",
+   "name": "Bluetooth",
+   "class": "SoftwareDevice",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL08\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A379&SUBSYS_7B181462&REV_10\\0&00000000&0&00",
+   "name": "Intel(R) Thermal Subsystem - A379",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_046D&PID_C52B&MI_02&COL01\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_8087&PID_0032\\0&00000000&0&0",
+   "name": "Intel(R) Wireless Bluetooth(R)",
+   "class": "Bluetooth",
+   "service": "BTHUSB",
+   "problem": 0,
+   "mfr": "Intel Corporation",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110C-0000-1000-8000-00805F9B34FB}_VID&00010039_PID&1582\\0&00000000&0&00000000000",
+   "name": "SRS-X55 Avrcp Transport",
+   "class": "Bluetooth",
+   "service": "Microsoft_Bluetooth_AvrcpTransport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\DEV_00023C95A3A7\\0&00000000&0&00000000000",
+   "name": " Pebble V3\r\n",
+   "class": "Bluetooth",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C02\\0000000",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0000\\0&00000000&0",
+   "name": "Programmable interrupt controller",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_258A&PID_0150&MI_01\\0&0000000&0&0000",
+   "name": "USB Input Device",
+   "class": "HIDClass",
+   "service": "HidUsb",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110C-0000-1000-8000-00805F9B34FB}_VID&0001004C_PID&200A\\0&00000000&0&00000000000",
+   "name": "VALERIE\u0393\u00c7\u00d6s AirPods Max - Find My Avrcp Transport",
+   "class": "Bluetooth",
+   "service": "Microsoft_Bluetooth_AvrcpTransport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{00001101-0000-1000-8000-00805F9B34FB}_LOCALMFG&0000\\0&00000000&0&00000000000",
+   "name": "Standard Serial over Bluetooth link (COM7)",
+   "class": "Ports",
+   "service": "BTHMODEM",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_258A&PID_0150&MI_00\\0&0000000&0&0000",
+   "name": "USB Input Device",
+   "class": "HIDClass",
+   "service": "HidUsb",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_046D&PID_C52B&MI_01&COL04\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MMDEVAPI\\{0.0.0.00000000}.{000000",
+   "name": "Microphone (Steam Streaming Microphone)",
+   "class": "AudioEndpoint",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_046D&PID_C52B&MI_02\\0&00000000&0&0000",
+   "name": "USB Input Device",
+   "class": "HIDClass",
+   "service": "HidUsb",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "DISPLAY\\AOC2702\\0&00000000&0&0000000",
+   "name": "Generic Monitor (27G2G3)",
+   "class": "Monitor",
+   "service": "monitor",
+   "problem": 0,
+   "mfr": "(Standard monitor types)",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\DELLUTILS\\0000",
+   "name": "DBUtilDrv2 Device",
+   "class": "DellUtils",
+   "service": "DBUtilDrv2",
+   "problem": 0,
+   "mfr": "Dell Technologies",
+   "status": "OK"
+  },
+  {
+   "id": "BTHHFENUM\\BTHHFPAUDIO\\0&00000000&0&00",
+   "name": "Razer Kaira Pro (BT) Hands-Free",
+   "class": "MEDIA",
+   "service": "BthHFAud",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\INT3F0D\\0&00000000&0",
+   "name": "Intel(R) Watchdog Timer Driver (Intel(R) WDT)",
+   "class": "System",
+   "service": "ICCWDT",
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MMDEVAPI\\{0.0.0.00000000}.{000000",
+   "name": "Realtek Digital Output (Realtek(R) Audio)",
+   "class": "AudioEndpoint",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\UMBUS\\0000",
+   "name": "UMBus Root Bus Enumerator",
+   "class": "System",
+   "service": "umbus",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A33F&SUBSYS_7B181462&REV_F0\\0&00000000&0&00",
+   "name": "Intel(R) PCI Express Root Port #8 - A33F",
+   "class": "System",
+   "service": "pci",
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{00001101-0000-1000-8000-00805F9B34FB}_VID&0001068E_PID&0545\\0&00000000&0&00000000000",
+   "name": "Standard Serial over Bluetooth link (COM6)",
+   "class": "Ports",
+   "service": "BTHMODEM",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0610\\0&0000000&0&0",
+   "name": "Generic USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0610\\0&0000000&0&0",
+   "name": "Generic USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0610\\0&0000000&0&0",
+   "name": "Generic USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0610\\0&0000000&0&0",
+   "name": "Generic USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C14\\000000000",
+   "name": "Microsoft Windows Management Interface for ACPI",
+   "class": "System",
+   "service": "WmiAcpi",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\RADIO\\{00000000-0000-0000-0000",
+   "name": "Microsoft Radio Device Enumeration Bus",
+   "class": "SoftwareDevice",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110C-0000-1000-8000-00805F9B34FB}_VID&0001068E_PID&0545\\0&00000000&0&00000000000",
+   "name": "Razer Kaira Pro (BT) Avrcp Transport",
+   "class": "Bluetooth",
+   "service": "Microsoft_Bluetooth_AvrcpTransport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSDAS\\{00000000-0000-0000-0000",
+   "name": "Microsoft Device Association Root Enumerator",
+   "class": "SoftwareDevice",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\ACPI_HAL\\0000",
+   "name": "ACPI x64-based PC",
+   "class": "Computer",
+   "service": "\\Driver\\ACPI_HAL",
+   "problem": 0,
+   "mfr": "(Standard computers)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\DRIVERENUM\\{00000000-0000-0000-0000",
+   "name": "Voice Clarity",
+   "class": "AudioProcessingObject",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft Corporation",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C14\\0000",
+   "name": "Microsoft Windows Management Interface for ACPI",
+   "class": "System",
+   "service": "WmiAcpi",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\00_000000000",
+   "name": "WAN Miniport (Network Monitor)",
+   "class": "Net",
+   "service": "NdisWan",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\00_000000000",
+   "name": "WAN Miniport (IP)",
+   "class": "Net",
+   "service": "NdisWan",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110E-0000-1000-8000-00805F9B34FB}_VID&00010039_PID&1582\\0&00000000&0&00000000000",
+   "name": "SRS-X55 Avrcp Transport",
+   "class": "Bluetooth",
+   "service": "Microsoft_Bluetooth_AvrcpTransport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_0951&PID_1666\\000000000000000000000000",
+   "name": "USB Mass Storage Device",
+   "class": "USB",
+   "service": "USBSTOR",
+   "problem": 0,
+   "mfr": "Compatible USB storage device",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A323&SUBSYS_7B181462&REV_10\\0&00000000&0&00",
+   "name": "Synaptics SMBus Driver",
+   "class": "System",
+   "service": "SmbDrvI",
+   "problem": 0,
+   "mfr": "Synaptics",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C14\\0000000",
+   "name": "Microsoft Windows Management Interface for ACPI",
+   "class": "System",
+   "service": "WmiAcpi",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110E-0000-1000-8000-00805F9B34FB}_VID&0001E003_PID&3528\\0&00000000&0&00000000000",
+   "name": " Pebble V3\r\n Avrcp Transport",
+   "class": "Bluetooth",
+   "service": "Microsoft_Bluetooth_AvrcpTransport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0A08\\0",
+   "name": "PCI Express Root Complex",
+   "class": "System",
+   "service": "pci",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\PRINTENUM\\{00000000-0000-0000-0000",
+   "name": "Fax",
+   "class": "PrintQueue",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\PRINTENUM\\{00000000-0000-0000-0000",
+   "name": "OneNote (Desktop)",
+   "class": "PrintQueue",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0610\\0&00000000&0&0",
+   "name": "Generic USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C02\\0&00000000&0",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHLEDEVICE\\{00001801-0000-1000-8000-00805F9B34FB}_F6414550698A\\0&00000000&0&0000",
+   "name": "Generic Attribute Profile",
+   "class": "Bluetooth",
+   "service": "UmPass",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USBSTOR\\DISK&VEN_KINGSTON&PROD_DATATRAVELER_3.0&REV_PMAP\\000000000000000000000000",
+   "name": "Kingston DataTraveler 3.0 USB Device",
+   "class": "DiskDrive",
+   "service": "disk",
+   "problem": 0,
+   "mfr": "(Standard disk drives)",
+   "status": "OK"
+  },
+  {
+   "id": "DISPLAY\\ACR0719\\0&00000000&0&0000000",
+   "name": "Generic Monitor (CB242Y)",
+   "class": "Monitor",
+   "service": "monitor",
+   "problem": 0,
+   "mfr": "(Standard monitor types)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110E-0000-1000-8000-00805F9B34FB}_VID&0001004C_PID&200A\\0&00000000&0&00000000000",
+   "name": "VALERIE\u0393\u00c7\u00d6s AirPods Max - Find My Avrcp Transport",
+   "class": "Bluetooth",
+   "service": "Microsoft_Bluetooth_AvrcpTransport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL04\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A36F&SUBSYS_72708086&REV_10\\0&00000000&0&00",
+   "name": "PCI standard RAM Controller",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\VPCIVSP\\0000",
+   "name": "Microsoft Hyper-V PCI Server",
+   "class": "System",
+   "service": "vpcivsp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL09\\0&00000000&0&0000",
+   "name": "HID-compliant mouse",
+   "class": "Mouse",
+   "service": "mouhid",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_10DE&DEV_1AD7&SUBSYS_12A410DE&REV_A1\\0&0000000&0&0000",
+   "name": "NVIDIA USB Type-C Port Policy Controller",
+   "class": "USB",
+   "service": "UcmCxUcsiNvppc",
+   "problem": 0,
+   "mfr": "NVIDIA",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_046D&PID_C52B&MI_02&COL02\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C0C\\0&0000000&0",
+   "name": "ACPI Power Button",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI_HAL\\PNP0C08\\0",
+   "name": "Microsoft ACPI-Compliant System",
+   "class": "System",
+   "service": "ACPI",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HTREE\\ROOT\\0",
+   "name": null,
+   "class": null,
+   "service": null,
+   "problem": 0,
+   "mfr": null,
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\BASICRENDER\\0000",
+   "name": "Microsoft Basic Render Driver",
+   "class": "System",
+   "service": "BasicRender",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHLE\\DEV_FF3300268F32\\0&00000000&0&00000000000",
+   "name": "RK-S98RGB",
+   "class": "Bluetooth",
+   "service": "BthLEEnum",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USBSTOR\\DISK&VEN_NORELSYS&PROD_1081CS0&REV_\\000000000000000&0",
+   "name": "NORELSYS 1081CS0 USB Device",
+   "class": "DiskDrive",
+   "service": "disk",
+   "problem": 0,
+   "mfr": "(Standard disk drives)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHLEDEVICE\\{00001800-0000-1000-8000-00805F9B34FB}_F6414550698A\\0&00000000&0&0000",
+   "name": "Generic Access Profile",
+   "class": "Bluetooth",
+   "service": "UmPass",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\STEAMSTREAMINGMICROPHONE\\0000",
+   "name": "Steam Streaming Microphone",
+   "class": "MEDIA",
+   "service": "SteamStreamingMicrophone",
+   "problem": 0,
+   "mfr": "Valve Corporation Audio DDK",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\DRIVERENUM\\{00000000-0000-0000-0000",
+   "name": "Realtek Hardware Support Application",
+   "class": "SoftwareComponent",
+   "service": null,
+   "problem": 0,
+   "mfr": "Realtek",
+   "status": "OK"
+  },
+  {
+   "id": "IEEE1667\\CONTROL&PROD_ST5000LM000-2AN170&REV_0001\\____________00000000&0&0",
+   "name": "Generic IEEE 1667 ACT",
+   "class": "EhStorSilo",
+   "service": null,
+   "problem": 0,
+   "mfr": "(IEEE 1667 Compatible ACTs)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\00_000000000000",
+   "name": "WAN Miniport (SSTP)",
+   "class": "Net",
+   "service": "RasSstp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SCSI\\DISK&VEN_NVME&PROD_CT1000P1SSD8\\0&00000000&0&000000",
+   "name": "CT1000P1SSD8",
+   "class": "DiskDrive",
+   "service": "disk",
+   "problem": 0,
+   "mfr": "(Standard disk drives)",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A330&SUBSYS_7B181462&REV_F0\\0&00000000&0&00",
+   "name": "Intel(R) PCI Express Root Port #9 - A330",
+   "class": "System",
+   "service": "pci",
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "BTH\\MS_RFCOMM\\0&0000000&0&0",
+   "name": "Bluetooth Device (RFCOMM Protocol TDI)",
+   "class": "Bluetooth",
+   "service": "RFCOMM",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHLEDEVICE\\{0000180A-0000-1000-8000-00805F9B34FB}_DEV_VID&02046D_PID&B35A_REV&0011_FF3300268F32\\0&0000000&0&0000",
+   "name": "Device Information Service",
+   "class": "Bluetooth",
+   "service": "UmPass",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI_HAL\\UEFI\\0",
+   "name": "Microsoft UEFI-Compliant System",
+   "class": "System",
+   "service": "UEFI",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_2537&PID_1081\\000000000000000",
+   "name": "USB Mass Storage Device",
+   "class": "USB",
+   "service": "USBSTOR",
+   "problem": 0,
+   "mfr": "Compatible USB storage device",
+   "status": "OK"
+  },
+  {
+   "id": "BTHHFENUM\\BTHHFPAUDIO\\0&0000000&0&00",
+   "name": "SRS-X55 Hands-Free",
+   "class": "MEDIA",
+   "service": "BthHFAud",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110E-0000-1000-8000-00805F9B34FB}_VID&0001068E_PID&0545\\0&00000000&0&00000000000",
+   "name": "Razer Kaira Pro (BT) Avrcp Transport",
+   "class": "Bluetooth",
+   "service": "Microsoft_Bluetooth_AvrcpTransport",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_C0A9&DEV_2263&SUBSYS_2263C0A9&REV_03\\0&00000000&0&0000",
+   "name": "Standard NVM Express Controller",
+   "class": "SCSIAdapter",
+   "service": "stornvme",
+   "problem": 0,
+   "mfr": "Standard NVM Express Controller",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C02\\000000",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A338&SUBSYS_7B181462&REV_F0\\0&00000000&0&00",
+   "name": "Intel(R) PCI Express Root Port #1 - A338",
+   "class": "System",
+   "service": "pci",
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\FIXEDBUTTON\\0&0000000&0",
+   "name": "ACPI Fixed Feature Button",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\PRINTENUM\\{00000000-0000-0000-0000",
+   "name": "Microsoft Print to PDF",
+   "class": "PrintQueue",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHLE\\DEV_F6414550698A\\0&00000000&0&00000000000",
+   "name": "StadiaBV9J-698a",
+   "class": "Bluetooth",
+   "service": "BthLEEnum",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\_??_0000000#0000&000_000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_1901&SUBSYS_7B181462&REV_0A\\0&00000000&0&00",
+   "name": "Intel(R) Xeon(R) E3 - 1200/1500 v5/6th Gen Intel(R) Core(TM) PCIe Controller (x16) - 1901",
+   "class": "System",
+   "service": "pci",
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C14\\0000",
+   "name": "Microsoft Windows Management Interface for ACPI",
+   "class": "System",
+   "service": "WmiAcpi",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_046D&PID_C52B&MI_00\\0&00000000&0&0000",
+   "name": "HID Keyboard Device",
+   "class": "Keyboard",
+   "service": "kbdhid",
+   "problem": 0,
+   "mfr": "(Standard keyboards)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\ACPI000E\\0&0000000&0",
+   "name": "ACPI Wake Alarm",
+   "class": "System",
+   "service": "acpitime",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C04\\0&00000000&0",
+   "name": "Numeric data processor",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\ROOT_HUB30\\0&00000000&0&0",
+   "name": "USB Root Hub (USB 3.0)",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_1A40&PID_0801\\0&00000000&0&0",
+   "name": "Generic USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MMDEVAPI\\{0.0.0.00000000}.{000000",
+   "name": "27G2G3 (NVIDIA High Definition Audio)",
+   "class": "AudioEndpoint",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\ROOT_HUB30\\0&00000000&0&0",
+   "name": "USB Root Hub (USB 3.0)",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "SCSI\\DISK&VEN_REALTEK&PROD_RTL9210B-CG\\0&0000000&0&000000",
+   "name": "Realtek RTL9210B-CG SCSI Disk Device",
+   "class": "DiskDrive",
+   "service": "disk",
+   "problem": 0,
+   "mfr": "(Standard disk drives)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C14\\0000",
+   "name": "Microsoft Windows Management Interface for ACPI",
+   "class": "System",
+   "service": "WmiAcpi",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\STEAMSTREAMINGSPEAKERS\\0000",
+   "name": "Steam Streaming Speakers",
+   "class": "MEDIA",
+   "service": "SteamStreamingSpeakers",
+   "problem": 0,
+   "mfr": "Valve Corporation Audio DDK",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\INT33A1\\0",
+   "name": "Intel(R) Power Engine Plug-in",
+   "class": "System",
+   "service": "intelpep",
+   "problem": 0,
+   "mfr": "Intel Corporation",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\DRIVERENUM\\000_0000_000000000&0&000",
+   "name": "Intel(R) iCLS Client",
+   "class": "SoftwareComponent",
+   "service": null,
+   "problem": 0,
+   "mfr": "Intel",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\STORVSP\\0000",
+   "name": "Microsoft Hyper-V Virtual Disk Server",
+   "class": "System",
+   "service": "storvsp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0C02\\0000000",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000111E-0000-1000-8000-00805F9B34FB}_VID&00010039_PID&1582\\0&00000000&0&00000000000",
+   "name": "SRS-X55 Hands-Free AG",
+   "class": "System",
+   "service": "BthHFEnum",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL05\\0&00000000&0&0000",
+   "name": "HID Keyboard Device",
+   "class": "Keyboard",
+   "service": "kbdhid",
+   "problem": 0,
+   "mfr": "(Standard keyboards)",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\UNNAMED_DEVICE\\0000",
+   "name": "NVIDIA Virtual Audio Device (Wave Extensible) (WDM)",
+   "class": "MEDIA",
+   "service": "nvvad_WaveExtensible",
+   "problem": 0,
+   "mfr": "NVIDIA",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\XVDDENUM\\00000000000000_00000000",
+   "name": "Xvdd SCSI Miniport",
+   "class": "SCSIAdapter",
+   "service": "Xvdd",
+   "problem": 0,
+   "mfr": "Xbox",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\DRIVERENUM\\{00000000-0000-0000-0000",
+   "name": "Realtek Audio Universal Service",
+   "class": "SoftwareComponent",
+   "service": null,
+   "problem": 0,
+   "mfr": "Realtek",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MMDEVAPI\\000000000000000000000000",
+   "name": "Microsoft GS Wavetable Synth",
+   "class": "SoftwareDevice",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000111E-0000-1000-8000-00805F9B34FB}_VID&0001004C_PID&200A\\0&00000000&0&00000000000",
+   "name": "VALERIE\u0393\u00c7\u00d6s AirPods Max - Find My Hands-Free AG",
+   "class": "System",
+   "service": "BthHFEnum",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHLEDEVICE\\{00001800-0000-1000-8000-00805F9B34FB}_DEV_VID&02046D_PID&B35A_REV&0011_FF3300268F32\\0&0000000&0&0000",
+   "name": "Generic Access Profile",
+   "class": "Bluetooth",
+   "service": "UmPass",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_046D&PID_C52B&MI_02&COL03\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110B-0000-1000-8000-00805F9B34FB}_VID&00010039_PID&1582\\0&00000000&0&00000000000",
+   "name": "SRS-X55",
+   "class": "MEDIA",
+   "service": "BthA2dp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_046D&PID_C52B&MI_01&COL01\\0&00000000&0&0000",
+   "name": "HID-compliant mouse",
+   "class": "Mouse",
+   "service": "mouhid",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110B-0000-1000-8000-00805F9B34FB}_VID&0001E003_PID&3528\\0&00000000&0&00000000000",
+   "name": " Pebble V3",
+   "class": "MEDIA",
+   "service": "BthA2dp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\AMDLOG\\0000",
+   "name": "AMD Crash Defender",
+   "class": "System",
+   "service": "amdfendrmgr",
+   "problem": 0,
+   "mfr": "Advanced Micro Devices, Inc.",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\USB\\0000",
+   "name": "Electronic USB Hub 3.0",
+   "class": "USB",
+   "service": "vuhub3",
+   "problem": 0,
+   "mfr": "Electronic Team, Inc.",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\NDISVIRTUALBUS\\0000",
+   "name": "NDIS Virtual Network Adapter Enumerator",
+   "class": "System",
+   "service": "NdisVirtualBus",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_1911&SUBSYS_7B181462&REV_00\\0&00000000&0&00",
+   "name": "Intel(R) Xeon(R) E3 - 1200/1500 v5/6th Gen Intel(R) Core(TM) Gaussian Mixture Model - 1911",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110B-0000-1000-8000-00805F9B34FB}_VID&0001004C_PID&200A\\0&00000000&0&00000000000",
+   "name": "VALERIE\u0393\u00c7\u00d6s AirPods Max - Find My",
+   "class": "MEDIA",
+   "service": "BthA2dp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0608\\0&00000000&0&00",
+   "name": "Generic USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0626\\0&00000000&0&0",
+   "name": "Generic SuperSpeed USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0626\\0&00000000&0&0",
+   "name": "Generic SuperSpeed USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0626\\0&00000000&0&0",
+   "name": "Generic SuperSpeed USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_05E3&PID_0626\\0&00000000&0&0",
+   "name": "Generic SuperSpeed USB Hub",
+   "class": "USB",
+   "service": "USBHUB3",
+   "problem": 0,
+   "mfr": "(Standard USB HUBs)",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000111E-0000-1000-8000-00805F9B34FB}_VID&0001068E_PID&0545\\0&00000000&0&00000000000",
+   "name": "Razer Kaira Pro (BT) Hands-Free AG",
+   "class": "System",
+   "service": "BthHFEnum",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "{8E7BD593-6E6C-4C52-86A6-77175494DD8E}\\MSVHDHBA\\0&0000000&0&00",
+   "name": "Microsoft VHD Loopback Controller",
+   "class": "SCSIAdapter",
+   "service": "vhdmp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHLEDEVICE\\{00001812-0000-1000-8000-00805F9B34FB}_DEV_VID&02046D_PID&B35A_REV&0011_FF3300268F32\\0&0000000&0&0000",
+   "name": "Bluetooth Low Energy GATT compliant HID device",
+   "class": "HIDClass",
+   "service": "mshidumdf",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\RADIO\\{00000000-0000-0000-0000",
+   "name": "Wi-Fi",
+   "class": "SoftwareDevice",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\WPDBUSENUM\\{00000000-0000-0000-0000",
+   "name": "OS",
+   "class": "WPD",
+   "service": "WUDFWpdFs",
+   "problem": 0,
+   "mfr": "Realtek ",
+   "status": "OK"
+  },
+  {
+   "id": "HDAUDIO\\FUNC_01&VEN_10DE&DEV_0091&SUBSYS_10DE12A4&REV_1001\\0&00000000&0&0000",
+   "name": "NVIDIA High Definition Audio",
+   "class": "MEDIA",
+   "service": "NVHDA",
+   "problem": 0,
+   "mfr": "NVIDIA",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A36D&SUBSYS_7B181462&REV_10\\0&00000000&0&00",
+   "name": "Intel(R) USB 3.1 eXtensible Host Controller - 1.10 (Microsoft)",
+   "class": "USB",
+   "service": "USBXHCI",
+   "problem": 0,
+   "mfr": "Generic USB xHCI Host Controller",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\{0000110B-0000-1000-8000-00805F9B34FB}_VID&0001068E_PID&0545\\0&00000000&0&00000000000",
+   "name": "Razer Kaira Pro (BT)",
+   "class": "MEDIA",
+   "service": "BthA2dp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTHENUM\\DEV_FCA89A0F448E\\0&00000000&0&00000000000",
+   "name": "SRS-X55",
+   "class": "Bluetooth",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\MSSMBIOS\\0000",
+   "name": "Microsoft System Management BIOS Driver",
+   "class": "System",
+   "service": "mssmbios",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\INT340E\\0&0000000&0",
+   "name": "Motherboard resources",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "USBSTOR\\DISK&VEN_NORELSYS&PROD_1081CS1&REV_\\000000000000000&0",
+   "name": "NORELSYS 1081CS1 USB Device",
+   "class": "DiskDrive",
+   "service": "disk",
+   "problem": 0,
+   "mfr": "(Standard disk drives)",
+   "status": "OK"
+  },
+  {
+   "id": "ACPI\\PNP0100\\0&00000000&0",
+   "name": "System timer",
+   "class": "System",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\WPDBUSENUM\\_??_0000000#0000&000_000",
+   "name": "F:\\",
+   "class": "WPD",
+   "service": "WUDFWpdFs",
+   "problem": 0,
+   "mfr": "NORELSYS",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL01\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A33B&SUBSYS_7B181462&REV_F0\\0&00000000&0&00",
+   "name": "Intel(R) PCI Express Root Port #4 - A33B",
+   "class": "System",
+   "service": "pci",
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_00\\0&0000000&0&0000",
+   "name": "HID Keyboard Device",
+   "class": "Keyboard",
+   "service": "kbdhid",
+   "problem": 0,
+   "mfr": "(Standard keyboards)",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_258A&PID_0150&MI_01&COL06\\0&00000000&0&0000",
+   "name": "HID-compliant vendor-defined device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A305&SUBSYS_7B181462&REV_10\\0&00000000&0&00",
+   "name": "Intel(R) 300 Series Chipset Family LPC Controller (Z390) - A305",
+   "class": "System",
+   "service": "msisadrv",
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_10DE&DEV_10F7&SUBSYS_12A410DE&REV_A1\\0&0000000&0&0000",
+   "name": "High Definition Audio Controller",
+   "class": "System",
+   "service": "HDAudBus",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\SYSTEM\\0000",
+   "name": "Plug and Play Software Device Enumerator",
+   "class": "System",
+   "service": "swenum",
+   "problem": 0,
+   "mfr": "(Standard system devices)",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\SYSTEM\\0000",
+   "name": "Nefarius Virtual Gamepad Emulation Bus",
+   "class": "System",
+   "service": "ViGEmBus",
+   "problem": 0,
+   "mfr": "Nefarius Software Solutions e.U.",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\SYSTEM\\0000",
+   "name": "Virtual Serial Bus Enumerator 7 (Eltima Software)",
+   "class": "System",
+   "service": "VSBC7",
+   "problem": 0,
+   "mfr": "ELTIMA Software",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\SYSTEM\\0000",
+   "name": "Electronic Virtual USB Hub",
+   "class": "System",
+   "service": "vuhub",
+   "problem": 0,
+   "mfr": "Electronic Team, Inc.",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\SYSTEM\\0000",
+   "name": "Virtual Serial Bus Enumerator 10 (Electronic Team)",
+   "class": "System",
+   "service": "VSBC9",
+   "problem": 0,
+   "mfr": "Electronic Team",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "BTH\\MS_BTHPAN\\0&0000000&0&0",
+   "name": "Bluetooth Device (Personal Area Network)",
+   "class": "Net",
+   "service": "BthPan",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_10EC&DEV_5762&SUBSYS_576210EC&REV_01\\0&00000000&0&0000",
+   "name": "Standard NVM Express Controller",
+   "class": "SCSIAdapter",
+   "service": "stornvme",
+   "problem": 0,
+   "mfr": "Standard NVM Express Controller",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_258A&PID_0150\\0&00000000&0&0",
+   "name": "USB Composite Device",
+   "class": "USB",
+   "service": "usbccgp",
+   "problem": 0,
+   "mfr": "(Standard USB Host Controller)",
+   "status": "OK"
+  },
+  {
+   "id": "ROOT\\RDPBUS\\0000",
+   "name": "Remote Desktop Device Redirector Bus",
+   "class": "System",
+   "service": "rdpbus",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "IEEE1667\\SILO_104&PROD_ST5000LM000-2AN170&REV_0001\\____________00000000&0&0",
+   "name": "Microsoft TCG Storage silo",
+   "class": "EhStorSilo",
+   "service": "EhStorTcgDrv",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\00_00000000000",
+   "name": "WAN Miniport (IPv6)",
+   "class": "Net",
+   "service": "NdisWan",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "HID\\VID_046D&PID_C52B&MI_01&COL02\\0&00000000&0&0000",
+   "name": "HID-compliant consumer control device",
+   "class": "HIDClass",
+   "service": null,
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "USB\\VID_046D&PID_C52B&MI_00\\0&00000000&0&0000",
+   "name": "Logitech USB Input Device",
+   "class": "HIDClass",
+   "service": "HidUsb",
+   "problem": 0,
+   "mfr": "Logitech (x64)",
+   "status": "OK"
+  },
+  {
+   "id": "SWD\\MSRRAS\\00_000000000000",
+   "name": "WAN Miniport (L2TP)",
+   "class": "Net",
+   "service": "Rasl2tp",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  },
+  {
+   "id": "PCI\\VEN_8086&DEV_A340&SUBSYS_7B181462&REV_F0\\0&00000000&0&00",
+   "name": "Intel(R) PCI Express Root Port #17 - A340",
+   "class": "System",
+   "service": "pci",
+   "problem": 0,
+   "mfr": "INTEL",
+   "status": "OK"
+  },
+  {
+   "id": "STORAGE\\VOLUME\\{00000000-0000-0000-0000",
+   "name": "Volume",
+   "class": "Volume",
+   "service": "volume",
+   "problem": 0,
+   "mfr": "Microsoft",
+   "status": "OK"
+  }
+ ],
+ "net": null,
+ "monitors": [
+  {
+   "name": "CB242Y",
+   "serial": "0",
+   "mfr": "ACR",
+   "instance": "DISPLAY\\ACR0719\\5&286dade5&0&UID4354_0",
+   "active": true,
+   "edid_hex": "00ffffffffffff0004721907e61c9001131e010380351e78ee0565a756529c270f5054b30c00714f818081c081009500b300d1c001012a4480a070382740302035000f282100001a023a801871382d40582c45000f282100001e000000fd00304c1f5412000a202020202020000000fc004342323432590a202020202020016102031fb14b900102030405111213141f65030c001000681a00000101304be6023a801871382d40582c45000f282100001e011d007251d01e206e2855000f282100001e8c0ad08a20e02d10103e96000f28210000182a4480a070382740302035000f282100001a000000000000000000000000000000000000000000000000e1",
+   "width_cm": 53,
+   "height_cm": 30
+  },
+  {
+   "name": "27G2G3",
+   "serial": "0",
+   "mfr": "AOC",
+   "instance": "DISPLAY\\AOC2702\\5&286dade5&0&UID4357_0",
+   "active": true,
+   "edid_hex": "00ffffffffffff0005e30227ea3c0000271e0104a53c22783bf385ac5047a426135054bfef00d1c081803168317c4568457c6168617c023a801871382d40582c450056502100001ed09480a070381e403040350056502100001a000000fc003237473247330a202020202020000000fd0030a5c8c83c010a20202020202001c502031ff14c0103051404131f120211903f230907078301000065030c001000fc7e8088703812401820350056502100001e866f80a0703840403020350056502100001efe5b80a0703835403020350056502100001eab22a0a050841a303020360056502100001a7c2e90a0601a1e403020360056502100001a000000000000f6",
+   "width_cm": 60,
+   "height_cm": 34
+  }
+ ],
+ "tpm": null,
+ "secureboot": null,
+ "firmware_type": "UEFI",
+ "self_disk": {
+  "letter": "C:",
+  "partition": "Disk #2, Partition #2",
+  "device": "\\\\.\\PHYSICALDRIVE2"
+ },
+ "_note": "Captured from a real MSI MAG Z390 TOMAHAWK bench PC, 2026-10-05, NOT elevated \u2014 so tpm/secureboot are null on purpose. Serials and the computer name are scrubbed; every shape and count is real."
+}

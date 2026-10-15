@@ -1,0 +1,16 @@
+{"blockdevices":[
+ {"name":"nvme0n1","path":"/dev/nvme0n1","type":"disk","size":500107862016,"fstype":null,"label":null,"mountpoint":null,"rm":"0","pkname":null,"children":[
+   {"name":"nvme0n1p1","path":"/dev/nvme0n1p1","type":"part","size":536870912,"fstype":"vfat","label":"SYSTEM","mountpoint":null,"rm":"0","pkname":"nvme0n1"},
+   {"name":"nvme0n1p3","path":"/dev/nvme0n1p3","type":"part","size":498500000000,"fstype":"ntfs","label":"Windows","mountpoint":null,"rm":"0","pkname":"nvme0n1"}
+ ]},
+ {"name":"sda","path":"/dev/sda","type":"disk","size":256060514304,"fstype":null,"label":null,"mountpoint":null,"rm":"0","pkname":null,"children":[
+   {"name":"sda2","path":"/dev/sda2","type":"part","size":255000000000,"fstype":"BitLocker","label":null,"mountpoint":null,"rm":"0","pkname":"sda"}
+ ]},
+ {"name":"sdb","path":"/dev/sdb","type":"disk","size":123000000000,"fstype":null,"label":null,"mountpoint":null,"rm":"1","pkname":null,"children":[
+   {"name":"sdb1","path":"/dev/sdb1","type":"part","size":122000000000,"fstype":"exfat","label":"BACKUP","mountpoint":"/run/media/backup","rm":"1","pkname":"sdb"}
+ ]},
+ {"name":"sdc","path":"/dev/sdc","type":"disk","size":15900000000,"fstype":null,"label":null,"mountpoint":null,"rm":"1","pkname":null,"children":[
+   {"name":"sdc1","path":"/dev/sdc1","type":"part","size":4000000000,"fstype":"vfat","label":"BENCHBOOT","mountpoint":"/run/live/medium","rm":"1","pkname":"sdc"},
+   {"name":"sdc2","path":"/dev/sdc2","type":"part","size":11000000000,"fstype":"exfat","label":"BENCHDIAG","mountpoint":"/run/benchdiag/payload","rm":"1","pkname":"sdc"}
+ ]}
+]}

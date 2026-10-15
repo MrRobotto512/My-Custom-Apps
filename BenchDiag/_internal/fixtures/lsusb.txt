@@ -1,0 +1,5 @@
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 0bda:8812 Realtek Semiconductor Corp. RTL8812AU 802.11a/b/g/n/ac WLAN Adapter
+Bus 001 Device 003: ID 174c:2362 ASMedia Technology Inc. ASM2362 NVMe USB enclosure
+Bus 001 Device 004: ID 046d:c534 Logitech, Inc. Unifying Receiver

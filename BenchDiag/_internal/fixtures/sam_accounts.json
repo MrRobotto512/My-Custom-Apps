@@ -1,0 +1,47 @@
+[
+ {
+  "rid": "01f4",
+  "name": "Administrator",
+  "admin": true,
+  "disabled": true,
+  "lock_flags": "dis/lock",
+  "account_type": "local",
+  "email": ""
+ },
+ {
+  "rid": "01f5",
+  "name": "Guest",
+  "admin": false,
+  "disabled": true,
+  "lock_flags": "dis/lock",
+  "account_type": "local",
+  "email": ""
+ },
+ {
+  "rid": "01f7",
+  "name": "DefaultAccount",
+  "admin": false,
+  "disabled": true,
+  "lock_flags": "dis/lock",
+  "account_type": "local",
+  "email": ""
+ },
+ {
+  "rid": "01f8",
+  "name": "WDAGUtilityAccount",
+  "admin": false,
+  "disabled": true,
+  "lock_flags": "dis/lock",
+  "account_type": "local",
+  "email": ""
+ },
+ {
+  "rid": "03e9",
+  "name": "Shadow",
+  "admin": true,
+  "disabled": false,
+  "lock_flags": "",
+  "account_type": "microsoft",
+  "email": "shadow.user@outlook.com"
+ }
+]

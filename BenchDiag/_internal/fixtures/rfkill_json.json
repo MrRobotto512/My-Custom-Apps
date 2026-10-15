@@ -1,0 +1,1 @@
+{"rfkilldevices":[{"id":0,"type":"wlan","device":"phy0","soft":"blocked","hard":"unblocked"},{"id":1,"type":"bluetooth","device":"hci0","soft":"unblocked","hard":"unblocked"}]}

@@ -1,0 +1,12 @@
+{"blockdevices":[
+ {"name":"sda","path":"/dev/sda","type":"disk","size":123456789012,"model":"Kingston DataTraveler","tran":"usb","rm":"1","children":[
+   {"name":"sda1","path":"/dev/sda1","type":"part","size":1073741824,"fstype":"vfat","partn":"1"},
+   {"name":"sda2","path":"/dev/sda2","type":"part","size":1073741824,"fstype":"exfat","partn":"2"}]},
+ {"name":"nvme0n1","path":"/dev/nvme0n1","type":"disk","size":512110190592,"model":"WD PC SN740","tran":"nvme","rm":"0","children":[
+   {"name":"nvme0n1p1","path":"/dev/nvme0n1p1","type":"part","size":272629760,"fstype":"vfat","partn":"1"},
+   {"name":"nvme0n1p2","path":"/dev/nvme0n1p2","type":"part","size":16777216,"fstype":"","partn":"2"},
+   {"name":"nvme0n1p3","path":"/dev/nvme0n1p3","type":"part","size":510182490112,"fstype":"ntfs","partn":"3","used":85899345920},
+   {"name":"nvme0n1p4","path":"/dev/nvme0n1p4","type":"part","size":650117120,"fstype":"ntfs","partn":"4"}]},
+ {"name":"sdb","path":"/dev/sdb","type":"disk","size":1000204886016,"model":"Samsung 990 EVO (enclosure)","tran":"usb","rm":"1","children":[]},
+ {"name":"sdd","path":"/dev/sdd","type":"disk","size":16013942784,"model":"Generic 16GB stick","tran":"usb","rm":"1","children":[]}
+]}

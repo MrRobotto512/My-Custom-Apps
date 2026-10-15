@@ -1,0 +1,58 @@
+[
+ {
+  "inf": "iigd_dch.inf",
+  "class": "display",
+  "provider": "Intel Corporation",
+  "date": "2022-06-15",
+  "version": "31.0.101.2115"
+ },
+ {
+  "inf": "e1d68x64.inf",
+  "class": "net",
+  "provider": "Intel",
+  "date": "2023-11-02",
+  "version": "12.19.2.60"
+ },
+ {
+  "inf": "iastorac.inf",
+  "class": "hdc",
+  "provider": "Intel Corporation",
+  "date": "2019-01-24",
+  "version": "17.2.0.1009"
+ },
+ {
+  "inf": "usbxhci.inf",
+  "class": "usb",
+  "provider": "Microsoft",
+  "date": "2024-05-08",
+  "version": "10.0.26100.1"
+ },
+ {
+  "inf": "heci.inf",
+  "class": "system",
+  "provider": "Intel Corporation",
+  "date": "2021-03-18",
+  "version": "2124.100.0.1096"
+ },
+ {
+  "inf": "dtsoftbus01.inf",
+  "class": "system",
+  "provider": "Disc Soft Ltd",
+  "date": "2016-04-01",
+  "version": "1.0.0.1"
+ },
+ {
+  "inf": "rt640x64.inf",
+  "class": "net",
+  "provider": "Realtek",
+  "date": "2021-08-19",
+  "version": "10.50.511.2021"
+ },
+ {
+  "inf": "hdaudio.inf",
+  "class": "media",
+  "provider": "Microsoft",
+  "date": "2024-05-08",
+  "version": "10.0.26100.1"
+ }
+]

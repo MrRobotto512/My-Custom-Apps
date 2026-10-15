@@ -1,0 +1,2 @@
+/sys/class/power_supply/AC
+/sys/class/power_supply/BAT0

@@ -1,0 +1,1 @@
+stress-ng: info:  [1010] successful run completed in 15.01s

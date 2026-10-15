@@ -1,0 +1,34 @@
+{"name":"C:","size":214748364800,"dir":true,"entries":184213,"partial":false,"children":[
+ {"name":"Users","size":96636764160,"dir":true,"children":[
+   {"name":"Wikedgames","size":88046829568,"dir":true,"children":[
+     {"name":"Videos","size":52428800000,"dir":true,"children":[
+       {"name":"capture_2025.mp4","size":18253611008},
+       {"name":"stream_archive.mkv","size":15032385536},
+       {"name":"gameplay_raw.mp4","size":12884901888},
+       {"name":"+240 smaller items","size":6257492568,"other":true}]},
+     {"name":"Downloads","size":21474836480,"dir":true,"children":[
+       {"name":"Win11_24H2.iso","size":6979321856},
+       {"name":"game_installer.exe","size":5368709120},
+       {"name":"+512 smaller items","size":9126805504,"other":true}]},
+     {"name":"Pictures","size":8589934592,"dir":true,"children":[
+       {"name":"+3120 smaller items","size":8589934592,"other":true}]},
+     {"name":"Documents","size":3221225472,"dir":true,"children":[
+       {"name":"taxes_2024.pdf","size":52428800},
+       {"name":"+880 smaller items","size":3168796672,"other":true}]},
+     {"name":"AppData","size":2331557888,"dir":true,"children":[
+       {"name":"+9000 smaller items","size":2331557888,"other":true}]}]},
+   {"name":"Public","size":8589934592,"dir":true,"children":[
+     {"name":"+120 smaller items","size":8589934592,"other":true}]}]},
+ {"name":"Program Files","size":48318382080,"dir":true,"children":[
+   {"name":"EA Games","size":32212254720,"dir":true,"children":[
+     {"name":"Apple","size":21474836480,"dir":true,"children":[]},
+     {"name":"+40 smaller items","size":10737418240,"other":true}]},
+   {"name":"+80 smaller items","size":16106127360,"other":true}]},
+ {"name":"Windows","size":42949672960,"dir":true,"children":[
+   {"name":"WinSxS","size":12884901888,"dir":true,"children":[]},
+   {"name":"System32","size":8589934592,"dir":true,"children":[]},
+   {"name":"+300 smaller items","size":21474836480,"other":true}]},
+ {"name":"pagefile.sys","size":17179869184},
+ {"name":"hiberfil.sys","size":8589934592},
+ {"name":"+60 smaller items","size":574619648,"other":true}
+]}

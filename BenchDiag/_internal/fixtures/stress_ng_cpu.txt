@@ -1,0 +1,6 @@
+metrics:
+    - stressor: cpu
+      bogo-ops: 812345
+      bogo-ops-per-second-usr-sys-time: 1128.44
+      bogo-ops-per-second-real-time: 13539.08
+      wall-clock-time: 60.001

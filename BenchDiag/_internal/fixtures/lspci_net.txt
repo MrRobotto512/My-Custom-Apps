@@ -1,0 +1,7 @@
+00:14.3 Network controller [0280]: Intel Corporation Wi-Fi 6 AX200 [8086:2723] (rev 1a)
+	Subsystem: Intel Corporation Wi-Fi 6 AX200 [8086:0084]
+	Kernel driver in use: iwlwifi
+	Kernel modules: iwlwifi
+00:1f.6 Ethernet controller [0200]: Intel Corporation Ethernet Connection I219-V [8086:15b8]
+	Kernel driver in use: e1000e
+	Kernel modules: e1000e

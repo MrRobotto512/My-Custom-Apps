@@ -1,0 +1,6 @@
+00:00.0 Host bridge: Intel Corporation Comet Lake-S 6c Host Bridge/DRAM Controller (rev 03)
+00:02.0 VGA compatible controller: Intel Corporation CometLake-S GT2 [UHD Graphics 630] (rev 03)
+00:14.0 USB controller: Intel Corporation Comet Lake USB 3.1 xHCI Host Controller
+00:1f.6 Ethernet controller: Intel Corporation Ethernet Connection (11) I219-V
+01:00.0 VGA compatible controller: NVIDIA Corporation TU116 [GeForce GTX 1660 SUPER] (rev a1)
+02:00.0 Network controller: Intel Corporation Wi-Fi 6 AX200 (rev 1a)

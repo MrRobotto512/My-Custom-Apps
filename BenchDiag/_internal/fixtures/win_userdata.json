@@ -1,0 +1,8 @@
+{"users":[
+ {"name":"jsmith","total_bytes":8493465600,"total_h":"7.9 GB","categories":[
+   {"key":"Desktop","count":42,"bytes":31457280,"size_h":"30.0 MB"},
+   {"key":"Documents","count":318,"bytes":1073741824,"size_h":"1.0 GB"},
+   {"key":"Pictures","count":1204,"bytes":5368709120,"size_h":"5.0 GB"},
+   {"key":"Videos","count":37,"bytes":2013265920,"size_h":"1.9 GB"}
+ ]}
+]}

@@ -1,0 +1,3 @@
+{"coretemp-isa-0000":{"Package id 0":{"temp1_input":47.0,"temp1_max":100.0},"Core 0":{"temp2_input":45.0},"Core 1":{"temp3_input":46.0}},
+ "nct6779-isa-0290":{"fan1":{"fan1_input":886},"fan2":{"fan2_input":1180},"fan3":{"fan3_input":0}},
+ "nvme-pci-0100":{"Composite":{"temp1_input":38.9}}}

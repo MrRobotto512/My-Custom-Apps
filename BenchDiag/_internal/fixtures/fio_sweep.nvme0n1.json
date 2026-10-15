@@ -1,0 +1,1 @@
+{"fio version":"fio-3.33","jobs":[{"jobname":"sweep","error":0,"read":{"io_bytes":3221225472,"bw_bytes":214000000,"iops":52300,"lat_ns":{"mean":300000,"max":18000000}}}]}

@@ -1,0 +1,4 @@
+smartctl 7.3 2022-02-28 r5338 [x86_64-linux-6.1.0] (local build)
+Sending command: "Execute SMART Short self-test routine immediately in off-line mode".
+Testing has begun.
+Please wait 2 minutes for test to complete.

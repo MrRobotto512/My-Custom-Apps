@@ -1,0 +1,1 @@
+{"fio version":"fio-3.33","jobs":[{"jobname":"region","error":0,"read":{"io_bytes":268435456,"bw_bytes":149000000,"iops":142,"lat_ns":{"mean":900000,"max":42000000}}}]}

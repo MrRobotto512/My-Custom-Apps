@@ -1,0 +1,1 @@
+{"fio version":"fio-3.33","jobs":[{"jobname":"usb_read","error":0,"read":{"io_bytes":536870912,"bw_bytes":92000000,"iops":87}}]}

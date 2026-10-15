@@ -1,0 +1,24 @@
+{
+ "lscpu": [
+  {
+   "field": "Architecture:",
+   "data": "x86_64"
+  },
+  {
+   "field": "CPU(s):",
+   "data": "12"
+  },
+  {
+   "field": "Model name:",
+   "data": "Intel(R) Core(TM) i5-10600K CPU @ 4.10GHz"
+  },
+  {
+   "field": "Core(s) per socket:",
+   "data": "6"
+  },
+  {
+   "field": "Flags:",
+   "data": "fpu vme de pse tsc msr sse sse2 ssse3 sse4_1 sse4_2 popcnt avx avx2 fma aes"
+  }
+ ]
+}

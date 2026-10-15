@@ -1,0 +1,6 @@
+BSS a0:40:a0:11:22:33(on wlan0)
+	SSID: ShopWiFi
+BSS a0:40:a0:44:55:66(on wlan0)
+	SSID: ShopWiFi-5G
+BSS 12:33:56:78:9a:bc(on wlan0)
+	SSID: Neighbor24

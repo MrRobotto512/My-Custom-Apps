@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "collected": "2026-10-05T14:22:08.1234567-05:00",
+  "errors": [],
+  "system": {
+    "manufacturer": "Dell Inc.",
+    "model": "XPS 15 9520",
+    "serial": "7KQ2WM3",
+    "bios": "1.22.0",
+    "bios_date": "2025-06-11",
+    "bios_vendor": "Dell Inc.",
+    "baseboard": "Dell Inc. 0K3HTD",
+    "os_caption": "Microsoft Windows 11 Pro",
+    "os_build": "26100",
+    "os_version": "10.0.26100",
+    "os_arch": "64-bit",
+    "installed_on": "2024-02-19",
+    "last_boot": "2026-10-05T07:41:02",
+    "computer": "DESKTOP-K2M7PQ"
+  },
+  "cpu": {
+    "name": "12th Gen Intel(R) Core(TM) i7-12700H",
+    "cores": 14,
+    "threads": 20,
+    "mhz": 4700,
+    "arch": "AMD64",
+    "l2_kb": 11776,
+    "l3_kb": 24576,
+    "sockets": 1,
+    "features": ["sse", "sse2", "sse3", "sse4_1", "sse4_2", "avx", "avx2", "popcnt"]
+  },
+  "memory": {
+    "total_kb": 33281032,
+    "free_kb": 14920144,
+    "available_kb": 14920144,
+    "modules": [
+      {"bank": "BANK 0", "slot": "DIMM A", "size": 17179869184, "speed": 4800, "mfr": "Samsung", "part": "M425R2GA3BB0"},
+      {"bank": "BANK 2", "slot": "DIMM B", "size": 17179869184, "speed": 4800, "mfr": "Samsung", "part": "M425R2GA3BB0"}
+    ]
+  },
+  "cpu_load": [
+    {"id": "0", "pct": 14.0}, {"id": "1", "pct": 6.0}, {"id": "2", "pct": 31.0}, {"id": "3", "pct": 2.0},
+    {"id": "4", "pct": 9.0}, {"id": "5", "pct": 0.0}, {"id": "6", "pct": 55.0}, {"id": "7", "pct": 3.0}
+  ],
+  "disks": [
+    {
+      "index": 0,
+      "device": "\\\\.\\PHYSICALDRIVE0",
+      "model": "KXG70ZNV1T02 NVMe KIOXIA 1024GB",
+      "serial": "Z1B0A04PTBYS",
+      "size": 1024209543168,
+      "bus": "NVMe",
+      "media": "SSD",
+      "spindle": 0,
+      "health": "Healthy",
+      "removable": false,
+      "partitions": [
+        {"index": 0, "size": 272629760, "type": "GPT: System", "bootable": true, "letter": null},
+        {"index": 1, "size": 16777216, "type": "GPT: Unknown", "bootable": false, "letter": null},
+        {"index": 2, "size": 1022656413696, "type": "GPT: Basic Data", "bootable": false, "letter": "C:"}
+      ]
+    },
+    {
+      "index": 1,
+      "device": "\\\\.\\PHYSICALDRIVE1",
+      "model": "ST1000LM035-1RK172",
+      "serial": "WL20ABCD",
+      "size": 1000204886016,
+      "bus": "SATA",
+      "media": "HDD",
+      "spindle": 5400,
+      "health": "Warning",
+      "removable": false,
+      "partitions": [
+        {"index": 0, "size": 1000203091968, "type": "GPT: Basic Data", "bootable": false, "letter": "D:"}
+      ]
+    },
+    {
+      "index": 2,
+      "device": "\\\\.\\PHYSICALDRIVE2",
+      "model": "SanDisk Ultra USB 3.0",
+      "serial": "4C530001234567",
+      "size": 61530439680,
+      "bus": "USB",
+      "media": "Removable Media",
+      "spindle": null,
+      "health": "Healthy",
+      "removable": true,
+      "partitions": [
+        {"index": 0, "size": 4294967296, "type": "GPT: System", "bootable": true, "letter": null},
+        {"index": 1, "size": 57231835136, "type": "GPT: Basic Data", "bootable": false, "letter": "E:"}
+      ]
+    }
+  ],
+  "volumes": [
+    {"letter": "C:", "fs": "NTFS", "label": "OS", "size": 1022656413696, "free": 182334324736, "type": 3},
+    {"letter": "D:", "fs": "NTFS", "label": "Data", "size": 1000203091968, "free": 684233101312, "type": 3},
+    {"letter": "E:", "fs": "exFAT", "label": "BENCHDIAG", "size": 57231835136, "free": 55132876800, "type": 2}
+  ],
+  "batteries": [
+    {
+      "name": "BAT0",
+      "status": 2,
+      "percent": 88,
+      "design_mwh": 86000,
+      "full_mwh": 71240,
+      "cycles": 287,
+      "rate_mw": 0,
+      "ac_online": true,
+      "chemistry": 6
+    }
+  ],
+  "ac_online": true,
+  "pnp": [
+    {"id": "PCI\\VEN_8086&DEV_46A6&SUBSYS_0A5D1028", "name": "Intel(R) Iris(R) Xe Graphics", "class": "Display", "service": "igfxn", "problem": 0, "mfr": "Intel Corporation", "status": "OK"},
+    {"id": "PCI\\VEN_10DE&DEV_25A2&SUBSYS_0A5D1028", "name": "NVIDIA GeForce RTX 3050 Laptop GPU", "class": "Display", "service": "nvlddmkm", "problem": 0, "mfr": "NVIDIA", "status": "OK"},
+    {"id": "PCI\\VEN_8086&DEV_51F0&SUBSYS_00748086", "name": "Intel(R) Wi-Fi 6E AX211 160MHz", "class": "Net", "service": "Netwtw12", "problem": 0, "mfr": "Intel Corporation", "status": "OK"},
+    {"id": "PCI\\VEN_8086&DEV_51C8&SUBSYS_0A5D1028", "name": "Intel(R) Smart Sound Technology", "class": "MEDIA", "service": "IntcAzAudAddService", "problem": 0, "mfr": "Intel", "status": "OK"},
+    {"id": "USB\\VID_8087&PID_0033\\5&1234ABCD&0&14", "name": "Intel(R) Wireless Bluetooth(R)", "class": "Bluetooth", "service": "BTHUSB", "problem": 0, "mfr": "Intel Corporation", "status": "OK"},
+    {"id": "USB\\VID_0BDA&PID_8812\\00E04C000001", "name": "802.11ac NIC", "class": "Net", "service": "", "problem": 28, "mfr": "Realtek", "status": "Error"},
+    {"id": "USB\\VID_0781&PID_5591\\4C530001234567", "name": "USB Mass Storage Device", "class": "USB", "service": "USBSTOR", "problem": 0, "mfr": "Compatible USB storage device", "status": "OK"},
+    {"id": "USB\\VID_046D&PID_C52B\\5&9876FEDC&0&3", "name": "Logitech USB Input Device", "class": "HIDClass", "service": "HidUsb", "problem": 0, "mfr": "Logitech", "status": "OK"}
+  ],
+  "net": [
+    {
+      "name": "Wi-Fi", "desc": "Intel(R) Wi-Fi 6E AX211 160MHz", "mac": "A4:BB:6D:11:22:33",
+      "speed": 1200000000, "up": true, "pnp": "PCI\\VEN_8086&DEV_51F0", "wifi": true,
+      "driver": "Netwtw12.sys", "driver_version": "23.80.1.2", "driver_date": "2025-08-14",
+      "ipv4": ["192.168.1.74"], "dhcp": true
+    },
+    {
+      "name": "Ethernet", "desc": "Realtek USB GbE Family Controller", "mac": "00:E0:4C:68:02:11",
+      "speed": 0, "up": false, "pnp": "USB\\VID_0BDA&DEV_8153", "wifi": false,
+      "driver": "rtux64w10.sys", "driver_version": "10.52.0401.2024", "driver_date": "2024-04-01",
+      "ipv4": [], "dhcp": true
+    }
+  ],
+  "monitors": [
+    {
+      "name": "Dell Built-in Display", "serial": "0", "mfr": "SHP", "instance": "DISPLAY\\SHP14D1\\4&2b1c9a3&0&UID8388688_0",
+      "active": true,
+      "edid_hex": "00ffffffffffff004d10d114000000001c1f0104a52213780ade50a3544c99260f5054000000010101010101010101010101010101014dd000a0f0703e803020350058c2100000190000000000000000000000000000000000000000fe0053484152500a202020202020000000fe004c513135364d314a573033200a0049",
+      "width_cm": 34, "height_cm": 19
+    }
+  ],
+  "tpm": {
+    "present": true,
+    "version": "2.0",
+    "enabled": true,
+    "activated": true,
+    "owned": true,
+    "vendor": "INTC"
+  },
+  "secureboot": true,
+  "firmware_type": "Uefi",
+  "self_disk": {
+    "letter": "E:",
+    "partition": "Disk #2, Partition #1",
+    "device": "\\\\.\\PHYSICALDRIVE2"
+  }
+}

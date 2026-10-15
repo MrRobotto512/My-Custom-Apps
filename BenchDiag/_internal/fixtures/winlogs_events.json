@@ -1,0 +1,302 @@
+[
+ {
+  "id": 1000,
+  "provider": "Application Error",
+  "time": "2026-08-21T14:02:11",
+  "level": 2,
+  "strings": [
+   "chrome.exe",
+   "139.0.7258.67",
+   "68a1b2c3",
+   "ucrtbase.dll",
+   "10.0.26100.1",
+   "c0000409"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1000,
+  "provider": "Application Error",
+  "time": "2026-08-21T14:02:11",
+  "level": 2,
+  "strings": [
+   "chrome.exe",
+   "139.0.7258.67",
+   "68a1b2c3",
+   "ucrtbase.dll",
+   "10.0.26100.1",
+   "c0000409"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1000,
+  "provider": "Application Error",
+  "time": "2026-08-21T14:02:11",
+  "level": 2,
+  "strings": [
+   "chrome.exe",
+   "139.0.7258.67",
+   "68a1b2c3",
+   "ucrtbase.dll",
+   "10.0.26100.1",
+   "c0000409"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1000,
+  "provider": "Application Error",
+  "time": "2026-08-21T14:02:11",
+  "level": 2,
+  "strings": [
+   "chrome.exe",
+   "139.0.7258.67",
+   "68a1b2c3",
+   "ucrtbase.dll",
+   "10.0.26100.1",
+   "c0000409"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1000,
+  "provider": "Application Error",
+  "time": "2026-08-21T14:02:11",
+  "level": 2,
+  "strings": [
+   "chrome.exe",
+   "139.0.7258.67",
+   "68a1b2c3",
+   "ucrtbase.dll",
+   "10.0.26100.1",
+   "c0000409"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1000,
+  "provider": "Application Error",
+  "time": "2026-08-21T14:02:11",
+  "level": 2,
+  "strings": [
+   "chrome.exe",
+   "139.0.7258.67",
+   "68a1b2c3",
+   "ucrtbase.dll",
+   "10.0.26100.1",
+   "c0000409"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1000,
+  "provider": "Application Error",
+  "time": "2026-08-14T09:31:40",
+  "level": 2,
+  "strings": [
+   "Photoshop.exe",
+   "26.5",
+   "66aa11bb",
+   "atio6axx.dll",
+   "31.0.24027",
+   "c0000005"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1000,
+  "provider": "Application Error",
+  "time": "2026-08-14T09:31:40",
+  "level": 2,
+  "strings": [
+   "Photoshop.exe",
+   "26.5",
+   "66aa11bb",
+   "atio6axx.dll",
+   "31.0.24027",
+   "c0000005"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1002,
+  "provider": "Application Hang",
+  "time": "2026-08-18T10:12:03",
+  "level": 2,
+  "strings": [
+   "OneDrive.exe",
+   "25.140.0801",
+   "1234"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1002,
+  "provider": "Application Hang",
+  "time": "2026-08-18T10:12:03",
+  "level": 2,
+  "strings": [
+   "OneDrive.exe",
+   "25.140.0801",
+   "1234"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1002,
+  "provider": "Application Hang",
+  "time": "2026-08-18T10:12:03",
+  "level": 2,
+  "strings": [
+   "OneDrive.exe",
+   "25.140.0801",
+   "1234"
+  ],
+  "channel": "Application"
+ },
+ {
+  "id": 1001,
+  "provider": "Microsoft-Windows-WER-SystemErrorReporting",
+  "time": "2026-08-19T22:47:55",
+  "level": 2,
+  "strings": [
+   "0x0000003b",
+   "C:\\Windows\\Minidump\\081926-9843-01.dmp",
+   "0x00000000c0000005"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 1001,
+  "provider": "Microsoft-Windows-WER-SystemErrorReporting",
+  "time": "2026-07-22T19:03:12",
+  "level": 2,
+  "strings": [
+   "0x00000133",
+   "C:\\Windows\\Minidump\\072226-11031-01.dmp",
+   "0x0000000000000001"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 41,
+  "provider": "Microsoft-Windows-Kernel-Power",
+  "time": "2026-08-19T22:46:02",
+  "level": 1,
+  "strings": [
+   "0",
+   "0",
+   "0"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 41,
+  "provider": "Microsoft-Windows-Kernel-Power",
+  "time": "2026-08-19T22:46:02",
+  "level": 1,
+  "strings": [
+   "0",
+   "0",
+   "0"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 6008,
+  "provider": "EventLog",
+  "time": "2026-07-30T08:12:00",
+  "level": 2,
+  "strings": [
+   "07:58:21",
+   "7/30/2026"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 7026,
+  "provider": "Service Control Manager",
+  "time": "2026-08-21T08:00:14",
+  "level": 2,
+  "strings": [
+   "amdsata\ndtsoftbus01"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 7000,
+  "provider": "Service Control Manager",
+  "time": "2026-08-10T12:00:00",
+  "level": 2,
+  "strings": [
+   "Intel(R) Dynamic Application Loader Host Interface Service",
+   "%%1053"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 153,
+  "provider": "storahci",
+  "time": "2026-08-20T03:14:22",
+  "level": 2,
+  "strings": [
+   "\\Device\\RaidPort0"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 153,
+  "provider": "storahci",
+  "time": "2026-08-20T03:14:22",
+  "level": 2,
+  "strings": [
+   "\\Device\\RaidPort0"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 153,
+  "provider": "storahci",
+  "time": "2026-08-20T03:14:22",
+  "level": 2,
+  "strings": [
+   "\\Device\\RaidPort0"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 153,
+  "provider": "disk",
+  "time": "2026-08-11T01:02:03",
+  "level": 2,
+  "strings": [
+   "\\Device\\Harddisk1\\DR1"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 19,
+  "provider": "Microsoft-Windows-WHEA-Logger",
+  "time": "2026-08-15T16:20:31",
+  "level": 2,
+  "strings": [
+   "corrected machine check",
+   "0",
+   "Internal parity error"
+  ],
+  "channel": "System"
+ },
+ {
+  "id": 19,
+  "provider": "Microsoft-Windows-WHEA-Logger",
+  "time": "2026-08-15T16:20:31",
+  "level": 2,
+  "strings": [
+   "corrected machine check",
+   "0",
+   "Internal parity error"
+  ],
+  "channel": "System"
+ }
+]

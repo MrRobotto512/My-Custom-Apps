@@ -1,0 +1,1 @@
+{"fio version": "fio-3.33", "jobs": [{"jobname": "bd", "read": {"io_bytes": 17179869184, "bw_bytes": 1717986918, "bw": 1677721, "iops": 1638, "lat_ns": {"mean": 610000}}}]}

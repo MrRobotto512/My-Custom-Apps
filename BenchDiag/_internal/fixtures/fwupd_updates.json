@@ -1,0 +1,15 @@
+{
+ "ok": true,
+ "source": "LVFS",
+ "available": true,
+ "devices": [
+  {
+   "name": "System Firmware",
+   "current": "1.21.0",
+   "latest": "1.27.0",
+   "summary": "Dell OptiPlex 7080 System BIOS 1.27.0 \u2014 CPU microcode and security fixes",
+   "urgency": "high"
+  }
+ ],
+ "note": "newer firmware published on LVFS \u2014 install it from Windows (vendor updater) or with fwupd"
+}

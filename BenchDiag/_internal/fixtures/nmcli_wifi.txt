@@ -1,0 +1,4 @@
+yes:ShopWiFi:82:WPA2
+no:ShopWiFi-5G:74:WPA2
+no:Neighbor24:41:WPA2
+no:GuestOpen:55:

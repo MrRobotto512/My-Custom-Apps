@@ -1,0 +1,6 @@
+Controller 9C:FC:E8:12:34:56 (public)
+	Name: benchdiag
+	Alias: benchdiag
+	Powered: yes
+	Discoverable: no
+	Pairable: yes

@@ -1,0 +1,4 @@
+Discovery started
+[NEW] Device 74:5C:4B:AA:11:22 JBL Flip 5
+[NEW] Device D0:03:DF:33:44:55 Galaxy Buds
+[CHG] Device 74:5C:4B:AA:11:22 RSSI: -60

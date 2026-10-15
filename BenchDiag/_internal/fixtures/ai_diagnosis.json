@@ -1,0 +1,66 @@
+{
+ "headline": "Recurring app crashes tie to an outdated GPU driver plus a failing storage controller driver.",
+ "severity": "serious",
+ "root_causes": [
+  {
+   "cause": "Outdated Intel display driver",
+   "evidence": "Photoshop faults in atio6axx.dll; newest GPU driver dated 2022-06-15 (over 3 years old)",
+   "confidence": "high"
+  },
+  {
+   "cause": "Unexpected power loss / dirty shutdowns",
+   "evidence": "2 Kernel-Power 41 plus a 6008 dirty shutdown around the BSOD timestamps",
+   "confidence": "medium"
+  }
+ ],
+ "driver_actions": [
+  {
+   "driver": "iastorac.inf (Intel RST storage)",
+   "action": "update",
+   "why": "2019 driver correlates with storahci 153 disk timeout events"
+  },
+  {
+   "driver": "iigd_dch.inf (Intel display)",
+   "action": "update",
+   "why": "faulting module in repeated Photoshop crashes"
+  }
+ ],
+ "recommended_actions": [
+  "Update the Intel Graphics and Intel RST drivers from Dell's OptiPlex 7040 support page",
+  "Run chkdsk and confirm SMART on the SATA SSD (153 timeouts seen)",
+  "Check the PSU / power connection given the dirty shutdowns"
+ ],
+ "customer_summary": "Your PC has been crashing mainly because two important drivers are out of date and the machine lost power unexpectedly a few times. Updating those drivers and checking the power should make it stable again.",
+ "updates": [
+  {
+   "item": "GPU driver \u2014 NVIDIA GeForce GTX 1660 SUPER",
+   "installed": "27.21.14.6627 (2021-05-13)",
+   "verdict": "outdated",
+   "advice": "Install the current NVIDIA Game Ready/Studio driver (5xx branch) from nvidia.com \u2014 the 466.27 driver is five years old and predates several stability fixes."
+  },
+  {
+   "item": "BIOS \u2014 Dell OptiPlex 7080",
+   "installed": "1.21.0 (2023-03-14)",
+   "verdict": "outdated",
+   "advice": "Dell has released newer 1.2x BIOS revisions with microcode and firmware fixes \u2014 update from dell.com/support (needs AC power)."
+  },
+  {
+   "item": "Chipset \u2014 Intel 400 Series LPC/SMBus",
+   "installed": "10.1.18383.8213 (2019-08-06)",
+   "verdict": "outdated",
+   "advice": "Install the current Intel Chipset Device Software (10.1.19xxx+) from Dell's support page for this model."
+  },
+  {
+   "item": "Storage \u2014 Intel Rapid Storage Technology",
+   "installed": "17.9.1.1009 (2019-01-24)",
+   "verdict": "outdated",
+   "advice": "Update to the current Intel RST driver from the Dell support page; keep the same RST major branch if RAID/Optane is in use."
+  },
+  {
+   "item": "Windows",
+   "installed": "Windows 10 Pro 22H2 build 19045.5131",
+   "verdict": "outdated",
+   "advice": "Windows 10 reached end of support on 2025-10-14 \u2014 upgrade to Windows 11 (this PC passes the hardware check) or enrol in Extended Security Updates."
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+Settings for eth0:
+	Supported link modes:   10baseT/Half 10baseT/Full 100baseT/Full 1000baseT/Full
+	Speed: 1000Mb/s
+	Duplex: Full
+	Link detected: yes

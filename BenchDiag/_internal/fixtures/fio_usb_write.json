@@ -1,0 +1,1 @@
+{"fio version":"fio-3.33","jobs":[{"jobname":"usb_write","error":0,"write":{"io_bytes":268435456,"bw_bytes":31000000,"iops":29}}]}

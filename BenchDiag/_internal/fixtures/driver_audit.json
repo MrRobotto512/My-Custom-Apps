@@ -1,0 +1,154 @@
+{
+ "ok": true,
+ "windows": {
+  "ok": true,
+  "product": "Windows 10 Pro",
+  "edition": "Professional",
+  "build": 19045,
+  "ubr": 5131,
+  "display_version": "22H2",
+  "install_type": "Client"
+ },
+ "drivers": [
+  {
+   "category": "gpu",
+   "label": "GPU / display",
+   "desc": "NVIDIA GeForce GTX 1660 SUPER",
+   "provider": "NVIDIA",
+   "version": "27.21.14.6627",
+   "date": "2021-05-13",
+   "inf": "oem12.inf",
+   "device_id": "PCI\\VEN_10DE&DEV_21C4"
+  },
+  {
+   "category": "gpu",
+   "label": "GPU / display",
+   "desc": "Intel(R) UHD Graphics 630",
+   "provider": "Intel Corporation",
+   "version": "31.0.101.2115",
+   "date": "2022-06-15",
+   "inf": "oem7.inf",
+   "device_id": "PCI\\VEN_8086&DEV_9BC5"
+  },
+  {
+   "category": "chipset",
+   "label": "Chipset / motherboard",
+   "desc": "Intel(R) Management Engine Interface",
+   "provider": "Intel",
+   "version": "2251.4.2.0",
+   "date": "2022-08-01",
+   "inf": "oem3.inf",
+   "device_id": "PCI\\VEN_8086&DEV_06E0"
+  },
+  {
+   "category": "chipset",
+   "label": "Chipset / motherboard",
+   "desc": "Intel(R) 400 Series Chipset Family LPC Controller (Q470) - 0684",
+   "provider": "INTEL",
+   "version": "10.1.18383.8213",
+   "date": "2019-08-06",
+   "inf": "oem9.inf",
+   "device_id": "PCI\\VEN_8086&DEV_0684"
+  },
+  {
+   "category": "chipset",
+   "label": "Chipset / motherboard",
+   "desc": "Intel(R) SMBus - 06A3",
+   "provider": "INTEL",
+   "version": "10.1.18383.8213",
+   "date": "2019-08-06",
+   "inf": "oem9.inf",
+   "device_id": "PCI\\VEN_8086&DEV_06A3"
+  },
+  {
+   "category": "firmware",
+   "label": "System firmware (UEFI / ME)",
+   "desc": "System Firmware 1.21.0",
+   "provider": "Dell Inc.",
+   "version": "1.21.0",
+   "date": "2023-03-14",
+   "inf": "oem21.inf",
+   "device_id": "UEFI\\RES_{a2b3...}"
+  },
+  {
+   "category": "storage",
+   "label": "Storage controller",
+   "desc": "Intel(R) Rapid Storage Technology",
+   "provider": "Intel Corporation",
+   "version": "17.9.1.1009",
+   "date": "2019-01-24",
+   "inf": "oem5.inf",
+   "device_id": "PCI\\VEN_8086&DEV_06D2"
+  },
+  {
+   "category": "storage",
+   "label": "Storage controller",
+   "desc": "Standard NVM Express Controller",
+   "provider": "Microsoft",
+   "version": "10.0.19041.3636",
+   "date": "2006-06-21",
+   "inf": "stornvme.inf",
+   "device_id": "PCI\\CC_010802"
+  },
+  {
+   "category": "network",
+   "label": "Network",
+   "desc": "Intel(R) Ethernet Connection (11) I219-LM",
+   "provider": "Intel",
+   "version": "12.19.2.60",
+   "date": "2023-11-02",
+   "inf": "oem4.inf",
+   "device_id": "PCI\\VEN_8086&DEV_0D4C"
+  },
+  {
+   "category": "network",
+   "label": "Network",
+   "desc": "Intel(R) Wi-Fi 6 AX201 160MHz",
+   "provider": "Intel",
+   "version": "22.230.0.9",
+   "date": "2023-06-26",
+   "inf": "oem14.inf",
+   "device_id": "PCI\\VEN_8086&DEV_02F0"
+  },
+  {
+   "category": "audio",
+   "label": "Audio",
+   "desc": "Realtek Audio",
+   "provider": "Realtek Semiconductor Corp.",
+   "version": "6.0.9235.1",
+   "date": "2021-09-02",
+   "inf": "oem17.inf",
+   "device_id": "INTELAUDIO\\FUNC_01&VEN_10EC"
+  },
+  {
+   "category": "bluetooth",
+   "label": "Bluetooth",
+   "desc": "Intel(R) Wireless Bluetooth(R)",
+   "provider": "Intel Corporation",
+   "version": "22.230.0.2",
+   "date": "2023-06-01",
+   "inf": "oem15.inf",
+   "device_id": "USB\\VID_8087&PID_0026"
+  },
+  {
+   "category": "usb",
+   "label": "USB controller",
+   "desc": "Intel(R) USB 3.1 eXtensible Host Controller - 1.10 (Microsoft)",
+   "provider": "Microsoft",
+   "version": "10.0.19041.3636",
+   "date": "2006-06-21",
+   "inf": "usbxhci.inf",
+   "device_id": "PCI\\VEN_8086&DEV_A36D"
+  },
+  {
+   "category": "tpm",
+   "label": "Security device (TPM)",
+   "desc": "Trusted Platform Module 2.0",
+   "provider": "Microsoft",
+   "version": "10.0.19041.1",
+   "date": "2006-06-21",
+   "inf": "tpm.inf",
+   "device_id": "ACPI\\MSFT0101"
+  }
+ ]
+}

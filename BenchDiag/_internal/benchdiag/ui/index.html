@@ -1,0 +1,3087 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BenchDiag</title>
+<style>
+/* == BenchDiag kiosk — TMOG-derived instrument theme ==================
+   Ground #0A0D12 · Panel #111820 · Border #1E2731
+   Accents: green #45E645 (CPU/pass) · amber #FFC02E (temp/warn)
+   blue #3E9CFF (storage/net/running) · magenta #C94BE0 (memory)
+   red #FF4545 (fail/thermals). Status is never color alone — every
+   chip carries its word. Offline kiosk: no external fonts or assets. */
+:root{
+  --bg:#0A0D12; --panel:#111820; --panel2:#0D1319; --line:#1E2731;
+  --ink:#E8EEF5; --mut:#8B98A8; --dim:#5A6675;
+  --grn:#45E645; --amb:#FFC02E; --blu:#3E9CFF; --mag:#C94BE0; --red:#FF4545;
+  --org:#FF8A3D; --cyn:#3FD6E0;
+  --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);
+  font:14px/1.45 system-ui,"Segoe UI",Roboto,sans-serif;
+  overflow:hidden}
+h1,h2{font-weight:600}
+button{font:inherit;color:var(--ink);background:#1A222D;border:1px solid #2A3543;
+  border-radius:7px;padding:7px 14px;cursor:pointer}
+button:hover{background:#212B38}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:linear-gradient(180deg,#1E3A5F,#16283F);border-color:#2E5A8F;color:#CFE6FF}
+button.primary:hover{border-color:var(--blu)}
+input[type=text],select{font:inherit;color:var(--ink);background:var(--panel2);
+  border:1px solid var(--line);border-radius:7px;padding:7px 10px}
+::selection{background:#264a73}
+
+/* custom dropdown — the native <select> popup does not render under the cage
+   Wayland kiosk compositor (the list never appears though arrow keys work), so
+   every <select> is progressively enhanced into this in-page dropdown. */
+.csel{position:relative;width:100%}
+.csel-native{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden}
+.csel-btn{width:100%;display:flex;align-items:center;gap:8px;text-align:left;
+  background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;color:var(--ink)}
+.csel-btn:hover{border-color:#2e5a8f}
+.csel.open .csel-btn{border-color:var(--blu)}
+.csel-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.csel-arrow{flex:none;color:var(--mut);font-size:11px;transition:transform .15s}
+.csel.open .csel-arrow{transform:rotate(180deg)}
+/* The option list is FIXED and lives on <body>, not inside .csel — every panel
+   that holds a select clips its overflow (.dashgrid>.panel, .panel.capped,
+   .panel.ov all scroll or hide), and an absolutely-positioned list inside one
+   is chopped off at the panel edge: on the dashboard "Full pass (~30 min)" was
+   simply unreachable with the mouse. Position comes from JS because the whole
+   UI is CSS-zoomed (see fitScreen) — getBoundingClientRect returns zoomed px,
+   so the offsets have to be divided back down by the zoom factor. */
+.csel-panel{position:fixed;z-index:60;
+  background:var(--panel);border:1px solid #2e5a8f;border-radius:8px;padding:4px;
+  max-height:min(46vh,320px);overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.55)}
+.csel-panel::-webkit-scrollbar{width:9px}
+.csel-panel::-webkit-scrollbar-thumb{background:#22303e;border-radius:6px}
+.csel-opt{padding:8px 10px;border-radius:6px;font-size:13px;cursor:pointer;white-space:normal}
+.csel-opt:hover,.csel-opt.hi{background:#152234}
+.csel-opt.sel{background:#12283f;color:#cfe6ff}
+.csel-opt.dis{color:var(--dim);cursor:default}
+.recrow .csel{flex:1}
+
+/* -- header ---------------------------------------------------------- */
+header{display:flex;align-items:center;gap:14px}
+/* header live readout (always visible across every view) */
+.hlive{display:flex;align-items:center;gap:16px;font-family:var(--mono);font-size:12px;color:var(--mut)}
+.hlive b{color:var(--ink);font-weight:500}
+.hlive .k{color:var(--dim);font-size:10px;letter-spacing:1.5px}
+.hchip{font-family:var(--mono);font-size:11.5px;color:var(--ink);background:var(--panel2);
+  border:1px solid var(--line);border-radius:6px;padding:4px 9px}
+.wordmark{font-family:var(--mono);font-size:21px;font-weight:700;letter-spacing:3px}
+.wordmark b{color:var(--grn);text-shadow:0 0 12px rgba(69,230,69,.55)}
+.crumb{color:var(--dim);font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.spacer{flex:1}
+.badge{font-family:var(--mono);font-size:11px;letter-spacing:2px;padding:4px 10px;
+  border-radius:20px;border:1px solid var(--line)}
+.badge.live{color:var(--grn);border-color:#1f5a1f}
+.badge.live::before{content:"● ";animation:blink 1.6s infinite}
+.badge.demo{color:var(--amb);border-color:#6b5514}
+@keyframes blink{0%,60%{opacity:1}80%{opacity:.25}100%{opacity:1}}
+#clock{font-family:var(--mono);color:var(--mut);font-size:13px}
+
+/* -- layout ---------------------------------------------------------- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:11px;
+  padding:13px 15px;min-width:0}
+.panel h2{font-size:11px;letter-spacing:2.2px;text-transform:uppercase;
+  color:var(--mut);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.panel h2 button.mini{text-transform:none;letter-spacing:0}
+.panel h2 .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+/* a panel that folds away when its task is not the task at hand */
+.panel.fold>h2{cursor:pointer;margin-bottom:0}
+.panel.fold.open>h2{margin-bottom:10px}
+.panel.fold>h2:hover{color:var(--ink)}
+.foldcue{margin-left:auto;font-size:10px;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--dim);border:1px solid var(--line);border-radius:10px;padding:1px 8px}
+.panel.fold.open .foldcue{color:var(--mut);border-color:#2a3543}
+.panel.fold[data-locked="1"]:not(.open) .foldcue{color:var(--amb);border-color:#6b5514}
+.panel h2 .metrics.alert{color:var(--amb)}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* -- app shell: fixed frame, never scrolls --------------------------- */
+.app{height:100vh;display:grid;grid-template-rows:auto 1fr;gap:12px;padding:14px}
+.shell{display:grid;grid-template-columns:168px 1fr;gap:12px;min-height:0}
+nav{display:flex;flex-direction:column;gap:6px;background:var(--panel);
+  border:1px solid var(--line);border-radius:11px;padding:10px;min-height:0}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:transparent;border:1px solid transparent;padding:10px 11px;border-radius:8px;
+  color:var(--mut);letter-spacing:.3px;font-size:14px}
+.nav-btn .ico{width:20px;text-align:center;font-size:15px;opacity:.9}
+.nav-btn:hover{background:#151d26;color:var(--ink)}
+.nav-btn.on{background:#0f1a26;border-color:#22405f;color:var(--ink)}
+.nav-btn.on .ico{filter:drop-shadow(0 0 6px currentColor)}
+.nav-btn.on.dash{color:var(--blu)} .nav-btn.on.diag{color:var(--grn)}
+.nav-btn.on.erase{color:var(--red)} .nav-btn.on.recov{color:var(--mag)} .nav-btn.on.rprt{color:var(--amb)}
+.nav-btn.on.migr{color:var(--org)} .nav-btn.on.inst{color:var(--blu)} .nav-btn.on.hlth{color:var(--cyn)}
+.nav-badge{margin-left:auto;font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:10px;
+  border:1px solid var(--line);color:var(--dim)}
+.nav-sep{height:1px;background:var(--line);margin:5px 2px}
+.nav-foot{margin-top:auto;font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.5;padding:6px}
+.main{min-height:0;position:relative}
+.view{position:absolute;inset:0;display:none;flex-direction:column;gap:12px;min-height:0}
+.view.on{display:flex}
+/* a panel or list inside a view scrolls internally; the shell stays put */
+.scroll{overflow-y:auto;min-height:0}
+.scroll::-webkit-scrollbar,.capped::-webkit-scrollbar{width:9px}
+.scroll::-webkit-scrollbar-thumb,.capped::-webkit-scrollbar-thumb{background:#22303e;border-radius:6px}
+/* a single centred panel (Migrate / Install / Erase / Report) keeps its natural
+   height but never grows past the frame — it scrolls inside instead */
+.panel.capped{max-height:100%;overflow-y:auto;min-height:0;flex:0 1 auto}
+.grow{flex:1;min-height:0;display:flex;flex-direction:column}
+/* two-pane split used inside Diagnostics / Recovery / Report */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0;flex:1}
+@media (max-width:1000px){.split{grid-template-columns:1fr}}
+/* dashboard grid
+   Rows 3-4 (Health at a glance, BitLocker) size to their content, so anything
+   that makes them taller — an extra disk, a card note — steals height from
+   rows 1-2. With a bare 1fr those rows can be squeezed to ZERO: on a 1904x1000
+   window the System panel's content measured 0 px and Overall tried to render
+   98 px of content in a 69 px box. A floor on the flexible rows stops content
+   being silently destroyed, and the grid itself scrolls when a window is
+   genuinely too short for the whole dashboard — scrolling is recoverable,
+   a blank panel is not.
+   Row 2 (Detected devices) carries a header AND a row of quick-action buttons
+   around its list, so a 130px floor left the list itself 17px tall — the
+   machine's disks, NICs and USB devices were there in the DOM and invisible on
+   screen. The floor has to be big enough for the panel's chrome *plus* a list
+   worth reading.
+   Row 3 (Health) is flexible for the same reason in reverse: sized to its
+   content it grew with every disk in the machine, and a 7-disk bench PC pushed
+   the rest off the frame on its own. It takes a share of what is left and the
+   cards scroll inside it. Only BitLocker, the one row that is a task rather
+   than a reading, sizes to itself — folded, that is a single header line. */
+.dashgrid{display:grid;grid-template-columns:210px 1fr 1fr;
+  grid-template-rows:minmax(168px,1fr) minmax(196px,1fr) minmax(190px,1.4fr) min-content;
+  gap:12px;min-height:0;flex:1;overflow-y:auto;overflow-x:hidden;padding-right:2px}
+.dashgrid::-webkit-scrollbar{width:9px}
+.dashgrid::-webkit-scrollbar-thumb{background:#22303e;border-radius:6px}
+/* ...and the inverse: a scrolling list inside a panel must never be the part
+   that gives up its height. Flex happily resolves `flex:1` to zero, which is
+   how the device list came to be 17px tall with 587px of disks, NICs and USB
+   devices inside it. The row floor above is what actually buys the list its
+   height; this is the backstop, deliberately *below* what that floor yields so
+   it can never be the thing that makes the panel overflow. */
+#hwBody{min-height:60px}
+.dashgrid .span2{grid-column:2 / 4}
+.dashgrid .span3{grid-column:1 / 4}
+/* a dashboard panel may scroll inside (.scroll) but never spills into its
+   neighbours, whatever the screen's aspect ratio */
+.dashgrid>.panel{overflow:hidden}
+/* Telemetry is the tall column on the left: it spans BOTH top rows (the cell
+   under it used to be empty, and the meters + sparklines + core bars spilled
+   out of the panel into it). It is a flex column whose meter stacks flex to
+   whatever height the rows give them, so nothing can overflow the box. */
+.dashgrid .tele{grid-row:1 / 3;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.dashgrid .tele .rail{flex:1;min-height:0}
+.dashgrid .tele .meter{min-height:0}
+.dashgrid .tele .stack{flex:1;min-height:60px;height:auto}
+@media (max-width:1100px){.dashgrid{grid-template-columns:190px 1fr}.dashgrid .span2{grid-column:1 / 3}.dashgrid .span3{grid-column:1 / 3}}
+/* per-core CPU bars */
+.cores{display:flex;gap:3px;align-items:flex-end;height:32px;margin-top:5px}
+.core{flex:1;min-width:3px;height:100%;background:#12212f;border-radius:2px 2px 0 0;position:relative;overflow:hidden}
+.core>i{position:absolute;left:0;right:0;bottom:0;background:var(--grn);transition:height .3s,background .3s}
+/* health at a glance */
+.healthgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;min-height:0}
+@media (max-width:900px){.healthgrid{grid-template-columns:1fr}}
+.hcard{background:#0c141d;border:1px solid var(--line);border-radius:9px;padding:10px 12px;overflow:auto}
+.htitle{font-size:12px;color:var(--mut);margin-bottom:7px;font-weight:600}
+.sbadge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10.5px;font-weight:700}
+.sbadge.pass{background:#12321c;color:var(--grn)} .sbadge.fail{background:#3b1212;color:#ff9b9b}
+.sbadge.warn{background:#2a2410;color:var(--amb)} .sbadge.error,.sbadge.skip{background:#1a222c;color:var(--mut)}
+.hrow{display:flex;align-items:baseline;gap:7px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.hrow:last-child{border-bottom:0}
+.hbar{height:7px;border-radius:4px;background:#16324a;overflow:hidden;margin:4px 0}
+.hbar>i{display:block;height:100%;border-radius:4px}
+/* drive map (treemap) */
+.mapcrumb{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:6px;font-size:12px}
+.mapcrumb button{padding:2px 8px;border-radius:6px;background:#12212f;border:1px solid var(--line);color:#9fd0ff;font-size:12px}
+.mapcrumb .sep{color:var(--mut)}
+/* overall status — verdict + the one line that matters (what failed / what is
+   running / when it last ran), then the run controls on ONE row so the panel
+   fits its grid cell: the old stacked select + full-width button pushed RUN
+   ALL below the panel's edge (overflow:hidden) on every screen size */
+.panel.ov{display:flex;flex-direction:column;min-height:0;overflow-y:auto}
+.overall{display:flex;align-items:center;gap:12px;flex:1;min-height:0}
+.ring{font-family:var(--mono);font-size:22px;font-weight:700;padding:8px 14px;border-radius:12px;
+  border:1px solid var(--line);color:var(--mut);flex:none;min-width:84px;text-align:center}
+.ring.pass{border-color:#1f5a1f;color:var(--grn);background:rgba(69,230,69,.06)}
+.ring.warn{border-color:#6b5514;color:var(--amb);background:rgba(255,192,46,.06)}
+.ring.fail{border-color:#7a2a2a;color:var(--red);background:rgba(255,69,69,.06)}
+.ring.live{border-color:#2E5A8F;color:#9fd0ff;background:rgba(69,138,255,.08);animation:pulse 1.2s infinite}
+.ovinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.tally{font-family:var(--mono);font-size:12px;line-height:1.4;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tally b{color:var(--ink);font-weight:600}
+.ovdetail{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ovdetail.fail{color:var(--red)} .ovdetail.warn{color:var(--amb)} .ovdetail.ok{color:var(--grn)} .ovdetail.live{color:#9fd0ff}
+.ovdetail a{cursor:pointer;text-decoration:underline dotted;color:inherit}
+.ovprog .erbar{height:6px;background:rgba(69,138,255,.12)}
+.ovprog .erbar div{background:var(--blu);box-shadow:none;transition:width .3s}
+.ovrun{display:flex;gap:8px;align-items:center;margin-top:8px;flex:none}
+.ovrun .csel{flex:1;width:auto;min-width:0}
+.ovrun button{flex:none;white-space:nowrap;padding:8px 14px}
+.qa{display:flex;gap:10px;flex-wrap:wrap}
+.qa button{flex:1;min-width:150px;padding:9px 13px;font-family:var(--mono);letter-spacing:.5px}
+.runbtns{display:flex;gap:9px}.runbtns>*{flex:1}
+
+/* -- meter rail (TMOG column) ---------------------------------------- */
+.rail{display:flex;gap:10px;justify-content:space-around}
+.meter{display:flex;flex-direction:column;align-items:center;gap:6px}
+.meter .label{font-size:10px;letter-spacing:1.5px;color:var(--mut)}
+.meter .stack{display:flex;flex-direction:column-reverse;gap:3px;height:clamp(120px,26vh,240px)}
+.meter .seg{width:26px;flex:1;border-radius:3px;background:var(--seg-off);
+  transition:background .25s, box-shadow .25s}
+.meter .seg.on{background:var(--seg-on);box-shadow:0 0 7px var(--seg-glow)}
+.meter .val{font-family:var(--mono);font-size:12px;color:var(--ink)}
+.m-load{--seg-on:var(--grn);--seg-off:rgba(69,230,69,.10);--seg-glow:rgba(69,230,69,.5)}
+.m-temp{--seg-on:var(--amb);--seg-off:rgba(255,192,46,.10);--seg-glow:rgba(255,192,46,.5)}
+/* a meter with no sensor behind it: unlit, not "reading zero" */
+.meter.dead{--seg-off:rgba(255,255,255,.04)}
+.meter.dead .label,.meter.dead .val{color:var(--dim)}
+.meter.dead .val{font-size:10px;letter-spacing:.3px}
+.m-mem{--seg-on:var(--mag);--seg-off:rgba(201,75,224,.12);--seg-glow:rgba(201,75,224,.5)}
+canvas.spark{width:100%;height:44px;display:block;margin-top:10px}
+
+/* -- inventory ------------------------------------------------------- */
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px}
+.kv.cols2{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);column-gap:14px;row-gap:2px}
+.kv.cols2 dd{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.kv.cols2 dt{font-size:12px}
+.kv dt{color:var(--dim)}
+.kv dd{font-family:var(--mono);font-size:12.5px;overflow-wrap:anywhere}
+
+/* -- test rows ------------------------------------------------------- */
+.trow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--panel2)}
+.trow:first-of-type{border-top:0}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:1px;font-weight:700;
+  padding:3px 0;width:74px;text-align:center;border-radius:5px;flex:none;
+  border:1px solid transparent}
+.chip.idle{color:var(--dim);border-color:var(--line)}
+.chip.queued{color:var(--blu);border-color:#1E3A5F}
+.chip.running{color:var(--blu);border-color:#2E5A8F;animation:pulse 1.2s infinite}
+.chip.pass{color:#0B1F0B;background:var(--grn)}
+.chip.warn{color:#241800;background:var(--amb)}
+.chip.fail{color:#fff;background:var(--red)}
+.chip.error{color:#241100;background:var(--org)}
+.chip.skip{color:var(--mut);border-color:var(--line)}
+@keyframes pulse{50%{opacity:.35}}
+.cathead{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);
+  margin:12px 0 2px;padding-top:8px;border-top:1px solid var(--line)}
+.cathead:first-child{margin-top:0;padding-top:0;border-top:0}
+.tname{flex:1;min-width:0}
+.tname .nm{font-size:13.5px}
+.tname .sum{font-size:11.5px;color:var(--mut);font-family:var(--mono);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow .run{padding:4px 10px;font-size:12px;flex:none}
+.metrics{font-family:var(--mono);font-size:11px;color:var(--mut)}
+
+/* -- interactive tiles ----------------------------------------------- */
+.itiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+.itile{background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  padding:10px;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.itile .nm{font-size:12.5px}
+.itile button{padding:4px 10px;font-size:12px}
+
+/* -- overlay --------------------------------------------------------- */
+#overlay{position:fixed;inset:0;background:#05070A;z-index:50;display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#overlay.show{display:flex}
+#ovStage{position:absolute;inset:0}
+#overlay.touchmode{justify-content:flex-end;padding-bottom:6px}
+#overlay.touchmode #ovHud{background:rgba(13,19,25,.82);padding:8px 14px;gap:6px;max-width:none}
+#overlay.touchmode #ovHud .hint{display:none}
+#ovHud{position:relative;z-index:2;background:rgba(13,19,25,.92);
+  border:1px solid var(--line);border-radius:11px;padding:16px 20px;max-width:640px;
+  display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+#ovHud .hint{color:var(--mut);font-size:13px}
+#ovHud .row{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+button.v-pass{background:#123B12;border-color:#1f5a1f;color:var(--grn)}
+button.v-fail{background:#3B1212;border-color:#5a1f1f;color:#FF9B9B}
+button.v-skip{color:var(--mut)}
+#kbLog{font-family:var(--mono);font-size:12px;color:var(--grn);max-width:600px;
+  min-height:44px;word-wrap:break-word}
+video{max-width:70vw;border-radius:9px;border:1px solid var(--line)}
+.usbNew{color:var(--grn);font-family:var(--mono)}
+#usbList{font-family:var(--mono);font-size:12px;text-align:left;max-height:40vh;overflow:auto}
+
+/* -- drive erase ------------------------------------------------------ */
+.erasepanel{border-color:#3d1a1a}
+.erasepanel h2{color:#c98585}
+button.danger{background:#2A0F0F;border-color:#5a1f1f;color:#FF9B9B;font-weight:600}
+button.danger:hover:not(:disabled){background:#3B1212;border-color:var(--red)}
+.erbar{height:12px;border-radius:6px;background:rgba(255,69,69,.12);overflow:hidden;position:relative}
+.erbar div{height:100%;width:0;background:var(--red);border-radius:6px;
+  transition:width .4s;box-shadow:0 0 10px rgba(255,69,69,.6)}
+/* "live" = a long step is running: moving stripes over the filled part, and a
+   soft sweep over the empty part, so a bar that hasn't moved still visibly
+   breathes — the tech can tell "working" from "hung" at a glance. */
+.erbar.live div{background-image:repeating-linear-gradient(-45deg,rgba(255,255,255,.28) 0 10px,transparent 10px 20px);
+  background-size:28px 28px;animation:stripes .8s linear infinite}
+.erbar.live::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.10) 50%,transparent 100%);
+  background-size:40% 100%;background-repeat:no-repeat;animation:sweep 1.6s ease-in-out infinite;pointer-events:none}
+@keyframes stripes{to{background-position:28px 0}}
+@keyframes sweep{0%{background-position:-40% 0}100%{background-position:140% 0}}
+.livedot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--grn);margin-right:6px;
+  animation:pulse 1s ease-in-out infinite;vertical-align:middle}
+
+/* low-effects mode (software rendering / weak GPU): no perpetual animations */
+.lowfx .badge.live::before,.lowfx .chip.running,.lowfx .livedot,.lowfx .erbar.live div,.lowfx .erbar.live::after{animation:none!important}
+.lowfx .erbar div{transition:none}
+/* -- install windows (two columns: set-up | progress + actions) -------- */
+.wiform{display:flex;flex-direction:column;gap:8px;padding-right:4px}
+.wirow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.wirow .csel{flex:1;width:auto;min-width:200px}
+.wicustom{padding:7px 10px;border:1px dashed var(--line);border-radius:8px}
+.wicustom .csel{min-width:150px}
+input[type=number]{font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);
+  border-radius:7px;padding:7px 10px;width:110px}
+.wiplan{font-family:var(--mono);font-size:12px;color:var(--mut);min-height:1.4em}
+.wiplan.bad{color:var(--red)}
+.wiright{display:flex;flex-direction:column;gap:12px;min-height:0}
+.wiactions{flex:0 1 auto;max-height:52%;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.wiactions::-webkit-scrollbar{width:9px}.wiactions::-webkit-scrollbar-thumb{background:#22303e;border-radius:6px}
+/* phase chips: 1 release ✓ · 2 partition ● · 3 format … — where we are, at a glance */
+.wiphases{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.wiphases span{font-family:var(--mono);font-size:10.5px;padding:2px 8px;border-radius:9px;border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+.wiphases span.done{color:var(--grn);border-color:#1f5a1f;background:rgba(69,230,69,.08)}
+.wiphases span.now{color:#cfe6ff;border-color:var(--blu);background:rgba(69,138,255,.14);box-shadow:0 0 8px rgba(69,138,255,.35)}
+.wiphases span.fail{color:var(--red);border-color:#7a2a2a}
+.wiprog{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
+.wimsg{font-size:13px;color:var(--ink)}
+.wilive{font-family:var(--mono);font-size:11.5px;color:var(--mut);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.wilive .livedot.quiet{background:var(--amb);animation:none}
+.wilive .livedot.lost{background:var(--red);animation:none}
+.wicmd{font-family:var(--mono);font-size:11.5px;color:var(--mut);padding:5px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);display:none}
+.wicmd.on{display:block}
+.wicmd.slow{border-color:#6b5514;color:var(--amb)}
+.wicmd.stuck{border-color:#7a2a2a;color:var(--red)}
+.wisteps{flex:1;min-height:60px;overflow:auto;font-family:var(--mono);font-size:11px;color:var(--mut);white-space:pre-line;
+  border-top:1px solid var(--line);padding-top:6px}
+.wisteps::-webkit-scrollbar{width:9px}.wisteps::-webkit-scrollbar-thumb{background:#22303e;border-radius:6px}
+
+/* -- windows recovery & analysis ------------------------------------- */
+.recpanel{border-color:#1e3450}
+.netbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.netdot{width:9px;height:9px;border-radius:50%;flex:none}
+.netdot.on{background:var(--grn);box-shadow:0 0 7px rgba(69,230,69,.6)}
+.netdot.off{background:var(--dim)}
+button.mini{padding:3px 10px;font-size:11px;flex:none}
+.wifi{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:9px;margin-bottom:10px}
+.wifi .net-item{display:flex;justify-content:space-between;padding:4px 6px;border-radius:5px;cursor:pointer}
+.wifi .net-item:hover{background:#1a2432}
+.wifi .net-item.sel{background:#16283f}
+.wifi-connect{display:flex;gap:6px;margin-top:7px}
+.wifi-connect input{flex:1}
+.hwdet{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin-bottom:10px}
+.hwdet summary{cursor:pointer;font-size:12px;color:var(--mut);letter-spacing:1px;text-transform:uppercase}
+.hwrow{display:flex;gap:10px;padding:3px 0;font-family:var(--mono);font-size:11.5px;border-top:1px solid var(--panel)}
+.hwrow:first-child,.hwsec+.hwrow{border-top:0}
+.hwdet .g{color:var(--grn)} .hwdet .a{color:var(--amb)} .hwdet .d{color:var(--dim)}
+.hwdet .hwsec{margin:9px 0 3px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);border-bottom:1px solid var(--line);padding-bottom:2px}
+.hwdet .hwverdict{padding:5px 8px;margin:5px 0;border-radius:6px;border-left:3px solid var(--amb);background:rgba(255,176,32,.07);font-size:11.5px;line-height:1.35}
+.hwdet .hwverdict.error{border-left-color:var(--red,#ff5a5a);background:rgba(255,90,90,.08)}
+.hwdet .hwverdict .d{color:var(--dim)}
+.hwdet button.mini{margin-top:6px}
+.fmtitem{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:12.5px}
+.fmtitem button{margin-left:auto;padding:4px 10px;font-size:12px}
+.vols{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.vol-item{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.vol-item:hover{border-color:#2e5a8f}
+.vol-item.sel{border-color:var(--blu);background:#12283f}
+.vol-item .lock{font-size:15px;flex:none}
+.vol-item .vnm{flex:1;min-width:0}
+.vol-item .vnm .t{font-size:13px}
+.vol-item .vnm .s{font-size:11px;color:var(--mut);font-family:var(--mono)}
+.winbadge{display:inline-block;margin-left:7px;padding:0 6px;border-radius:9px;font-size:9.5px;
+  font-weight:700;letter-spacing:.6px;background:#12283f;color:#9fd0ff;border:1px solid #2e5a8f;
+  vertical-align:1px}
+.rk{font-family:var(--mono);letter-spacing:1px}
+.recrow{display:flex;gap:8px;margin-top:9px}
+.recrow select{flex:1}
+.udata{border-top:1px solid var(--panel2);padding-top:7px;margin-top:7px}
+.udata .uname{font-size:12px;color:var(--blu);margin-bottom:4px}
+.ucat{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12.5px}
+.ucat input{width:16px;height:16px;flex:none}
+.ucat .csize{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--mut)}
+.recbar{height:11px;border-radius:6px;background:rgba(62,156,255,.12);overflow:hidden}
+.recbar div{height:100%;width:0;background:var(--blu);border-radius:6px;transition:width .3s;
+  box-shadow:0 0 8px rgba(62,156,255,.5)}
+.aidivider{height:1px;background:var(--line);margin:12px 0 10px}
+/* offline SAM account reset */
+.samhead{margin:8px 0 4px}
+.samrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--panel2);flex-wrap:wrap}
+.samrow:first-of-type{border-top:0}
+.samname{flex:1;min-width:140px;font-size:13.5px;display:flex;align-items:center;gap:7px}
+.sambadge{font-family:var(--mono);font-size:9px;letter-spacing:.5px;padding:2px 6px;border-radius:4px;border:1px solid}
+.sambadge.adm{color:var(--blu);border-color:#22405f}
+.sambadge.dis{color:var(--amb);border-color:#6b5514}
+button.aibtn{background:linear-gradient(180deg,#2a1e40,#1c1430);border-color:#5a3e8f;color:#d9c8ff}
+button.aibtn:hover{border-color:var(--mag)}
+.aicard{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:11px;margin-top:9px}
+.aicard h4{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin:9px 0 4px}
+.aicard .head{font-size:14px;margin-bottom:6px}
+.aicard .sev{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:5px;margin-bottom:8px}
+.sev.ok{background:var(--grn);color:#0b1f0b}
+.sev.attention{background:var(--amb);color:#241800}
+.sev.serious{background:var(--red);color:#fff}
+.aicard ul{margin:0;padding-left:18px}
+.aicard li{font-size:12.5px;margin:3px 0}
+/* BitLocker unlock row (dashboard) */
+.blrow{display:flex;gap:10px;align-items:center;margin:2px 0 8px}
+.blrow label{flex:none;width:100px;white-space:nowrap}
+.blrow .csel,.blrow select{flex:1;min-width:0}
+.blkey{flex:1;min-width:0;font-family:var(--mono);font-size:16px;letter-spacing:1px;padding:9px 12px;
+  border:1px solid var(--line);border-radius:8px;background:#0a0f16;color:var(--ink)}
+.blkey::placeholder{color:#2c3a4a;letter-spacing:1px}
+.blkey.good{border-color:var(--grn)}
+.blkey.bad{border-color:var(--red)}
+.blrow button{flex:none;padding:9px 22px}
+/* health page */
+.hlrow{display:flex;gap:10px;align-items:center;margin:10px 0}
+.hlrow label{white-space:nowrap}
+.hlrow select{flex:1;min-width:0}
+.hlcards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+@media (max-width:1200px){.hlcards{grid-template-columns:repeat(2,1fr)}}
+.hlcard{background:#0c141d;border:1px solid var(--line);border-radius:9px;padding:10px 12px;min-width:0}
+.hlcard .t{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+.hlcard .v{font-size:14px;margin-bottom:4px}
+.hlcard .s{font-size:11.5px;color:var(--mut);line-height:1.45}
+.hlh{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mut);margin:8px 0 6px;display:flex;gap:8px;align-items:baseline}
+.drvwrap{overflow:auto;border:1px solid var(--line);border-radius:8px}
+.drvtab{width:100%;border-collapse:collapse;font-size:12px}
+.drvtab th{text-align:left;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);padding:7px 9px;border-bottom:1px solid var(--line);background:#0c141d;position:sticky;top:0}
+.drvtab td{padding:6px 9px;border-bottom:1px solid #141d28;vertical-align:top}
+.drvtab tr:last-child td{border-bottom:0}
+.drvtab td.mono,.drvtab td.date{font-family:var(--mono);white-space:nowrap;color:var(--mut)}
+.drvtab td.note{color:var(--mut);font-size:11.5px}
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:9px;letter-spacing:.5px;white-space:nowrap}
+.sbadge.skip{background:#121a24;color:var(--mut);border:1px solid var(--line)}
+/* one line explaining why a whole card could not measure — a setup fact, not
+   a fault, so it reads as a note rather than four red error rows */
+.hnote{font-size:11.5px;color:var(--amb);background:rgba(255,192,46,.07);
+  border:1px solid #6b5514;border-radius:7px;padding:5px 8px;margin-bottom:7px;line-height:1.45}
+.pill.ok{background:rgba(69,230,69,.15);color:var(--grn);border:1px solid #1f5a1f}
+.pill.check{background:rgba(255,192,46,.12);color:var(--amb);border:1px solid #6b5514}
+.pill.outdated{background:rgba(255,192,46,.12);color:var(--amb);border:1px solid #6b5514}
+.pill.missing,.pill.newer{background:rgba(255,69,69,.14);color:var(--red);border:1px solid #7a2a2a}
+.pill.current{background:rgba(69,230,69,.15);color:var(--grn);border:1px solid #1f5a1f}
+.pill.inbox,.pill.unknown{background:#121a24;color:var(--mut);border:1px solid var(--line)}
+.pill.supported{background:rgba(69,230,69,.15);color:var(--grn);border:1px solid #1f5a1f}
+.sambadge.msa{background:rgba(62,156,255,.16);color:var(--blu);border:1px solid #2e5a8f}
+.sambadge.loc{background:#121a24;color:var(--mut);border:1px solid var(--line)}
+.pill.unsupported,.pill.impossible{background:rgba(255,138,61,.14);color:var(--org);border:1px solid #7a4a1f}
+.aicard .cust{font-size:12.5px;color:var(--ink);background:#0d1319;border-left:3px solid var(--blu);
+  padding:8px 10px;border-radius:0 6px 6px 0;margin-top:6px}
+
+/* -- footer / report -------------------------------------------------- */
+.statusline{display:flex;gap:10px;align-items:center;margin-top:14px;
+  color:var(--dim);font-size:12px;font-family:var(--mono)}
+#toast{position:fixed;right:18px;bottom:18px;background:#0D1A0D;border:1px solid #1f5a1f;
+  color:var(--grn);border-radius:9px;padding:10px 16px;font-family:var(--mono);
+  font-size:12.5px;display:none;z-index:60;max-width:420px}
+</style>
+</head>
+<body>
+
+<div class="app">
+<header>
+  <div class="wordmark">BENCH<b>DIAG</b></div>
+  <div class="crumb" id="shopline">HARDWARE DIAGNOSTICS</div>
+  <div class="spacer"></div>
+  <div class="hlive">
+    <span><span class="k">TEMP</span> <b id="hTemp">—</b></span>
+    <span><span class="k">LOAD</span> <b id="hLoad">—</b></span>
+    <span><span class="k">MEM</span> <b id="hMem">—</b></span>
+  </div>
+  <span class="hchip" id="hNet">net —</span>
+  <span id="modeBadge" class="badge live">LIVE</span>
+  <span id="clock"></span>
+</header>
+
+<div class="shell">
+  <nav>
+    <button class="nav-btn dash on" data-view="dash"><span class="ico">▪</span> Dashboard</button>
+    <button class="nav-btn diag" data-view="diag"><span class="ico">✦</span> Diagnostics</button>
+    <button class="nav-btn recov" data-view="recov"><span class="ico">🔓</span> Recovery</button>
+    <button class="nav-btn hlth" data-view="health"><span class="ico">🩺</span> Health &amp; AI</button>
+    <div class="nav-sep"></div>
+    <button class="nav-btn migr" data-view="migr"><span class="ico">⇄</span> Migrate</button>
+    <button class="nav-btn inst" data-view="inst"><span class="ico">⊞</span> Install Windows</button>
+    <button class="nav-btn erase" data-view="erase"><span class="ico">⚠</span> Drive Erase</button>
+    <button class="nav-btn rprt" data-view="rprt"><span class="ico">▤</span> Report</button>
+    <div class="nav-foot"><span id="verline">benchdiag</span><br><span id="payline"></span></div>
+  </nav>
+
+  <div class="main">
+
+    <!-- DASHBOARD ------------------------------------------------------- -->
+    <section class="view on" data-view="dash">
+      <div class="dashgrid">
+        <div class="panel tele">
+          <h2><span class="dot" style="background:var(--grn)"></span>Telemetry</h2>
+          <div class="rail">
+            <div class="meter m-load"><span class="label">CPU</span>
+              <div class="stack" id="mLoad"></div><span class="val" id="vLoad">—</span></div>
+            <div class="meter m-temp"><span class="label">TEMP</span>
+              <div class="stack" id="mTemp"></div><span class="val" id="vTemp">—</span></div>
+            <div class="meter m-mem"><span class="label">RAM</span>
+              <div class="stack" id="mMem"></div><span class="val" id="vMem">—</span></div>
+          </div>
+          <canvas class="spark" id="sparkLoad"></canvas>
+          <canvas class="spark" id="sparkTemp"></canvas>
+          <div class="metrics dim" style="margin-top:4px">CPU cores <span id="coreN"></span></div>
+          <div class="cores" id="coreBars"></div>
+        </div>
+
+        <div class="panel grow">
+          <h2><span class="dot" style="background:var(--blu)"></span>System</h2>
+          <dl class="kv cols2 scroll" id="inv" style="flex:1"><dt>…</dt><dd>reading inventory</dd></dl>
+        </div>
+
+        <div class="panel ov">
+          <h2><span class="dot" style="background:var(--amb)"></span>Overall
+            <span class="metrics" id="ovState" style="margin-left:auto;text-transform:none;letter-spacing:0"></span></h2>
+          <div class="overall">
+            <div class="ring" id="ovRing">—</div>
+            <div class="ovinfo">
+              <div class="tally" id="ovTally">no tests run yet</div>
+              <div class="ovdetail" id="ovDetail">Pick a preset, press Run — results also go into the report.</div>
+              <div class="ovprog" id="ovProg" style="display:none"><div class="erbar"><div id="ovBar"></div></div></div>
+            </div>
+          </div>
+          <div class="ovrun">
+            <select id="preset">
+              <option value="quick">Quick pass (~5 min)</option>
+              <option value="full">Full pass (~30 min)</option>
+            </select>
+            <button class="primary" id="runAll">▶ RUN ALL</button>
+          </div>
+        </div>
+
+        <div class="panel span2 grow">
+          <h2><span class="dot" style="background:var(--mag)"></span>Detected devices <span id="hwCount" class="metrics"></span>
+            <button class="mini" style="margin-left:auto" onclick="refreshHw()">↻ Rescan</button></h2>
+          <div id="hwBody" class="metrics scroll" style="flex:1">scanning…</div>
+          <div class="qa" style="margin-top:10px">
+            <button onclick="showView('diag')">✦ Diagnostics</button>
+            <button onclick="showView('recov')">🔓 Recover data</button>
+            <button onclick="showView('erase')">⚠ Erase a drive</button>
+            <button onclick="showView('rprt')">▤ Build report</button>
+          </div>
+        </div>
+
+        <div class="panel span3 grow">
+          <h2><span class="dot" style="background:var(--blu)"></span>Health at a glance
+            <button class="mini" style="margin-left:auto" onclick="loadDash()">↻ Refresh</button></h2>
+          <div class="healthgrid">
+            <div class="hcard">
+              <div class="htitle">🔋 Battery</div>
+              <div id="hBatt" class="metrics">…</div>
+            </div>
+            <div class="hcard">
+              <div class="htitle">💽 Drive SMART health</div>
+              <div id="hSmart" class="metrics">…</div>
+            </div>
+            <div class="hcard">
+              <div class="htitle">⊞ Windows install</div>
+              <div id="hWin" class="metrics">…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BitLocker: one place to unlock an encrypted customer drive. The key
+             is 8 groups of 6 digits; the box is wide enough to show all of it
+             and checks each group's built-in checksum as it is typed.
+             It is a *task*, not a status, and it was eating 150px of the
+             dashboard on every machine — including the majority that have no
+             encrypted drive at all — which is what pushed the device list and
+             the health cards off the frame. So it folds, and unfolds itself
+             the moment a locked volume is actually found. -->
+        <div class="panel span3 fold" id="blPanel">
+          <h2 onclick="toggleBl()" title="show / hide the unlock form"><span class="dot" style="background:var(--mag)"></span>BitLocker — unlock an encrypted drive
+            <span class="metrics" id="blCount"></span>
+            <span class="foldcue" id="blCue">show</span>
+            <button class="mini" onclick="event.stopPropagation();loadBitlocker()">↻ Rescan</button></h2>
+          <div class="foldbody" id="blBody" hidden>
+          <div class="blrow">
+            <label class="metrics dim">Drive</label>
+            <select id="blVol"><option value="">looking for BitLocker drives…</option></select>
+          </div>
+          <div class="blrow">
+            <label class="metrics dim">Recovery key</label>
+            <input type="text" id="blKey" class="blkey" placeholder="123456-123456-123456-123456-123456-123456-123456-123456" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="55">
+            <button id="blGo" class="primary" disabled>🔓 UNLOCK</button>
+          </div>
+          <div class="metrics" id="blHint">48-digit recovery key, 8 groups of 6 (dashes optional). Find it at <span class="mono">aka.ms/myrecoverykey</span> (customer's Microsoft account), their work/school account, or their printout — match the <b>Key ID</b> above with the one on the Windows recovery screen.</div>
+          <div class="metrics" id="blMsg"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIAGNOSTICS ----------------------------------------------------- -->
+    <section class="view" data-view="diag">
+      <div class="split">
+        <div class="panel grow">
+          <h2><span class="dot" style="background:var(--grn)"></span>Automated Tests
+            <span class="metrics" id="runstate" style="margin-left:auto">idle</span></h2>
+          <div id="autoTests" class="scroll" style="flex:1"></div>
+        </div>
+        <div class="panel grow">
+          <h2><span class="dot" style="background:var(--mag)"></span>Interactive Tests</h2>
+          <div class="itiles scroll" id="iTiles" style="flex:1"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECOVERY -------------------------------------------------------- -->
+    <section class="view" data-view="recov">
+      <div class="panel recpanel grow">
+        <h2><span class="dot" style="background:var(--blu)"></span>Windows Recovery &amp; Analysis
+          <button id="recRescan" class="mini" style="margin-left:auto">↻ Rescan</button></h2>
+        <div class="scroll" style="flex:1">
+          <!-- network / internet -->
+          <div class="netbar">
+            <span id="netDot" class="netdot off"></span>
+            <span class="metrics" id="netState">checking network…</span>
+            <button id="wifiBtn" class="mini">Wi-Fi</button>
+          </div>
+          <div id="wifiPanel" class="wifi" style="display:none">
+            <div id="wifiList" class="metrics">scanning…</div>
+            <div class="wifi-connect" style="display:none" id="wifiConnect">
+              <input type="password" id="wifiPass" placeholder="Wi-Fi password" autocomplete="off">
+              <button id="wifiGo" class="mini">Join <span id="wifiSsid"></span></button>
+            </div>
+          </div>
+
+          <!-- windows volumes -->
+          <div id="volList" class="vols metrics">looking for Windows drives…</div>
+
+          <!-- unlock (shown when a locked volume is selected) -->
+          <div id="unlockBox" style="display:none">
+            <div class="metrics" style="color:var(--amb)">🔒 <span id="unlockName"></span> is BitLocker-encrypted. Enter the customer's 48-digit recovery key (or unlock it on the Dashboard — the key is then reused everywhere).</div>
+            <input type="text" id="rkInput" class="rk" placeholder="123456-123456-123456-123456-123456-123456-123456-123456" autocomplete="off" maxlength="55" inputmode="numeric">
+            <button id="unlockGo" class="primary">🔓 UNLOCK DRIVE (read-only)</button>
+            <div class="metrics" id="unlockMsg"></div>
+          </div>
+
+          <!-- format a blank drive (e.g. a fresh NVMe in a USB enclosure) -->
+          <div id="fmtBox" style="display:none">
+            <div class="metrics" style="color:var(--amb)">Blank/unformatted drives detected — format one to exFAT to use as a recovery target:</div>
+            <div id="fmtList"></div>
+          </div>
+
+          <!-- once a volume is readable -->
+          <div id="recBox" style="display:none">
+            <div class="metrics" id="recFor"></div>
+            <div id="userData"></div>
+            <div class="recrow">
+              <select id="recDest"><option value="">destination…</option></select>
+              <button id="recGo" class="primary" disabled>⭳ RECOVER SELECTED</button>
+            </div>
+            <div class="erprog" id="recProgWrap" style="display:none">
+              <div class="recbar"><div id="recBar"></div></div>
+              <div class="metrics" id="recMsg"></div>
+            </div>
+            <div class="metrics" id="recOut"></div>
+
+            <!-- drive map (WizTree-style) — find the big files worth recovering -->
+            <div class="aidivider"></div>
+            <div id="mapSection">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <button id="mapGo" class="mini">🗺 Map drive contents — find the big files</button>
+                <button id="mapSelMode" class="mini" style="display:none" title="When on, clicking any box picks it for recovery instead of zooming in. Right-click always picks.">☐ Select files to recover</button>
+              </div>
+              <div class="metrics" id="mapMsg" style="display:none;margin-top:6px"></div>
+              <div id="mapWrap" style="display:none;margin-top:8px">
+                <div class="mapcrumb" id="mapCrumb"></div>
+                <canvas id="mapCanvas" width="900" height="360"
+                        style="width:100%;height:360px;display:block;border-radius:8px;cursor:pointer;background:#0a0f16"></canvas>
+                <div class="metrics dim" id="mapHover" style="margin-top:5px">Hover a box for its size · click a folder to zoom in · click a file (or right-click anything) to pick it for recovery.</div>
+                <!-- what's been picked on the map — feeds RECOVER SELECTED above -->
+                <div id="mapSelBar" style="display:none;margin-top:8px;padding:8px 10px;border:1px solid var(--grn);border-radius:8px;background:rgba(69,230,69,.06)">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <span class="metrics" id="mapSelSum" style="color:var(--grn);font-weight:700"></span>
+                    <span class="metrics dim">→ choose a destination above and press RECOVER SELECTED</span>
+                    <button class="mini" onclick="clearMapSel()" style="margin-left:auto">✕ Clear picks</button>
+                  </div>
+                  <div id="mapSelList" class="metrics" style="margin-top:6px;max-height:96px;overflow:auto;line-height:1.7"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="aidivider"></div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="mini aibtn" onclick="showView('health')">🩺 Health &amp; AI — drivers, firmware, event-log analysis</button>
+              <span class="metrics dim">moved to its own tab; it opens on the volume selected here</span>
+            </div>
+
+            <!-- offline local-account reset (locked-out recovery) -->
+            <div class="aidivider"></div>
+            <div id="samSection">
+              <div class="metrics" style="color:var(--amb)">🔑 Locked out of this machine? Reset a local account's password to blank, or unlock/enable it — so the customer can sign back in and recover their data.</div>
+              <div class="metrics" id="samWarn" style="margin-top:6px;color:var(--org)">⚠ This mounts the Windows volume <b>READ-WRITE</b>. The SAM hive is backed up first and every change is recorded in the report. <span id="samKeyNote"></span></div>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+                <button id="samOpen" class="mini">🔑 Manage local accounts (mounts read-write)</button>
+                <button id="samClose" class="mini" style="display:none">🔒 Done — back to read-only</button>
+              </div>
+              <div class="metrics" id="samMsg"></div>
+              <div id="samList"></div>
+              <div class="metrics dim" id="samNote" style="display:none;margin-top:6px">Volume is mounted read-write. Every change is recorded in the report; press "Done" to put it back to read-only. For the customer's own machine, with their consent.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HEALTH & AI (drivers / firmware / Windows version / AI analysis) -->
+    <section class="view" data-view="health">
+      <div class="panel grow">
+        <h2><span class="dot" style="background:var(--cyn)"></span>Windows Health — drivers, firmware &amp; AI analysis
+          <button id="hlRescan" class="mini" style="margin-left:auto">↻ Rescan</button></h2>
+        <div class="scroll" style="flex:1">
+          <div class="metrics dim">Reads the customer's Windows without booting it: which Windows and whether it is still supported, how old the BIOS is, and every GPU / chipset / firmware / storage / network driver with its version and date — flagged when it is behind. Then the AI reads the event logs together with that inventory and writes the plain-English diagnosis and update list.</div>
+          <div class="hlrow">
+            <label class="metrics dim">Windows install</label>
+            <select id="hlVol"><option value="">looking for Windows drives…</option></select>
+            <span class="metrics" id="hlVolMsg"></span>
+          </div>
+          <div id="hlBody" style="display:none">
+            <div class="hlcards" id="hlCards"></div>
+            <div class="hlh">Drivers &amp; firmware <span class="metrics dim" id="hlCount"></span>
+              <button id="hlOnline" class="mini" style="margin-left:auto">🌐 Check online for newer versions</button>
+              <span class="metrics" id="hlOnlineMsg"></span></div>
+            <div class="drvwrap"><table class="drvtab" id="hlTable"></table></div>
+            <div class="metrics dim" style="margin-top:6px"><b>Age</b> is only a hint — an old date does not mean a newer driver exists (vendors stop shipping them). <b>Check online</b> asks Windows Update's catalog for each device's hardware ID and LVFS for this machine's firmware; "update available" is only ever said when a newer version is actually listed.</div>
+            <div class="aidivider"></div>
+            <button id="aiGo" class="primary aibtn">🤖 AI HEALTH ANALYSIS (event logs + drivers + firmware)</button>
+            <div class="metrics" id="aiMsg"></div>
+            <div id="aiResult"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MIGRATE (clone internal Windows disk -> USB/enclosure target) --- -->
+    <section class="view" data-view="migr">
+      <div class="panel capped" style="max-width:680px;width:100%;margin:0 auto">
+        <h2><span class="dot" style="background:var(--org)"></span>Windows Migration — clone to a new drive
+          <button id="migRescan" class="mini" style="margin-left:auto">↻ Rescan</button></h2>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div class="metrics dim">Clone the internal Windows disk onto a drive plugged in via USB / an enclosure (the customer's new SSD). A drive at least as large gets a full block clone (layout + boot preserved, BitLocker stays encrypted). A <b>smaller</b> drive that still fits the used data is handled by shrinking Windows and copying it file-by-file, then rebuilding the boot. The source is only ever read.</div>
+          <label class="metrics dim">Source — internal Windows disk (read only)</label>
+          <select id="migSrc"><option value="">detecting Windows disks…</option></select>
+          <div class="metrics dim" id="migDiag" style="display:none;font-family:var(--mono,monospace);color:var(--mut)"></div>
+          <label class="metrics dim">Target — drive to migrate ONTO (everything on it is erased)</label>
+          <select id="migDst"><option value="">detecting target drives…</option></select>
+          <div class="metrics" id="migWarn" style="color:var(--amb)"></div>
+          <input type="text" id="migConfirm" class="mono" placeholder="type: MIGRATE" autocomplete="off">
+          <button id="migGo" class="danger" disabled>⇄ CLONE WINDOWS TO TARGET (erases target)</button>
+          <div class="erprog" id="migProgWrap" style="display:none">
+            <div class="erbar"><div id="migBar"></div></div>
+            <div class="metrics" id="migMsg"></div>
+            <div class="metrics dim" id="migSteps" style="white-space:pre-line;max-height:120px;overflow:auto"></div>
+          </div>
+          <div class="metrics" id="migOut"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTALL WINDOWS (fresh deploy from an ISO on the stick) --------- -->
+    <section class="view" data-view="inst">
+      <div class="split">
+        <!-- LEFT: set the install up -->
+        <div class="panel grow">
+          <h2><span class="dot" style="background:var(--blu)"></span>Fresh Windows Install — from an ISO on the stick
+            <button id="wiRescan" class="mini" style="margin-left:auto">↻ Rescan</button></h2>
+          <div class="scroll wiform" style="flex:1">
+            <div class="metrics dim">Drop <span class="mono">Windows 10.iso</span> / <span class="mono">Windows 11.iso</span> on the BenchDiag stick. BenchDiag partitions the target, applies the edition and writes the UEFI boot files. <b>The target drive is fully erased.</b></div>
+            <label class="metrics dim">Windows ISO (on the BenchDiag stick)</label>
+            <select id="wiIso"><option value="">scanning the stick…</option></select>
+            <label class="metrics dim">Edition</label>
+            <select id="wiEd"><option value="">pick an ISO first</option></select>
+            <label class="metrics dim">Target — drive to install ONTO (everything on it is erased)</label>
+            <select id="wiDst"><option value="">detecting drives…</option></select>
+            <div class="metrics" id="wiWarn" style="color:var(--amb)"></div>
+
+            <label class="metrics dim">Partition layout</label>
+            <select id="wiLayout">
+              <option value="whole">Windows takes the whole drive (EFI + MSR + C:)</option>
+              <option value="custom">Custom — choose the size of C: yourself</option>
+            </select>
+            <div id="wiLayoutCustom" class="wicustom wirow" style="display:none">
+              <span class="metrics dim" style="flex:none">C: size</span>
+              <input type="number" id="wiWinGb" class="mono" min="32" step="1" placeholder="e.g. 250" autocomplete="off" style="width:92px">
+              <span class="metrics dim" style="flex:none">GB (32 – <span id="wiWinMax" class="mono">?</span>)</span>
+              <span class="metrics dim" style="flex:none;margin-left:6px">Rest of the drive</span>
+              <select id="wiRest">
+                <option value="free">leave unallocated</option>
+                <option value="data">NTFS partition "Data" (D:)</option>
+              </select>
+            </div>
+            <div class="metrics wiplan" id="wiPlan"></div>
+
+            <label class="metrics dim">First boot</label>
+            <select id="wiMode">
+              <option value="bench">Bench desktop — skip OOBE (local admin "Home", auto-login)</option>
+              <option value="customer">Customer-ready — keep the normal Windows setup (OOBE)</option>
+            </select>
+            <div class="metrics dim" id="wiOobe"></div>
+            <label class="metrics dim">Restore owner's recovered files onto the new desktop</label>
+            <select id="wiRestore"><option value="">Don't restore any files</option></select>
+            <div class="wirow" style="margin-top:4px">
+              <input type="text" id="wiConfirm" class="mono" placeholder="type: INSTALL" autocomplete="off" style="flex:0 0 170px">
+              <button id="wiGo" class="danger" disabled style="flex:1">⊞ INSTALL WINDOWS (erases the target)</button>
+            </div>
+            <div class="metrics" id="wiOut"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: what is happening, then the two non-destructive actions -->
+        <div class="wiright">
+          <div class="panel grow" id="wiProgPanel">
+            <h2><span class="dot" style="background:var(--grn)"></span>Progress
+              <span class="pill unknown" id="wiState" style="margin-left:auto">idle</span></h2>
+            <div class="wiphases" id="wiPhases"></div>
+            <div class="metrics dim" id="wiIdle">Nothing running. Pick an ISO, an edition and a target on the left, type <span class="mono">INSTALL</span> and go — every phase reports here with its running command, throughput and time left, so a quiet minute is never a mystery.</div>
+            <div class="erprog wiprog" id="wiProgWrap" style="display:none">
+              <div class="erbar" id="wiBarWrap"><div id="wiBar"></div></div>
+              <div class="wimsg" id="wiMsg"></div>
+              <div class="wilive" id="wiLive"><span class="livedot" id="wiDot"></span><span id="wiElapsed"></span></div>
+              <div class="wicmd" id="wiCmd"></div>
+              <div class="wisteps" id="wiSteps"></div>
+            </div>
+            <div class="metrics" id="wiBoot" style="display:none;color:var(--org)"></div>
+          </div>
+
+          <div class="panel wiactions">
+            <h2><span class="dot" style="background:var(--amb)"></span>On the Target drive, without erasing it</h2>
+            <div class="metrics" style="color:var(--amb)">🔧 <b>Repair boot</b> — installed but stops at the Recovery screen (0xc0000001 / 0xc000000e)? Rebuilds the EFI boot files + BCD pointed at the existing Windows. About a minute.</div>
+            <div class="wirow">
+              <input type="text" id="wiRepairConfirm" class="mono" placeholder="type: REPAIR" autocomplete="off" style="flex:0 0 150px">
+              <button id="wiRepair" class="primary" disabled style="flex:1">🔧 REPAIR BOOT (keeps Windows)</button>
+            </div>
+            <div class="aidivider" style="margin:8px 0 6px"></div>
+            <div class="metrics" style="color:var(--amb)">⬆ <b>Windows 10 → 11 on a PC that fails Microsoft's check</b> (no TPM 2.0, old CPU). Setup must run inside Windows, so BenchDiag stages it on the target's Windows 10: setup files to <span class="mono">C:\BenchDiag\Win11</span>, registry bypass, and an <b>"Upgrade to Windows 11"</b> launcher on the desktop. Keeps files + apps. Needs the <b>Windows 11 ISO</b> selected on the left (same language as the install). A fresh install never runs the check at all.</div>
+            <div class="metrics dim" id="wiReady">checking this PC against the Windows 11 requirements…</div>
+            <div class="wirow">
+              <input type="text" id="wiUpConfirm" class="mono" placeholder="type: UPGRADE" autocomplete="off" style="flex:0 0 150px">
+              <button id="wiUpgrade" class="primary" disabled style="flex:1">⬆ STAGE WINDOWS 11 UPGRADE (keeps files)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DRIVE ERASE ----------------------------------------------------- -->
+    <section class="view" data-view="erase">
+      <div class="panel erasepanel capped" style="max-width:640px;width:100%;margin:0 auto">
+        <h2><span class="dot" style="background:var(--red)"></span>Drive Erase — DESTRUCTIVE</h2>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <select id="erDev"><option>loading targets…</option></select>
+          <select id="erMethod"></select>
+          <input type="text" id="erConfirm" placeholder='type: ERASE' autocomplete="off">
+          <button id="erGo" class="danger" disabled>⚠ ERASE THIS DRIVE FOREVER</button>
+          <div class="erprog" id="erProgWrap" style="display:none">
+            <div class="erbar"><div id="erBar"></div></div>
+            <div class="metrics" id="erMsg"></div>
+          </div>
+          <button id="erCert" style="display:none">Generate sanitization certificate</button>
+          <div class="metrics" id="erOut"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORT ---------------------------------------------------------- -->
+    <section class="view" data-view="rprt">
+      <div class="panel capped" style="max-width:640px;width:100%;margin:0 auto">
+        <h2><span class="dot" style="background:var(--amb)"></span>Report</h2>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <input type="text" id="customer" placeholder="Customer name (optional)">
+          <button class="primary" id="mkReport">⭳ GENERATE REPORT (PDF + JSON)</button>
+          <div class="metrics" id="reportOut"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<!-- fullscreen overlay for interactive tests -->
+<div id="overlay">
+  <div id="ovStage"></div>
+  <div id="ovHud">
+    <div class="nm" id="ovTitle" style="font-size:15px"></div>
+    <div class="hint" id="ovHint"></div>
+    <div id="ovBody"></div>
+    <div class="row">
+      <button class="v-pass" onclick="finishInteractive('pass')">PASS ✓</button>
+      <button class="v-fail" onclick="finishInteractive('fail')">FAIL ✗</button>
+      <button class="v-skip" onclick="finishInteractive('skip')">Skip</button>
+      <button onclick="closeOverlay()">Close (Esc)</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const SEGS=18;
+let state=null, esc=null, current=null, cleanup=null, liveHandler=null;
+const hist={load:[],temp:[]};
+
+/* ---- BitLocker unlock (dashboard) ---------------------------------- */
+let blVols=[];
+// group the digits as 123456-123456-… while typing/pasting; digits only, 48 max
+function blFormat(raw){const d=(raw||"").replace(/\D/g,"").slice(0,48);return d.replace(/(\d{6})(?=\d)/g,"$1-");}
+// each 6-digit block is a multiple of 11 below 720896 — BitLocker's own checksum
+function blBlockOk(g){const v=parseInt(g,10);return g.length===6&&v%11===0&&v<720896;}
+function blCheck(){
+  const inp=$("blKey"); const v=blFormat(inp.value); if(inp.value!==v)inp.value=v;
+  const digits=v.replace(/-/g,""); const groups=v.split("-").filter(Boolean);
+  const vol=blVols.find(x=>x.device===$("blVol").value);
+  let msg="", cls="";
+  const bad=groups.findIndex((g,i)=>g.length===6&&!blBlockOk(g));
+  if(!digits.length)msg="";
+  else if(bad>=0){msg=`group ${bad+1} (${groups[bad]}) looks mistyped — every BitLocker group is a multiple of 11`;cls="bad";}
+  else if(digits.length<48)msg=`${digits.length} of 48 digits`;
+  else{msg="✓ key format valid — press UNLOCK";cls="good";}
+  inp.className="blkey "+cls;
+  $("blMsg").textContent=msg; $("blMsg").style.color=cls==="bad"?"var(--amb)":(cls==="good"?"var(--grn)":"var(--mut)");
+  $("blGo").disabled=!(vol&&vol.locked&&digits.length===48&&bad<0);
+}
+/* The unlock form is folded away until it is the job in front of you.
+   It deliberately does NOT open itself when a locked drive is found: opening it
+   costs ~150px, which pushes the bottom of the dashboard out of the frame, and
+   a form you cannot see is worse than one you have to click for. Instead the
+   header shouts — amber "1 LOCKED", cue reads "unlock" — and the click that
+   opens it is also the click that means the tech is looking at it. */
+function setBlOpen(open){
+  const p=$("blPanel"); if(!p)return;
+  p.classList.toggle("open",!!open);
+  $("blBody").hidden=!open;
+  $("blCue").textContent=open?"hide":($("blPanel").dataset.locked?"unlock":"show");
+  if(open)$("blKey").focus({preventScroll:false});
+}
+function toggleBl(){ setBlOpen(!$("blPanel").classList.contains("open")); }
+
+async function loadBitlocker(){
+  try{
+    const d=await api("/api/bitlocker"); blVols=d.volumes||[];
+    const sel=$("blVol");
+    $("blPanel").dataset.locked=d.locked?"1":"";
+    if(!$("blPanel").classList.contains("open"))
+      $("blCue").textContent=d.locked?"unlock":"show";
+    if(!blVols.length){
+      sel.innerHTML='<option value="">no BitLocker-encrypted drives detected — plug the customer\'s drive in, then ↻ Rescan</option>';
+      $("blCount").textContent="";$("blKey").disabled=true;$("blGo").disabled=true;return;
+    }
+    $("blKey").disabled=false;
+    sel.innerHTML=blVols.map(v=>{
+      const kid=(v.key_ids||[]).length?` · Key ID ${v.key_ids.join(" / ")}`:"";
+      const who=v.description?` · ${esc_(v.description)}`:"";
+      return `<option value="${esc_(v.device)}">${v.locked?"🔒":"🔓"} ${esc_(v.device)} · ${v.size_gb} GB${who}${kid}${v.locked?"":" · UNLOCKED (read-only)"}</option>`;
+    }).join("");
+    const first=blVols.find(v=>v.locked)||blVols[0]; sel.value=first.device;
+    $("blCount").textContent=d.locked?`${d.locked} locked`:"all unlocked";
+    $("blCount").classList.toggle("alert",!!d.locked);
+    blCheck();
+    if(d.cryptsetup_ok===false){$("blMsg").style.color="var(--amb)";
+      $("blMsg").textContent=`⚠ this image has cryptsetup ${d.cryptsetup||"?"} — Windows 11 (24H2+) BitLocker drives need 2.7.3+; rebuild the image to unlock those.`;}
+  }catch(e){$("blVol").innerHTML='<option value="">could not scan drives</option>';}
+}
+$("blKey").addEventListener("input",blCheck);
+$("rkInput").addEventListener("input",()=>{const i=$("rkInput");const v=blFormat(i.value);if(i.value!==v)i.value=v;});
+$("blVol").addEventListener("change",blCheck);
+$("blKey").addEventListener("keydown",e=>{if(e.key==="Enter"&&!$("blGo").disabled)$("blGo").click();});
+$("blGo").onclick=async()=>{
+  const device=$("blVol").value, key=$("blKey").value;
+  $("blGo").disabled=true;$("blMsg").style.color="var(--mut)";$("blMsg").textContent="unlocking…";
+  try{
+    const r=await fetch("/api/windows/unlock",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({device,recovery_key:key})}).then(x=>x.json());
+    if(r.ok){
+      $("blKey").value="";                       /* never keep the key around */
+      toast("BitLocker drive unlocked (read-only)");
+      await loadBitlocker();
+      $("blMsg").style.color="var(--grn)";
+      $("blMsg").textContent="✓ "+(r.message||"Unlocked")+" — the drive is now readable in Recovery, Health & AI and Migrate.";
+      if(typeof refreshVols==="function")refreshVols();   /* Recovery's list */
+      hlLoaded=false;                                     /* Health re-reads on next visit */
+    }else{$("blGo").disabled=false;$("blMsg").style.color="var(--red)";$("blMsg").textContent=r.message||"unlock failed";}
+  }catch(e){$("blMsg").style.color="var(--red)";$("blMsg").textContent="unlock failed: "+(e.message||e);}
+};
+
+/* ---- meters -------------------------------------------------------- */
+function buildStack(el){for(let i=0;i<SEGS;i++){const s=document.createElement("div");s.className="seg";el.appendChild(s)}}
+["mLoad","mTemp","mMem"].forEach(id=>buildStack($(id)));
+function setMeter(id,pct){
+  const kids=$(id).children, n=Math.round((pct/100)*SEGS);
+  for(let i=0;i<SEGS;i++)kids[i].classList.toggle("on",i<n);
+}
+function spark(id,arr,color){
+  const c=$(id),ctx=c.getContext("2d");
+  const w=c.width=c.clientWidth*devicePixelRatio, h=c.height=c.clientHeight*devicePixelRatio;
+  ctx.clearRect(0,0,w,h);
+  if(arr.length<2)return;
+  const max=Math.max(100,...arr), min=0;
+  ctx.beginPath();
+  arr.forEach((v,i)=>{
+    const x=i/(arr.length-1)*w, y=h-((v-min)/(max-min))*(h-4)-2;
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  });
+  ctx.strokeStyle=color;ctx.lineWidth=2*devicePixelRatio;ctx.stroke();
+  ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();
+  ctx.fillStyle=color.replace(")",",0.10)").replace("rgb","rgba");ctx.fill();
+}
+function onTelemetry(t){
+  if(t.cpu_load!=null){setMeter("mLoad",t.cpu_load);$("vLoad").textContent=t.cpu_load.toFixed(0)+"%";
+    hist.load.push(t.cpu_load);if(hist.load.length>90)hist.load.shift();}
+  /* An empty gauge with "n/a" under it looks like a broken tool, and a tech
+     cannot tell it from a machine reading 0 °C. When there is no sensor the
+     meter goes dark and says so, and the reason rides along in the tooltip. */
+  const tm=$("mTemp").closest(".meter");
+  if(t.cpu_temp!=null){
+    tm.classList.remove("dead"); tm.title="";
+    setMeter("mTemp",Math.min(100,t.cpu_temp));$("vTemp").textContent=t.cpu_temp.toFixed(0)+"°C";
+    hist.temp.push(t.cpu_temp);if(hist.temp.length>90)hist.temp.shift();
+  }else{
+    tm.classList.add("dead"); tm.title=t.temp_note||"";
+    setMeter("mTemp",0); $("vTemp").textContent="no sensor";
+  }
+  if(t.mem_used!=null){setMeter("mMem",t.mem_used);$("vMem").textContent=t.mem_used.toFixed(0)+"%";}
+  if(Array.isArray(t.cores))renderCores(t.cores);
+  // mirror into the always-visible header readout
+  if(t.cpu_load!=null)$("hLoad").textContent=t.cpu_load.toFixed(0)+"%";
+  $("hTemp").textContent=t.cpu_temp!=null?t.cpu_temp.toFixed(0)+"°":"—";
+  $("hTemp").parentElement.title=t.cpu_temp!=null?"":(t.temp_note||"");
+  if(t.mem_used!=null)$("hMem").textContent=t.mem_used.toFixed(0)+"%";
+  spark("sparkLoad",hist.load,"rgb(69,230,69)");
+  spark("sparkTemp",hist.temp,"rgb(255,192,46)");
+}
+function renderCores(cores){
+  const box=$("coreBars");if(!box)return;
+  const n=$("coreN");if(n)n.textContent="("+cores.length+")";
+  if(box.children.length!==cores.length)box.innerHTML=cores.map(()=>'<div class="core"><i></i></div>').join("");
+  [...box.children].forEach((el,i)=>{const p=Math.max(0,Math.min(100,cores[i]||0));
+    const b=el.firstChild;b.style.height=p+"%";
+    b.style.background=p>85?"#ff5a5a":p>60?"var(--amb)":"var(--grn)";});
+}
+
+/* ---- health at a glance (battery / SMART / windows) ---------------- */
+async function loadDash(){
+  loadBitlocker();
+  try{const d=await api("/api/dash");renderBatt(d.battery);renderSmart(d.smart);renderWin(d.windows);}
+  catch(e){}
+}
+function renderBatt(b){
+  const el=$("hBatt");if(!el)return;
+  if(!b||!b.present){el.innerHTML='<div class="dim">No battery — desktop'+(b&&b.ac_online===false?' · AC OFFLINE':'')+'</div>';return;}
+  el.innerHTML=b.batteries.map(x=>{
+    const h=x.health_pct, col=h==null?"var(--mut)":h<50?"#ff5a5a":h<75?"var(--amb)":"var(--grn)";
+    let s=`<div class="hrow"><b>${esc_(x.name)}</b>${x.status?` <span class="dim">${esc_(x.status)}</span>`:""}</div>`;
+    if(h!=null){s+=`<div style="display:flex;justify-content:space-between"><span>Health</span><b style="color:${col}">${h}% <span class="dim">· ${x.wear_pct}% wear</span></b></div>
+      <div class="hbar"><i style="width:${h}%;background:${col}"></i></div>`;}
+    else s+='<div class="dim">capacity not reported by firmware</div>';
+    const bits=[];if(x.charge_pct!=null)bits.push(`charge ${x.charge_pct}%`);
+    if(x.cycles!=null)bits.push(`${x.cycles} cycles`);if(x.drain_w!=null)bits.push(`drawing ${x.drain_w} W`);
+    if(bits.length)s+=`<div class="dim">${bits.join(" · ")}</div>`;
+    return s;
+  }).join("")+(b.ac_online!=null?`<div class="dim" style="margin-top:6px">AC adapter: ${b.ac_online?"online":"OFFLINE"}</div>`:"");
+}
+function renderSmart(data){
+  const el=$("hSmart");if(!el)return;
+  // the payload grew a card-level note; tolerate the old bare array too
+  const list=Array.isArray(data)?data:((data&&data.disks)||[]);
+  const note=(!Array.isArray(data)&&data&&data.note)||"";
+  if(!list.length){el.innerHTML='<div class="dim">no fixed disks detected</div>';return;}
+  // One missing tool is one fact about this build, not a fault per disk.
+  const head=note?`<div class="hnote">⚙ ${esc_(note)}</div>`:"";
+  el.innerHTML=head+list.map(d=>{
+    const extra=[d.temp,d.hours?d.hours+" h":"",d.ssd_life?"life "+d.ssd_life:"",d.wear?"wear "+d.wear:""].filter(Boolean).join(" · ");
+    const tail=[esc_(d.summary||""),extra?esc_(extra):""].filter(Boolean).join(" · ");
+    return `<div class="hrow"><span class="sbadge ${d.verdict}">${(d.verdict||"?").toUpperCase()}</span>
+      <b>${esc_(d.model)}</b></div>
+      <div class="dim">${d.size_gb} GB · ${esc_(d.bus||"disk")}${tail?" — "+tail:""}</div>`;
+  }).join("");
+}
+function renderWin(list){
+  const el=$("hWin");if(!el)return;
+  if(!list||!list.length){el.innerHTML='<div class="dim">no internal Windows install detected</div>';return;}
+  el.innerHTML=list.map(w=>`<div class="hrow"><span class="sbadge pass">FOUND</span>
+    <b>${esc_(w.model)}</b></div>
+    <div class="dim">${esc_(w.path)} · ${esc_(w.size_h)}${w.bitlocker?" · 🔒 BitLocker":""}</div>`).join("")+
+    '<div class="dim" style="margin-top:6px">Migrate, recover data, or clone from the tabs on the left.</div>';
+}
+
+/* ---- state / rendering --------------------------------------------- */
+/* /api/* failures come back as {ok:false,message,error,trace}. Throwing the
+   raw body meant every caller's `e.message` was a wall of JSON, so they all
+   printed their own generic line instead — "could not read the volume" is what
+   a tech saw when the server had said, precisely, "AttributeError: module 'os'
+   has no attribute 'statvfs'". Carry the server's sentence through. */
+async function api(path,opts){
+  const r=await fetch(path,opts);
+  if(!r.ok){
+    const body=await r.text();
+    let msg=body;
+    try{const j=JSON.parse(body);msg=j.message||j.error||body;}catch(_){}
+    const err=new Error(msg); err.body=body; throw err;
+  }
+  return r.json();
+}
+function chip(status){
+  const label={idle:"IDLE",queued:"QUEUED",running:"RUN",pass:"PASS",warn:"ATTN",
+               fail:"FAIL",error:"NO RUN",skip:"SKIP"}[status]||status.toUpperCase();
+  return `<span class="chip ${status}">${label}</span>`;
+}
+// dmidecode / lspci / lscpu strings carry legal boilerplate ("ASUSTeK COMPUTER
+// INC.", "Intel(R) Core(TM) … CPU @ 3.70GHz", "NVIDIA Corporation AD106M [GeForce
+// RTX 4070 Max-Q / Mobile] [10de:2860] (rev a1)"). The panel has two lines'
+// worth of width per value, so keep the words a tech reads and drop the rest.
+function tidyVendor(s){
+  return String(s||"")
+    .replace(/Advanced Micro Devices,? Inc\.?\s*(\[AMD\/ATI\]|\[AMD\])?/i,"AMD")
+    .replace(/\b(ASUSTeK COMPUTER INC\.?)/i,"ASUS").replace(/\bMicro-Star International Co\.?,? Ltd\.?/i,"MSI")
+    .replace(/\b(Hewlett-Packard|HP Inc\.?)/i,"HP").replace(/\bDell Inc\.?/i,"Dell").replace(/\bLENOVO\b/,"Lenovo")
+    .replace(/\bGigabyte Technology Co\.?,? Ltd\.?/i,"Gigabyte").replace(/\bAcer\b.*?Inc\.?/i,"Acer")
+    .replace(/\s*(Corporation|Corp\.?|Inc\.?|Co\.?,? Ltd\.?|Semiconductor Co\.?,? Ltd\.?)(?=\s|$)/g,"")
+    .replace(/\((R|TM|C)\)/g,"").replace(/\s*CPU\s*@\s*[\d.]+\s*GHz/i,"").replace(/\s*\[[0-9a-f]{4}:[0-9a-f]{4}\]/ig,"")
+    .replace(/\s*\(rev [0-9a-f]+\)/i,"").replace(/\s{2,}/g," ").trim();
+}
+function tidyGpu(g){
+  // "NVIDIA AD106M [GeForce RTX 4070 Max-Q / Mobile]" -> "NVIDIA RTX 4070 Max-Q";
+  // "AMD Phoenix1 [Radeon 780M Graphics]" -> "AMD Radeon 780M"; the die codename
+  // before the bracket is what lspci knows, the bracket is what the tech knows
+  const t=tidyVendor(g); const m=t.match(/^(\S+)\s+.*\[([^\]]+)\]\s*$/);
+  return (m?`${m[1]} ${m[2]}`:t).replace(/\bGeForce\s+/,"").replace(/\s*\/\s*Mobile\b/,"").replace(/\s+Graphics\b/,"");
+}
+function tidyCpu(c){
+  // "13th Gen Intel(R) Core(TM) i9-13980HX" -> "Core i9-13980HX" (the model number
+  // already says the generation); "AMD Ryzen 7 7840HS w/ Radeon 780M Graphics" -> "AMD Ryzen 7 7840HS"
+  return tidyVendor(c).replace(/^\d+(st|nd|rd|th) Gen\s+/i,"").replace(/^Intel\s+(?=Core|Xeon|Pentium|Celeron)/,"")
+    .replace(/\s+(w\/|with)\s+(AMD\s+)?Radeon.*$/i,"").replace(/\s+\d+-Core Processor$/i,"").replace(/\s+Processor$/i,"");
+}
+function renderInventory(inv,st){
+  const rows=[];
+  const s=inv.system||{};
+  const model=tidyVendor([s.manufacturer,s.model].filter(Boolean).join(" "));
+  if(model)rows.push(["Model",model]);
+  if(s.serial)rows.push(["Serial",s.serial]);
+  if(inv.cpu&&inv.cpu.model)rows.push(["CPU",tidyCpu(inv.cpu.model)+(inv.cpu.threads?` (${inv.cpu.threads} thr)`:"")]);
+  if(inv.memory_gb)rows.push(["Memory",inv.memory_gb+" GB"+(inv.cpu&&inv.cpu.flags_isa?" · "+inv.cpu.flags_isa:"")]);
+  const gpus=(inv.gpus||[]).map(tidyGpu);
+  gpus.forEach(g=>rows.push(["GPU",g]));
+  if(gpus.length%2)rows.push(["",""]);           // keep Kernel | Display on one line
+  // how THIS stick is running on the machine: kernel + the kiosk's GPU path
+  // (from cage-launch.sh) — the two facts every "graphics is weird" question needs
+  if(st&&st.kernel)rows.push(["Kernel",st.kernel]);
+  if(st&&st.render&&st.render.renderer){
+    const r=st.render;
+    const why=(r.reason&&r.reason!=="GPU-accelerated")?" — "+r.reason:"";
+    rows.push(["Display",`${r.driver||"?"} · ${r.renderer==="pixman"?"software rendering":"GPU-accelerated"}${why}`]);
+  }
+  if(s.bios)rows.push(["BIOS",s.bios]);
+  (inv.disks||[]).forEach(d=>rows.push(["Disk",`${tidyVendor(d.model||d.path)} · ${d.size_gb} GB · ${d.bus||"int"}`]));
+  $("inv").innerHTML=rows.map(([k,v])=>k?`<dt>${k}</dt><dd title="${esc_(v)}">${esc_(v)}</dd>`:"<dt></dt><dd></dd>").join("")||"<dt>—</dt><dd>no data</dd>";
+}
+const esc_=s=>String(s).replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+function renderTests(){
+  const auto=state.session.tests.filter(t=>!t.interactive);
+  const cats=[...new Set(auto.map(t=>t.category))];
+  $("autoTests").innerHTML=cats.map(cat=>{
+    const rows=auto.filter(t=>t.category===cat).map(t=>{
+      const res=t.result;
+      const sum=res?esc_(res.summary):"";
+      const met=res&&Object.keys(res.metrics).length?
+        `<div class="metrics">${Object.entries(res.metrics).slice(0,4).map(([k,v])=>k+": "+esc_(v)).join(" · ")}</div>`:"";
+      return `<div class="trow">${chip(t.status)}
+        <div class="tname"><div class="nm">${esc_(t.name)}</div>
+        ${sum?`<div class="sum">${sum}</div>`:""}${met}</div>
+        <button class="run" onclick="runOne('${t.id}')" ${t.status==="running"||t.status==="queued"?"disabled":""}>run</button>
+      </div>`;
+    }).join("");
+    return `<div class="cathead">${esc_(cat)}</div>${rows}`;
+  }).join("");
+  const inter=state.session.tests.filter(t=>t.interactive);
+  $("iTiles").innerHTML=inter.map(t=>{
+    const auto=t.category==="Browser";
+    return `<div class="itile">${chip(t.status)}<span class="nm">${esc_(t.name.replace(" (browser)",""))}</span>
+    <button onclick="openInteractive('${t.id}')">${auto?"▶ auto-run":"start"}</button></div>`;
+  }).join("");
+  const running=state.session.tests.filter(t=>t.status==="running").map(t=>t.name);
+  $("runstate").textContent=running.length?("running: "+running.join(", ")):"idle";
+  renderOverall();
+}
+/* ---- overall status (dashboard) ------------------------------------
+   One glance answers: is it running (how far, on what), did it fail (which
+   tests — click to jump there), or when did it last run and how long did it
+   take. The batch is tracked client-side from the moment the queue fills. */
+let ovBatch=null;   // {start: epoch s} while a run is in flight
+const shortName=n=>String(n||"").replace(" (browser)","");
+function fmtDur(sec){sec=Math.max(0,Math.round(sec));return sec<60?`${sec} s`:(sec<3600?`${Math.floor(sec/60)} min ${String(sec%60).padStart(2,"0")} s`:`${Math.floor(sec/3600)} h ${Math.floor(sec%3600/60)} min`);}
+const fmtClock=ts=>new Date(ts*1000).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+function renderOverall(){
+  if(!state||!state.session)return;
+  const tests=state.session.tests||[];
+  const c={pass:0,warn:0,fail:0,error:0};
+  tests.forEach(t=>{if(c[t.status]!=null)c[t.status]++;});
+  const running=tests.filter(t=>t.status==="running"), queued=tests.filter(t=>t.status==="queued");
+  const active=running.length+queued.length;
+  const notrun=tests.filter(t=>["idle","queued","running"].includes(t.status)).length;
+  const now=Date.now()/1000;
+  if(active&&!ovBatch)ovBatch={start:now};
+  if(!active)ovBatch=null;
+  const doneInBatch=ovBatch?tests.filter(t=>t.finished&&t.finished>=ovBatch.start-2).length:0;
+  const total=ovBatch?active+doneInBatch:0;
+  let lvl="—",cls="";
+  if(active){lvl="RUN";cls="live";}
+  else if(c.fail||c.error){lvl="FAIL";cls="fail";}
+  else if(c.warn){lvl="ATTN";cls="warn";}
+  else if(c.pass){lvl="PASS";cls="pass";}
+  const r=$("ovRing"); if(r){r.textContent=lvl;r.className="ring "+cls;}
+  const tl=$("ovTally"), dt=$("ovDetail"), st=$("ovState"), pr=$("ovProg"); if(!tl)return;
+  // tally: only the counts that are non-zero, failures first
+  const bits=[];
+  if(c.fail+c.error)bits.push(`<b style="color:var(--red)">${c.fail+c.error} failed</b>`);
+  if(c.warn)bits.push(`<span style="color:var(--amb)">${c.warn} attention</span>`);
+  bits.push(`${c.pass} passed`);
+  if(notrun)bits.push(`<span class="dim">${notrun} not run</span>`);
+  tl.innerHTML=bits.join(" · ");
+  const done=tests.filter(t=>t.finished);
+  const t1=done.length?Math.max(...done.map(t=>t.finished)):0;
+  const t0=done.length?Math.min(...done.filter(t=>t.started).map(t=>t.started)):0;
+  if(active){
+    const cur=running[0];
+    const el=cur&&cur.started?now-cur.started:0;
+    dt.className="ovdetail live";
+    dt.innerHTML=cur?`▶ ${esc_(shortName(cur.name))}${queued.length?` · ${queued.length} queued`:""}`:`${queued.length} queued — starting…`;
+    st.textContent=`running ${doneInBatch}/${total}`+(cur&&cur.started?` · ${fmtDur(el)}`:"");
+    pr.style.display="block"; $("ovBar").style.width=(total?Math.round(doneInBatch*100/total):0)+"%";
+  }else{
+    pr.style.display="none";
+    const bad=tests.filter(t=>t.status==="fail"||t.status==="error"), warn=tests.filter(t=>t.status==="warn");
+    const link=(t)=>`<a onclick="showView('diag')" title="${esc_(t.result&&t.result.summary||"")}">${esc_(shortName(t.name))}</a>`;
+    if(bad.length){dt.className="ovdetail fail";dt.innerHTML="✗ "+bad.slice(0,2).map(link).join(" · ")+(bad.length>2?` +${bad.length-2} more`:"");}
+    else if(warn.length){dt.className="ovdetail warn";dt.innerHTML="⚠ "+warn.slice(0,2).map(link).join(" · ")+(warn.length>2?` +${warn.length-2} more`:"");}
+    else if(c.pass){dt.className="ovdetail ok";dt.textContent=notrun?`all ${c.pass} that ran passed — ${notrun} still to run`:`all ${c.pass} tests passed`;}
+    else{dt.className="ovdetail";dt.textContent="Pick a preset, press Run — results also go into the report.";}
+    st.textContent=done.length?`last run ${fmtClock(t1)}${t0?` · ${fmtDur(t1-t0)}`:""}`:"";
+  }
+  const btn=$("runAll"); if(btn){btn.disabled=!!active;btn.textContent=active?"▶ RUNNING…":"▶ RUN ALL";}
+}
+// the elapsed counter on the running test ticks even between events
+setInterval(()=>{if(state&&state.session&&(state.session.tests||[]).some(t=>t.status==="running"))renderOverall();},1000);
+/* ---- view switching (tabbed app shell) ----------------------------- */
+function showView(v){
+  // dropdown lists live on <body>, so one left open would survive the switch
+  if(typeof closeAllCsel==='function')closeAllCsel();
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.dataset.view===v));
+  if(v==='diag'||v==='dash'){try{spark("sparkLoad",hist.load,"rgb(69,230,69)");spark("sparkTemp",hist.temp,"rgb(255,192,46)");}catch(e){}}
+  if(v==='dash')loadDash();
+  if(v==='health'&&typeof loadHealthVols==='function'){
+    // re-sync with whatever Recovery opened since; otherwise a one-time load
+    if(!hlLoaded||(curVol&&curVol.device!==hlDevice))loadHealthVols(false);
+  }
+}
+document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(v)showView(v);});
+if(location.hash.slice(1))showView(location.hash.slice(1));
+async function refresh(){
+  state=await api("/api/state");
+  $("modeBadge").className="badge "+(state.demo?"demo":"live");
+  $("modeBadge").textContent=state.demo?"DEMO":"LIVE";
+  const b=state.branding;
+  $("shopline").textContent=(b.shop?b.shop+"  ·  ":"")+"HARDWARE DIAGNOSTICS"+(b.bench?"  ·  "+b.bench:"");
+  $("verline").textContent="benchdiag v"+state.version;
+  $("payline").textContent=state.payload_mounted?"reports → USB payload partition":"reports → "+state.reports_dir;
+  renderInventory(state.inventory, state);
+  renderTests();
+  lowFxFrom(state);
+}
+/* ---- low-effects mode ------------------------------------------------
+   Continuous CSS animations (the LIVE blink, pulsing dots, the striped
+   progress bar) cost a full-window repaint ~60×/s. That is free with a GPU
+   and brutal without one: on software rendering (pixman + --disable-gpu)
+   or a weak APU it is the difference between a snappy UI and one that
+   misses taps. So: when the kiosk reports software rendering, or the
+   browser cannot hold ~25 fps at startup, animations are switched off. */
+let lowFx=false;
+function setLowFx(on,why){ if(on===lowFx)return; lowFx=on; document.body.classList.toggle("lowfx",on); if(on)console.log("low-effects mode: "+why); }
+function lowFxFrom(st){ if(st&&st.render&&st.render.renderer==="pixman")setLowFx(true,"software rendering"); }
+(function probeFps(){
+  let n=0, t0=0;
+  function tick(t){ if(!t0)t0=t; n++; if(t-t0<1500){requestAnimationFrame(tick);return;}
+    const fps=n/((t-t0)/1000); if(fps<25)setLowFx(true,`slow frames (${fps.toFixed(0)} fps)`); }
+  requestAnimationFrame(tick);
+})();
+
+/* ---- actions ------------------------------------------------------- */
+async function runOne(id){await api(`/api/test/${id}/run`,{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({preset:$("preset").value})});}
+$("runAll").onclick=async()=>{await api("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({preset:$("preset").value})});};
+$("mkReport").onclick=async()=>{
+  await api("/api/customer",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({customer:$("customer").value})});
+  const r=await api("/api/report",{method:"POST"});
+  $("reportOut").innerHTML=`overall: <b>${r.overall.toUpperCase()}</b><br>${esc_(r.pdf)}<br>${esc_(r.json)}<br>→ ${esc_(r.dir)}`;
+  toast((r.on_stick?"Report written to the USB stick":"Report written")+" — "+r.pdf);
+};
+function toast(msg){const t=$("toast");t.textContent=msg;t.style.display="block";
+  clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",6000);}
+
+/* ---- SSE ----------------------------------------------------------- */
+function connect(){
+  const src=new EventSource("/api/events");
+  src.onmessage=e=>{
+    const ev=JSON.parse(e.data);
+    if(ev.type==="telemetry")onTelemetry(ev);
+    else if(ev.type==="test"){
+      const t=state&&state.session.tests.find(x=>x.id===ev.id);
+      if(t){Object.assign(t,ev);renderTests();}
+    }
+    else if(ev.type==="erase")onEraseEvent(ev);
+    else if(ev.type==="recovery")onRecoveryEvent(ev);
+    else if(ev.type==="migrate")onMigrateEvent(ev);
+    else if(ev.type==="winstall")onWinstallEvent(ev);
+    else if(ev.type==="treemap")onTreemapEvent(ev);
+    else if(ev.type==="livetest"){if(liveHandler)liveHandler(ev);}
+  };
+  src.onerror=()=>{};
+}
+
+/* ---- interactive tests --------------------------------------------- */
+const INTERACTIVE={
+  display:{
+    title:"Display test",
+    hint:"Click / press Space to cycle: white → black → red → green → blue → gradient → grid. Look for stuck pixels, bleed, banding. Esc when done.",
+    start(stage,body){
+      body.innerHTML='<div class="row" style="display:flex;gap:8px;justify-content:center">'+
+        '<span class="metrics">backlight:</span>'+
+        [25,50,100].map(p=>`<button onclick="fetch('/api/backlight',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({percent:${p}})})">${p}%</button>`).join("")+
+        '</div>';
+      const modes=["#fff","#000","#f00","#0f0","#00f","grad","grid"];let i=0;
+      const paint=()=>{const m=modes[i%modes.length];
+        if(m==="grad")stage.style.background="linear-gradient(90deg,#000,#fff)";
+        else if(m==="grid")stage.style.background=
+          "repeating-linear-gradient(0deg,#888 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,#888 0 1px,#000 1px 24px)";
+        else stage.style.background=m;};
+      paint();
+      const next=e=>{if(e.type==="keydown"&&e.code!=="Space")return;i++;paint()};
+      stage.addEventListener("click",next);document.addEventListener("keydown",next);
+      return()=>{document.removeEventListener("keydown",next);stage.style.background=""}
+    }
+  },
+  keyboard:{
+    title:"Keyboard test",
+    hint:"Press every key. It lights green on screen when it registers; a key that never lights is dead. Hold a key to see it highlighted. (Esc closes.)",
+    start(_,body){
+      // rows of [event.code, label, widthUnits]. 1 unit ≈ one key.
+      const U=38, GAP=4;
+      const rows=[
+        [["Escape","esc",1],["F1","F1",1],["F2","F2",1],["F3","F3",1],["F4","F4",1],["F5","F5",1],["F6","F6",1],["F7","F7",1],["F8","F8",1],["F9","F9",1],["F10","F10",1],["F11","F11",1],["F12","F12",1]],
+        [["Backquote","`",1],["Digit1","1",1],["Digit2","2",1],["Digit3","3",1],["Digit4","4",1],["Digit5","5",1],["Digit6","6",1],["Digit7","7",1],["Digit8","8",1],["Digit9","9",1],["Digit0","0",1],["Minus","-",1],["Equal","=",1],["Backspace","⌫",2]],
+        [["Tab","Tab",1.5],["KeyQ","Q",1],["KeyW","W",1],["KeyE","E",1],["KeyR","R",1],["KeyT","T",1],["KeyY","Y",1],["KeyU","U",1],["KeyI","I",1],["KeyO","O",1],["KeyP","P",1],["BracketLeft","[",1],["BracketRight","]",1],["Backslash","\\",1.5]],
+        [["CapsLock","Caps",1.8],["KeyA","A",1],["KeyS","S",1],["KeyD","D",1],["KeyF","F",1],["KeyG","G",1],["KeyH","H",1],["KeyJ","J",1],["KeyK","K",1],["KeyL","L",1],["Semicolon",";",1],["Quote","'",1],["Enter","⏎",2.2]],
+        [["ShiftLeft","Shift",2.3],["KeyZ","Z",1],["KeyX","X",1],["KeyC","C",1],["KeyV","V",1],["KeyB","B",1],["KeyN","N",1],["KeyM","M",1],["Comma",",",1],["Period",".",1],["Slash","/",1],["ShiftRight","Shift",2.7]],
+        [["ControlLeft","Ctrl",1.4],["MetaLeft","Win",1.2],["AltLeft","Alt",1.2],["Space","Space",6.4],["AltRight","Alt",1.2],["MetaRight","Win",1.2],["ContextMenu","☰",1.2],["ControlRight","Ctrl",1.4]],
+      ];
+      // clusters to the right: arrows + nav + numpad
+      const arrows=[["ArrowLeft","◀"],["ArrowUp","▲"],["ArrowDown","▼"],["ArrowRight","▶"]];
+      const nav=[["Insert","Ins"],["Home","Home"],["PageUp","PgUp"],["Delete","Del"],["End","End"],["PageDown","PgDn"],["PrintScreen","PrtSc"]];
+      const numpad=[["NumLock","Num"],["NumpadDivide","/"],["NumpadMultiply","*"],["NumpadSubtract","-"],
+        ["Numpad7","7"],["Numpad8","8"],["Numpad9","9"],["NumpadAdd","+"],
+        ["Numpad4","4"],["Numpad5","5"],["Numpad6","6"],
+        ["Numpad1","1"],["Numpad2","2"],["Numpad3","3"],["NumpadEnter","⏎"],
+        ["Numpad0","0"],["NumpadDecimal","."]];
+
+      const seen=new Set(), keyEls={};
+      const keyEl=(code,label,w)=>{
+        const d=document.createElement("div");d.dataset.code=code;
+        d.style.cssText=`display:inline-flex;align-items:center;justify-content:center;height:${U}px;`+
+          `width:${(w||1)*U+((w||1)-1)*GAP}px;margin:0;border-radius:6px;font-size:11px;`+
+          `background:#161d26;border:1px solid #26303c;color:#9fb2c4;user-select:none;flex:none`;
+        d.textContent=label;keyEls[code]=keyEls[code]||[];keyEls[code].push(d);return d;
+      };
+      const mkRow=(keys)=>{const r=document.createElement("div");
+        r.style.cssText=`display:flex;gap:${GAP}px;justify-content:center`;
+        keys.forEach(([c,l,w])=>r.appendChild(keyEl(c,l,w)));return r;};
+
+      const wrap=document.createElement("div");
+      wrap.style.cssText="display:flex;gap:16px;align-items:flex-start;justify-content:center;flex-wrap:wrap";
+      const main=document.createElement("div");main.style.cssText=`display:flex;flex-direction:column;gap:${GAP}px`;
+      rows.forEach(r=>main.appendChild(mkRow(r)));
+      // arrow cluster (inverted-T)
+      const arrowBox=document.createElement("div");
+      arrowBox.style.cssText=`display:grid;grid-template-columns:repeat(3,${U}px);gap:${GAP}px;align-content:end`;
+      const aMap={ArrowLeft:[3,1],ArrowUp:[2,1],ArrowDown:[2,2],ArrowRight:[3,3]};
+      arrowBox.appendChild(document.createElement("div"));const up=keyEl("ArrowUp","▲",1);arrowBox.appendChild(up);arrowBox.appendChild(document.createElement("div"));
+      arrows.filter(a=>a[0]!=="ArrowUp").forEach(([c,l])=>arrowBox.appendChild(keyEl(c,l,1)));
+      main.appendChild(document.createElement("div"));
+      const numBox=document.createElement("div");numBox.style.cssText=`display:grid;grid-template-columns:repeat(4,${U}px);gap:${GAP}px`;
+      numpad.forEach(([c,l])=>numBox.appendChild(keyEl(c,l,1)));
+
+      const right=document.createElement("div");right.style.cssText=`display:flex;flex-direction:column;gap:14px;align-items:center`;
+      const navBox=document.createElement("div");navBox.style.cssText=`display:grid;grid-template-columns:repeat(3,${U}px);gap:${GAP}px`;
+      nav.forEach(([c,l])=>navBox.appendChild(keyEl(c,l,1)));
+      right.appendChild(navBox);right.appendChild(arrowBox);right.appendChild(numBox);
+      wrap.appendChild(main);wrap.appendChild(right);
+
+      body.innerHTML="";body.appendChild(wrap);
+      const count=document.createElement("div");count.className="metrics";
+      count.innerHTML='<span id="kbCount">0</span> keys registered · <span id="kbUnk">0</span> other';
+      body.appendChild(count);
+
+      const light=(code,on,held)=>{(keyEls[code]||[]).forEach(el=>{
+        el.style.background=on?(held?"#1f7a3a":"#12321c"):"#161d26";
+        el.style.borderColor=on?(held?"#37e045":"#2f6f52"):"#26303c";
+        el.style.color=on?"#eafff0":"#9fb2c4";});};
+      let unknown=0;
+      const down=e=>{if(e.code==="Escape")return;e.preventDefault();
+        if(keyEls[e.code]){if(!seen.has(e.code)){seen.add(e.code);document.getElementById("kbCount").textContent=seen.size;}
+          light(e.code,true,true);}
+        else{unknown++;document.getElementById("kbUnk").textContent=unknown;}};
+      const up2=e=>{if(keyEls[e.code])light(e.code,seen.has(e.code),false);};
+      document.addEventListener("keydown",down);document.addEventListener("keyup",up2);
+      current.details=()=>[`${seen.size} distinct keys registered${unknown?`, ${unknown} other events`:""}`];
+      return()=>{document.removeEventListener("keydown",down);document.removeEventListener("keyup",up2);}
+    }
+  },
+  audio:{
+    title:"Speaker test",
+    hint:"Play each tone; confirm it comes from the correct side, clean and unrattled.",
+    start(_,body){
+      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      body.innerHTML='<div class="row" style="display:flex;gap:8px;justify-content:center">'+
+        '<button onclick="_tone(-1)">◀ LEFT</button><button onclick="_tone(0)">BOTH</button>'+
+        '<button onclick="_tone(1)">RIGHT ▶</button></div>';
+      window._tone=pan=>{
+        const osc=ctx.createOscillator(),g=ctx.createGain(),p=ctx.createStereoPanner();
+        osc.frequency.value=440;g.gain.value=.25;p.pan.value=pan;
+        osc.connect(g).connect(p).connect(ctx.destination);
+        osc.start();osc.stop(ctx.currentTime+1);
+      };
+      return()=>{ctx.close();delete window._tone}
+    }
+  },
+  mic:{
+    title:"Microphone loopback",
+    hint:"Record 3 seconds, then it plays back. Hearing yourself = mic and speakers both work.",
+    start(_,body){
+      body.innerHTML='<button id="micGo">● Record 3 s</button><div class="metrics" id="micState"></div>';
+      let stream;
+      document.getElementById("micGo").onclick=async()=>{
+        try{
+          stream=await navigator.mediaDevices.getUserMedia({audio:true});
+          const rec=new MediaRecorder(stream),chunks=[];
+          rec.ondataavailable=e=>chunks.push(e.data);
+          rec.onstop=()=>{
+            const a=new Audio(URL.createObjectURL(new Blob(chunks)));a.play();
+            document.getElementById("micState").textContent="playing back…";
+          };
+          rec.start();document.getElementById("micState").textContent="recording…";
+          setTimeout(()=>rec.stop(),3000);
+        }catch(err){document.getElementById("micState").textContent="mic unavailable: "+err.message}
+      };
+      return()=>{if(stream)stream.getTracks().forEach(t=>t.stop())}
+    }
+  },
+  webcam:{
+    title:"Webcam test",
+    hint:"A live preview should appear — check focus, color, artifacts.",
+    start(_,body){
+      body.innerHTML='<video autoplay playsinline muted></video><div class="metrics" id="camState"></div>';
+      let stream;
+      navigator.mediaDevices.getUserMedia({video:true}).then(s=>{
+        stream=s;body.querySelector("video").srcObject=s;
+        const t=s.getVideoTracks()[0];
+        document.getElementById("camState").textContent=t.label||"camera active";
+      }).catch(err=>document.getElementById("camState").textContent="camera unavailable: "+err.message);
+      return()=>{if(stream)stream.getTracks().forEach(t=>t.stop())}
+    }
+  },
+  touchscreen:{
+    title:"Touch screen test — full screen",
+    hint:"Drag across the WHOLE screen until every cell lights. Edges and corners matter most. The counter shows simultaneous fingers for multi-touch. No touch input? Skip.",
+    start(stage,body){
+      document.getElementById("overlay").classList.add("touchmode");
+      const CELL=Math.max(46,Math.min(90,Math.round(window.innerWidth/24)));
+      const cols=Math.max(6,Math.floor(window.innerWidth/CELL));
+      const rows=Math.max(4,Math.floor(window.innerHeight/CELL));
+      const total=cols*rows;
+      stage.innerHTML="";
+      stage.style.cssText="position:absolute;inset:0;touch-action:none;display:grid;"+
+        `grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr);gap:2px;padding:2px;background:#05070A`;
+      const cells=[];
+      for(let i=0;i<total;i++){const c=document.createElement("div");
+        c.style.cssText="border-radius:4px;background:rgba(201,75,224,.10)";
+        stage.appendChild(c);cells.push(c);}
+      let hit=0,maxT=0;const active=new Set();
+      body.innerHTML=`<div class="metrics"><b><span id="tHit">0</span> / ${total}</b> cells · max simultaneous fingers: <b id="tMulti">0</b></div>`;
+      const rect=()=>stage.getBoundingClientRect();
+      const markAt=(x,y)=>{const r=rect();
+        const cx=Math.floor((x-r.left)/(r.width/cols)), cy=Math.floor((y-r.top)/(r.height/rows));
+        if(cx<0||cy<0||cx>=cols||cy>=rows)return;
+        const idx=cy*cols+cx, c=cells[idx];
+        if(c&&!c._hit){c._hit=true;hit++;c.style.background="var(--mag)";c.style.boxShadow="0 0 8px rgba(201,75,224,.55)";
+          document.getElementById("tHit").textContent=hit;
+          if(hit===total){document.getElementById("tHit").parentElement.innerHTML='<b style="color:var(--grn)">✓ whole screen covered</b> · max fingers: <b>'+maxT+'</b>';}}
+      };
+      const onDown=e=>{stage.setPointerCapture&&e.pointerId!=null&&(()=>{try{stage.setPointerCapture(e.pointerId)}catch(_){}})();
+        active.add(e.pointerId);maxT=Math.max(maxT,active.size);document.getElementById("tMulti").textContent=maxT;markAt(e.clientX,e.clientY);};
+      const onMove=e=>{if(e.pressure===0&&e.buttons===0&&e.pointerType==="mouse")return;
+        if(e.getCoalescedEvents){for(const ce of e.getCoalescedEvents())markAt(ce.clientX,ce.clientY);}
+        markAt(e.clientX,e.clientY);};
+      const onUp=e=>{active.delete(e.pointerId);};
+      stage.addEventListener("pointerdown",onDown);stage.addEventListener("pointermove",onMove);
+      stage.addEventListener("pointerup",onUp);stage.addEventListener("pointercancel",onUp);
+      current.details=()=>[`${hit}/${total} cells covered (${cols}×${rows}), max ${maxT} simultaneous fingers`];
+      return()=>{document.getElementById("overlay").classList.remove("touchmode");stage.innerHTML="";stage.style.cssText="position:absolute;inset:0";}
+    }
+  },
+  gpu_render:{
+    title:"GPU test — hardware, VRAM & sustained load",
+    hint:"Confirms the REAL GPU is doing the work (not software), verifies VRAM, then runs a heavy visible 3D load — watch for tearing, artifacts or freezes. Verdict posts itself.",
+    auto:true,
+    start(stage,body){
+      body.innerHTML=`<div id="glBadge" style="text-align:center;margin-bottom:6px"></div>
+        <canvas id="glc" width="720" height="405" style="border:1px solid var(--line);border-radius:8px;max-width:74vw;display:block;margin:0 auto;background:#000"></canvas>
+        <div class="metrics" id="glState" style="text-align:center;margin-top:6px">starting…</div>`;
+      const say=t=>{const el=document.getElementById("glState");if(el)el.textContent=t};
+      const setBadge=(txt,col)=>{const el=document.getElementById("glBadge");
+        if(el)el.innerHTML=`<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;background:${col};color:#0a0a0a">${txt}</span>`;};
+      const canvas=document.getElementById("glc");
+      let stop=false;
+      (async()=>{
+        const details=[];let verdict="pass";
+        try{
+          const attrs={preserveDrawingBuffer:true,antialias:false,powerPreference:"high-performance"};
+          const gl=canvas.getContext("webgl2",attrs)||canvas.getContext("webgl",attrs);
+          if(!gl)throw new Error("no WebGL context — the GPU driver isn't working at all");
+          const isGL2=(typeof WebGL2RenderingContext!=="undefined")&&(gl instanceof WebGL2RenderingContext);
+
+          // --- 1) which renderer, and is it the REAL GPU or a software fallback? ---
+          const dbg=gl.getExtension("WEBGL_debug_renderer_info");
+          const renderer=dbg?String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)||""):"";
+          const vendor=dbg?String(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL)||""):"";
+          const softRe=/swiftshader|llvmpipe|softpipe|software|basic render|microsoft basic|mesa offscreen|apple software/i;
+          const isSoft=softRe.test(renderer)||softRe.test(vendor);
+          details.push("renderer: "+(renderer||"(masked by driver)"));
+          if(vendor)details.push("vendor: "+vendor);
+          details.push("API: "+(isGL2?"WebGL 2":"WebGL 1"));
+          if(isSoft){
+            verdict="fail";
+            details.push("FAIL: SOFTWARE rendering — the CPU is drawing, the real GPU/driver is NOT being used. Check the GPU driver/firmware.");
+            setBadge("⚠ SOFTWARE RENDERER — GPU NOT ACCELERATED","#e0c070");
+          }else{
+            setBadge((renderer||"GPU").slice(0,54)+"  ·  "+(isGL2?"WebGL2":"WebGL1"),"#37b6ff");
+          }
+
+          // --- 2) correctness: a solid clear must read back bit-exact ---
+          say("correctness readback…");
+          gl.clearColor(32/255,64/255,96/255,1);gl.clear(gl.COLOR_BUFFER_BIT);
+          const px=new Uint8Array(4);gl.readPixels(10,10,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);
+          if(px[0]!==32||px[1]!==64||px[2]!==96){verdict="fail";
+            details.push(`FAIL: framebuffer readback ${px[0]},${px[1]},${px[2]} (expected 32,64,96) — GPU output is corrupt`);}
+          else details.push("framebuffer readback exact");
+
+          // --- 3) VRAM sweep: write patterned textures, verify each by readback ---
+          say("VRAM pattern sweep…");
+          const texMB=16, texSide=Math.sqrt(texMB*1048576/4)|0, count=24; // up to ~384 MB
+          let vramOK=0, vramMB=0, allocFail=false;
+          const pat=new Uint8Array(texSide*texSide*4);
+          for(let t=0;t<count&&!stop;t++){
+            for(let i=0;i<pat.length;i+=4){pat[i]=(t*37+i)&255;pat[i+1]=((t*91+(i>>2))&255);pat[i+2]=t&255;pat[i+3]=255;}
+            const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+            gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,texSide,texSide,0,gl.RGBA,gl.UNSIGNED_BYTE,pat);
+            if(gl.getError()!==gl.NO_ERROR){allocFail=true;gl.deleteTexture(tex);break;}
+            const fb=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,fb);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);
+            const chk=new Uint8Array(4);gl.readPixels(texSide>>1,texSide>>1,1,1,gl.RGBA,gl.UNSIGNED_BYTE,chk);
+            const off=((texSide>>1)*texSide+(texSide>>1))*4;
+            if(chk[0]===pat[off]&&chk[1]===pat[off+1]&&chk[2]===pat[off+2]){vramOK++;vramMB+=texMB;}
+            else{verdict="fail";details.push(`FAIL: VRAM pattern mismatch on chunk ${t+1} — bad video memory`);}
+            gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.deleteFramebuffer(fb);gl.deleteTexture(tex);
+            say(`VRAM sweep ${vramMB} MB`);await new Promise(r=>setTimeout(r,0));
+          }
+          details.push(`VRAM: ${vramMB} MB of patterns verified${allocFail?" (allocation capped — normal on shared-memory iGPUs)":""}`);
+
+          // --- 4) heavy VISIBLE load: a raymarched scene fills the canvas so a
+          //         tech can SEE artifacts, and we measure sustained frame rate ---
+          say("render load — watch for artifacts…");
+          const vs="attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+          const fs=`precision highp float;uniform vec2 R;uniform float T;
+            float map(vec3 q){float d=1e9;for(int i=0;i<5;i++){
+              vec3 c=vec3(sin(T+float(i)*1.7),cos(T*1.1+float(i)),sin(T*0.7+float(i)*2.1))*1.6;
+              d=min(d,length(q-c)-0.55);}
+              d=min(d,length(vec2(length(q.xz)-2.2,q.y))-0.25);return d;}
+            void main(){vec2 uv=(gl_FragCoord.xy*2.-R)/R.y;
+              vec3 ro=vec3(0.,0.,-5.),rd=normalize(vec3(uv,1.6));
+              float ca=cos(T*.3),sa=sin(T*.3);ro.xz=mat2(ca,-sa,sa,ca)*ro.xz;rd.xz=mat2(ca,-sa,sa,ca)*rd.xz;
+              float t=0.;vec3 col=vec3(0.);
+              for(int i=0;i<90;i++){vec3 q=ro+rd*t;float d=map(q);
+                if(d<0.002){vec3 n=normalize(vec3(
+                  map(q+vec3(.01,0,0))-map(q-vec3(.01,0,0)),
+                  map(q+vec3(0,.01,0))-map(q-vec3(0,.01,0)),
+                  map(q+vec3(0,0,.01))-map(q-vec3(0,0,.01))));
+                  float dif=max(dot(n,normalize(vec3(.6,.8,-.4))),0.);
+                  col=mix(vec3(.2,.4,.9),vec3(1.,.6,.2),n.y*.5+.5)*(dif+.15);break;}
+                t+=d;if(t>20.)break;}
+              gl_FragColor=vec4(col,1.);}`;
+          const mk=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+            if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error("shader: "+gl.getShaderInfoLog(s));return s;};
+          const prog=gl.createProgram();gl.attachShader(prog,mk(gl.VERTEX_SHADER,vs));gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fs));
+          gl.linkProgram(prog);
+          if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw new Error("link: "+gl.getProgramInfoLog(prog));
+          gl.useProgram(prog);
+          const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+          gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+          const loc=gl.getAttribLocation(prog,"p");gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+          gl.uniform2f(gl.getUniformLocation(prog,"R"),canvas.width,canvas.height);
+          const uT=gl.getUniformLocation(prog,"T");
+          let frames=0,worst=0;const t0=performance.now();let prev=t0;
+          await new Promise(res=>{const loop=()=>{
+            const now=performance.now();
+            if(stop||now-t0>4000)return res();
+            worst=Math.max(worst,now-prev);prev=now;
+            gl.uniform1f(uT,(now-t0)/1000);gl.drawArrays(gl.TRIANGLES,0,3);
+            frames++;requestAnimationFrame(loop);};loop();});
+          gl.finish&&gl.finish();
+          const secs=(performance.now()-t0)/1000, fps=frames/secs;
+          details.push(`render load: ${fps.toFixed(0)} FPS avg, worst frame ${worst.toFixed(0)} ms`);
+          if(!isSoft&&verdict==="pass"){
+            if(fps<20){verdict="fail";details.push("FAIL: under 20 FPS on a real GPU — the card is faulty, throttling, or barely coping");}
+            else if(fps<45||worst>120){verdict="warn";details.push("marginal frame rate / stutter — check thermals, artifacts, and driver");}
+          }
+          if(isSoft&&fps<15)details.push("(software renderer is also very slow, as expected)");
+          say(`done — ${verdict.toUpperCase()} · ${fps.toFixed(0)} FPS`+(isSoft?" · SOFTWARE":""));
+        }catch(err){verdict="fail";details.push("error: "+err.message);say("failed: "+err.message);
+          setBadge("✗ GPU TEST FAILED","#ff5a5a");}
+        if(!stop&&current&&current.id==="gpu_render"){
+          await api("/api/interactive/gpu_render",{method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({verdict,summary:details.find(d=>d.startsWith("FAIL"))||details[details.length-1],details})});
+          setTimeout(closeOverlay,2200);
+        }
+      })();
+      return()=>{stop=true}
+    }
+  },
+  audio_loopback:{
+    title:"Audio loopback (automatic)",
+    hint:"Turn the volume up. Three tones play through the speakers; the microphone must hear each one at the right frequency.",
+    auto:true,
+    start(_,body){
+      body.innerHTML='<div class="metrics" id="alState">requesting microphone…</div>';
+      const say=t=>{const el=document.getElementById("alState");if(el)el.textContent=t};
+      let stop=false,stream,ctx;
+      (async()=>{
+        const details=[];let heard=0;const freqs=[440,1000,2600];
+        try{
+          stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false}});
+          ctx=new (window.AudioContext||window.webkitAudioContext)();
+          const src=ctx.createMediaStreamSource(stream);
+          const an=ctx.createAnalyser();an.fftSize=4096;src.connect(an);
+          const bins=new Float32Array(an.frequencyBinCount);
+          const hz=i=>i*ctx.sampleRate/an.fftSize;
+          for(const f of freqs){
+            if(stop)return;
+            say(`playing ${f} Hz…`);
+            const osc=ctx.createOscillator(),g=ctx.createGain();
+            osc.frequency.value=f;g.gain.value=.5;
+            osc.connect(g).connect(ctx.destination);osc.start();
+            let best=-200,bestF=0;
+            const t0=performance.now();
+            while(performance.now()-t0<900){
+              await new Promise(r=>setTimeout(r,80));
+              an.getFloatFrequencyData(bins);
+              let mi=0;for(let i=2;i<bins.length;i++)if(bins[i]>bins[mi])mi=i;
+              if(bins[mi]>best){best=bins[mi];bestF=hz(mi)}
+            }
+            osc.stop();
+            const ok=Math.abs(bestF-f)<70&&best>-90;
+            if(ok)heard++;
+            details.push(`${f} Hz → mic heard ${bestF.toFixed(0)} Hz @ ${best.toFixed(0)} dB ${ok?"✔":"✘"}`);
+            await new Promise(r=>setTimeout(r,250));
+          }
+          const verdict=heard===freqs.length?"pass":heard>0?"warn":"fail";
+          const summary=`${heard}/${freqs.length} tones heard by the microphone`;
+          say(`done — ${verdict.toUpperCase()}: ${summary}`);
+          if(!stop&&current&&current.id==="audio_loopback"){
+            await api("/api/interactive/audio_loopback",{method:"POST",headers:{"Content-Type":"application/json"},
+              body:JSON.stringify({verdict,summary,details})});
+            setTimeout(closeOverlay,1600);
+          }
+        }catch(err){
+          say("microphone unavailable: "+err.message);
+          if(current&&current.id==="audio_loopback"){
+            await api("/api/interactive/audio_loopback",{method:"POST",headers:{"Content-Type":"application/json"},
+              body:JSON.stringify({verdict:"skip",summary:"no microphone — loopback skipped",details:[String(err.message)]})});
+            setTimeout(closeOverlay,1600);
+          }
+        }
+      })();
+      return()=>{stop=true;if(stream)stream.getTracks().forEach(t=>t.stop());if(ctx)ctx.close()}
+    }
+  },
+  storage_speed_live:{
+    title:"Storage speed — live read test & region sweep",
+    hint:"Reads the drive only, never writes. Pick a drive, then watch sequential + 4k random speed and a bandwidth bar built across the whole disk. A region far slower than its neighbours, or a high worst-case latency, points at a weak or failing surface. The verdict posts itself.",
+    async start(_,body){
+      body.innerHTML=`<div style="max-width:640px;margin:0 auto;text-align:left">
+        <div class="row" style="justify-content:flex-start;gap:8px;align-items:center">
+          <select id="lsDev" style="min-width:300px"><option>loading drives…</option></select>
+          <button id="lsGo" class="primary" disabled>▶ Start read test</button>
+        </div>
+        <div id="lsLive" style="display:none;margin-top:12px">
+          <div class="metrics" id="lsTop"></div>
+          <div id="lsRegions" style="margin-top:8px;display:flex;flex-direction:column;gap:5px"></div>
+          <div class="metrics" id="lsMsg" style="margin-top:10px">…</div>
+        </div></div>`;
+      let done=false;
+      try{
+        const {targets}=await api("/api/livetest/storage/targets");
+        const sel=$("lsDev");
+        if(!targets.length){sel.innerHTML='<option value="">no internal drives detected</option>';}
+        else{sel.innerHTML=targets.map(t=>`<option value="${esc_(t.path)}">${esc_(t.label)} · ${t.size_gb} GB · ${t.kind}</option>`).join("");$("lsGo").disabled=false;}
+      }catch(e){$("lsDev").innerHTML='<option value="">could not list drives</option>';}
+      const fmt=v=>v==null?"—":(v>=1000?(v/1000).toFixed(2)+" GB/s":v.toFixed(0)+" MB/s");
+      const render=ev=>{
+        $("lsLive").style.display="block";
+        const top=[];
+        if(ev.seq_mbs!=null)top.push("Seq read: <b>"+fmt(ev.seq_mbs)+"</b>");
+        if(ev.rand_iops!=null)top.push("4k random: <b>"+Math.round(ev.rand_iops).toLocaleString()+" IOPS</b>");
+        if(ev.metrics&&ev.metrics.Latency)top.push("Latency: <b>"+ev.metrics.Latency+"</b>");
+        if(ev.worst_lat_ms!=null)top.push("Worst latency: <b>"+ev.worst_lat_ms.toFixed(0)+" ms</b>");
+        $("lsTop").innerHTML=top.join(" &nbsp;·&nbsp; ");
+        const regs=ev.regions||[];
+        const mx=Math.max(1,...regs.map(r=>r.mbs||0));
+        $("lsRegions").innerHTML=regs.map(r=>{
+          const w=Math.round((r.mbs||0)/mx*100), col=r.errors?"var(--red)":"var(--blu)";
+          return `<div style="display:flex;align-items:center;gap:9px">
+            <span class="metrics dim" style="width:40px;text-align:right">${r.pct}%</span>
+            <div style="flex:1;background:#0f1620;border-radius:4px;overflow:hidden;height:16px">
+              <div style="width:${w}%;height:100%;background:${col};transition:width .2s"></div></div>
+            <span class="metrics" style="width:104px;text-align:right">${r.errors?("⚠ "+r.errors+" err"):fmt(r.mbs)}</span></div>`;
+        }).join("");
+        const vc=ev.verdict==="pass"?"var(--grn)":ev.verdict==="warn"?"var(--amb)":"var(--red)";
+        if((ev.status==="done"||ev.status==="failed")){
+          $("lsMsg").innerHTML=`<b style="color:${vc}">${(ev.verdict||"").toUpperCase()}</b> — ${esc_(ev.message||"")}`;
+          if(!done){done=true;
+            if(current){current.details=()=>ev.details||[];
+              if(current.id==="storage_speed_live")api("/api/interactive/storage_speed_live",{method:"POST",headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({verdict:ev.verdict||"error",summary:ev.message||"",details:ev.details||[]})}).catch(()=>{});}}
+        }else{$("lsMsg").textContent=ev.message||"";}
+      };
+      liveHandler=ev=>{if(ev.kind==="storage")render(ev);};
+      $("lsGo").onclick=async()=>{
+        const dev=$("lsDev").value;if(!dev)return;
+        $("lsGo").disabled=true;$("lsLive").style.display="block";$("lsMsg").textContent="starting…";done=false;
+        try{await api("/api/livetest/storage/start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({device:dev})});}
+        catch(e){$("lsMsg").textContent="could not start: "+e.message;$("lsGo").disabled=false;}
+      };
+      return ()=>{liveHandler=null;};
+    }
+  },
+  ram_stress_live:{
+    title:"Memory stress — live load + pattern suite",
+    hint:"Locks a safe slice of free RAM and hammers it. Phase 1 is a timed load-stress; phase 2 runs the classic pattern algorithms (walking ones, checkerboard…), each lighting up as it passes. The full-range sweep is Memtest86+ on the boot menu. The verdict posts itself.",
+    start(_,body){
+      body.innerHTML=`<div style="max-width:640px;margin:0 auto;text-align:left">
+        <div class="row" style="justify-content:flex-start;gap:8px;align-items:center">
+          <select id="rsMode"><option value="quick">Quick · ~45s stress + 512 MB patterns</option>
+            <option value="thorough">Thorough · ~2.5 min stress + 2 GB patterns</option></select>
+          <button id="rsGo" class="primary">▶ Start memory test</button>
+        </div>
+        <div id="rsLive" style="display:none;margin-top:12px">
+          <div class="metrics" id="rsSummary"></div>
+          <div style="margin-top:10px"><div class="metrics dim">Phase 1 · load stress</div>
+            <div style="background:#0f1620;border-radius:4px;overflow:hidden;height:14px;margin-top:4px">
+              <div id="rsBar" style="width:0%;height:100%;background:var(--blu);transition:width .25s linear"></div></div>
+            <div class="metrics" id="rsStress" style="margin-top:4px"></div></div>
+          <div style="margin-top:12px"><div class="metrics dim">Phase 2 · pattern suite</div>
+            <div id="rsPatterns" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px"></div></div>
+          <div class="metrics" id="rsMsg" style="margin-top:10px"></div>
+        </div></div>`;
+      let done=false,raf=null,t0=0,dur=0;
+      const setBar=p=>{const b=$("rsBar");if(b)b.style.width=Math.max(0,Math.min(100,p))+"%";};
+      const tick=()=>{if(!dur)return;const el=(performance.now()-t0)/1000;setBar(el/dur*100);
+        const s=$("rsStress");if(s)s.textContent=`stressing… ${el.toFixed(0)}s / ${dur}s`;
+        if(el<dur)raf=requestAnimationFrame(tick);};
+      const render=ev=>{
+        $("rsLive").style.display="block";
+        const s=[];
+        if(ev.total_mb)s.push("Total RAM: <b>"+(ev.total_mb/1024).toFixed(1)+" GB</b>");
+        if(ev.tested_mb)s.push("Under test: <b>"+ev.tested_mb.toLocaleString()+" MB</b>");
+        $("rsSummary").innerHTML=s.join(" &nbsp;·&nbsp; ");
+        if(ev.phase==="stress"){
+          if(ev.phase_status==="running"&&!raf&&ev.duration){dur=ev.duration;t0=performance.now();raf=requestAnimationFrame(tick);}
+          if(ev.phase_status==="done"){if(raf){cancelAnimationFrame(raf);raf=null;}setBar(100);
+            const bits=[];if(ev.incidents!=null)bits.push(ev.incidents+" incident(s)");if(ev.bandwidth)bits.push(ev.bandwidth);
+            $("rsStress").innerHTML="stress pass complete"+(bits.length?" · "+bits.join(" · "):"");}
+        }
+        if((ev.patterns||[]).length){
+          $("rsPatterns").innerHTML=ev.patterns.map(p=>{
+            const bg=p.ok?"#12331f":"#331414", fg=p.ok?"var(--grn)":"var(--red)";
+            return `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${bg};color:${fg};border:1px solid ${fg}">${p.ok?"✓":"✗"} ${esc_(p.name)}</span>`;
+          }).join("");
+        }else if(ev.phase==="patterns"&&ev.phase_status==="running"){
+          $("rsPatterns").innerHTML='<span class="metrics dim">running pattern algorithms…</span>';
+        }
+        const vc=ev.verdict==="pass"?"var(--grn)":ev.verdict==="warn"?"var(--amb)":"var(--red)";
+        if((ev.status==="done"||ev.status==="failed")){
+          $("rsMsg").innerHTML=`<b style="color:${vc}">${(ev.verdict||"").toUpperCase()}</b> — ${esc_(ev.message||"")}`;
+          if(!done){done=true;
+            if(current){current.details=()=>ev.details||[];
+              if(current.id==="ram_stress_live")api("/api/interactive/ram_stress_live",{method:"POST",headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({verdict:ev.verdict||"error",summary:ev.message||"",details:ev.details||[]})}).catch(()=>{});}}
+        }else{$("rsMsg").textContent=ev.message||"";}
+      };
+      liveHandler=ev=>{if(ev.kind==="ram")render(ev);};
+      $("rsGo").onclick=async()=>{
+        $("rsGo").disabled=true;$("rsLive").style.display="block";$("rsMsg").textContent="starting…";
+        done=false;setBar(0);$("rsPatterns").innerHTML="";$("rsStress").textContent="";
+        try{await api("/api/livetest/ram/start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:$("rsMode").value})});}
+        catch(e){$("rsMsg").textContent="could not start: "+e.message;$("rsGo").disabled=false;}
+      };
+      return ()=>{liveHandler=null;if(raf)cancelAnimationFrame(raf);};
+    }
+  },
+  usb_portwalk:{
+    title:"USB port walk",
+    hint:"Take one known-good USB device and move it through every physical port. Each port where it appears lights up below; a silent port is dead.",
+    start(_,body){
+      body.innerHTML='<div class="metrics"><span id="usbHits">0</span> appearance(s) detected</div><div id="usbList"></div>';
+      let last=null,hits=0,timer;
+      const poll=async()=>{
+        try{
+          const {devices}=await api("/api/usb");
+          if(last){
+            const key=d=>d.bus+":"+d.device+":"+d.id;
+            const prev=new Set(last.map(key));
+            devices.filter(d=>!prev.has(key(d))).forEach(d=>{
+              hits++;document.getElementById("usbHits").textContent=hits;
+              const div=document.createElement("div");div.className="usbNew";
+              div.textContent=`+ bus ${d.bus} · ${d.id} · ${d.name||"device"}`;
+              document.getElementById("usbList").prepend(div);
+            });
+          }
+          last=devices;
+        }catch(e){}
+        timer=setTimeout(poll,1000);
+      };
+      poll();
+      current.details=()=>[`${hits} device appearance(s) during walk`];
+      return()=>clearTimeout(timer)
+    }
+  }
+};
+function openInteractive(id){
+  const def=INTERACTIVE[id];if(!def)return;
+  current={id,details:null};
+  $("ovTitle").textContent=def.title;$("ovHint").textContent=def.hint;
+  $("ovBody").innerHTML="";$("ovStage").style.background="";
+  $("overlay").classList.add("show");
+  cleanup=def.start($("ovStage"),$("ovBody"))||null;
+}
+function closeOverlay(){
+  if(cleanup){try{cleanup()}catch(e){}cleanup=null}
+  $("overlay").classList.remove("show");current=null;
+}
+async function finishInteractive(verdict){
+  if(!current)return;
+  const details=current.details?current.details():[];
+  await api(`/api/interactive/${current.id}`,{method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({verdict,summary:`technician marked ${verdict}`,details})});
+  closeOverlay();
+}
+document.addEventListener("keydown",e=>{if(e.code==="Escape")closeOverlay()});
+
+/* ---- drive erase ---------------------------------------------------- */
+let eraseTargets=[];
+async function loadEraseTargets(){
+  try{
+    const data=await api("/api/erase/targets");
+    eraseTargets=data.targets;
+    $("erDev").innerHTML=eraseTargets.length
+      ?eraseTargets.map(t=>`<option value="${t.path}">${esc_(t.model||t.path)} — ${t.path} · ${t.size_gb} GB</option>`).join("")
+      :"<option value=''>no erasable drives (boot stick is protected)</option>";
+    onEraseDevChange();
+  }catch(e){$("erDev").innerHTML="<option value=''>erase targets unavailable</option>"}
+}
+function onEraseDevChange(){
+  const t=eraseTargets.find(x=>x.path===$("erDev").value);
+  $("erMethod").innerHTML=t?t.methods.map(m=>
+    `<option value="${m.id}" ${m.blocked?"disabled":""}>${esc_(m.label)} · NIST ${m.nist}${m.blocked?" — "+esc_(m.blocked):""}</option>`).join(""):"";
+  $("erConfirm").value="";
+  $("erConfirm").placeholder="type: ERASE";
+  checkEraseReady();
+}
+function checkEraseReady(){
+  const dev=$("erDev").value;
+  // The word ERASE alone confirms (drive is already picked); the longer
+  // "ERASE <path>" form still works.
+  const c=$("erConfirm").value.trim().toUpperCase();
+  const ok=(c==="ERASE"||c===`ERASE ${dev}`.toUpperCase());
+  $("erGo").disabled=!(dev&&ok&&$("erMethod").value);
+}
+$("erDev").addEventListener("change",onEraseDevChange);
+$("erConfirm").addEventListener("input",checkEraseReady);
+$("erGo").onclick=async()=>{
+  const dev=$("erDev").value;
+  try{
+    await api("/api/erase/start",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({device:dev,method:$("erMethod").value,confirm:$("erConfirm").value})});
+    $("erProgWrap").style.display="block";$("erGo").disabled=true;
+    $("erCert").style.display="none";$("erOut").textContent="";
+  }catch(e){$("erOut").textContent=String(e.message||e)}
+};
+function onEraseEvent(ev){
+  $("erProgWrap").style.display="block";
+  $("erBar").style.width=(ev.progress||0)+"%";
+  $("erMsg").textContent=`${ev.status.toUpperCase()} · ${ev.progress}% · ${ev.message||""}`;
+  if(ev.status==="done"||ev.status==="failed"){
+    $("erCert").style.display="block";
+    $("erGo").disabled=false;$("erConfirm").value="";
+    toast(ev.status==="done"?"Erase complete — generate the certificate":"Erase FAILED — see log");
+  }
+}
+$("erCert").onclick=async()=>{
+  const r=await api("/api/erase/certificate",{method:"POST"});
+  $("erOut").innerHTML=`${esc_(r.pdf)}<br>${esc_(r.json)}<br>→ ${esc_(r.dir)}`;
+  toast("Sanitization certificate written — "+r.pdf);
+};
+
+/* ==== Windows migration (clone internal disk -> USB/enclosure) ====== */
+let migTargets=[];
+async function loadMigrateTargets(){
+  try{
+    const src=$("migSrc").value;
+    const d=await api("/api/migrate/targets"+(src?("?source="+encodeURIComponent(src)):""));
+    if(!$("migSrc").value){
+      $("migSrc").innerHTML=(d.sources||[]).length?
+        (d.sources||[]).map(s=>`<option value="${s.path}">${esc_(s.model)} — ${esc_(s.path)} · ${s.size_h}${s.bitlocker?" · BitLocker":""}</option>`).join(""):
+        '<option value="">no internal Windows disk detected</option>';
+      // when nothing matched, show what the disk probe actually saw
+      if(d.diag){$("migDiag").textContent="probe saw — "+d.diag;$("migDiag").style.display="block";}
+      else{$("migDiag").style.display="none";}
+    }
+    // never offer the source disk as its own target (server excludes it too,
+    // but the very first scan runs before the source dropdown has a value)
+    const chosen=$("migSrc").value||d.source||"";
+    migTargets=(d.targets||[]).filter(t=>t.path!==chosen);
+    $("migDst").innerHTML=migTargets.length?
+      ('<option value="">choose target…</option>'+migTargets.map(t=>
+        `<option value="${t.path}">${esc_(t.model)} — ${t.path} · ${t.size_h}${t.bus?(" · "+t.bus):""}${t.removable?" (removable)":""}${migFitTag(t)}${t.has_data?" · HAS DATA":" · blank"}</option>`).join("")):
+      '<option value="">plug in the new drive (USB/enclosure), then ↻ Rescan</option>';
+    migCheck();
+  }catch(e){$("migSrc").innerHTML='<option value="">could not scan drives</option>';}
+}
+function migFitTag(t){ return t.fits?"":(t.fits_resized?" — SHRINK TO FIT":" — TOO SMALL"); }
+function migCheck(){
+  const dst=migTargets.find(t=>t.path===$("migDst").value);
+  let warn="", usable=false;
+  if(dst){
+    if(dst.fits){usable=true;
+      warn=dst.has_data?("⚠ Everything currently on "+dst.path+" will be permanently erased."):"Target is blank — a full clone will be made.";}
+    else if(dst.fits_resized){usable=true;
+      warn="↔ Smaller drive: Windows will be SHRUNK to fit and copied file-by-file, then the boot rebuilt (not a byte-exact clone). "+(dst.has_data?("Everything on "+dst.path+" is erased."):"Target is blank.");}
+    else warn="⚠ Too small even to shrink — the used data needs about "+(dst.min_fit_h||"?")+". Use a larger drive.";
+  }
+  $("migWarn").textContent=warn;
+  // button label reflects clone vs shrink-copy
+  $("migGo").textContent=(dst&&!dst.fits&&dst.fits_resized)?"⇄ SHRINK + COPY WINDOWS TO TARGET (erases target)":"⇄ CLONE WINDOWS TO TARGET (erases target)";
+  const c=$("migConfirm").value.trim().toUpperCase();
+  const ready=usable&&c==="MIGRATE";
+  $("migGo").disabled=!ready;
+}
+$("migSrc").addEventListener("change",loadMigrateTargets);
+$("migDst").addEventListener("change",migCheck);
+$("migConfirm").addEventListener("input",migCheck);
+$("migRescan").onclick=async()=>{$("migRescan").disabled=true;await loadMigrateTargets();$("migRescan").disabled=false;toast("Rescanned drives");};
+$("migGo").onclick=async()=>{
+  const src=$("migSrc").value, dst=$("migDst").value;
+  $("migGo").disabled=true;$("migProgWrap").style.display="block";$("migOut").textContent="";
+  try{
+    const r=await fetch("/api/migrate/start",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({source:src,dest:dst,confirm:$("migConfirm").value})}).then(x=>x.json());
+    if(!r.ok){$("migOut").textContent=r.error||"could not start";$("migGo").disabled=false;}
+  }catch(e){$("migOut").textContent="could not start migration";$("migGo").disabled=false;}
+};
+function onMigrateEvent(ev){
+  $("migProgWrap").style.display="block";
+  $("migBar").style.width=(ev.progress||0)+"%";
+  $("migMsg").textContent=`${ev.status.toUpperCase()} · ${ev.progress}% · ${ev.message||""}`+(ev.cmd&&ev.status==="running"?` · ▶ ${ev.cmd}`:"");
+  if(ev.steps)$("migSteps").textContent=(ev.steps||[]).slice(-8).join("\n");
+  if(ev.status==="done"||ev.status==="failed"){
+    $("migConfirm").value="";
+    toast(ev.status==="done"?"Migration complete — swap the new drive in":"Migration FAILED — see steps");
+  }
+}
+
+/* ==== Fresh Windows install (deploy Win10/11 from ISO on stick) ===== */
+let wiTargets=[], wiIsos=[], wiOobeUser="Home", wiReadiness=null, wiLimits={esp_mib:260,msr_mib:16,slack_mib:3,min_windows_gib:32,min_data_gib:1,data_label:"Data"};
+let wiPhaseNames=["release the target","partition","format","apply the image","boot files (EFI + BCD)","first-boot setup","finish"];
+function wiReadyLine(rd){
+  if(!rd){$("wiReady").textContent="";return;}
+  const bits=[`TPM ${rd.tpm||"?"}`,`Secure Boot ${rd.secure_boot===true?"on":(rd.secure_boot===false?"off":"?")}`,rd.uefi?"UEFI":"legacy BIOS",esc_(rd.cpu_note||rd.cpu||"CPU ?")];
+  let verdict;
+  if(rd.verdict==="supported")verdict='<span class="pill supported">passes</span> this PC passes Microsoft\'s Windows 11 check — a normal upgrade works; staging here is still fine (it just skips nothing).';
+  else if(rd.verdict==="unsupported")verdict='<span class="pill unsupported">fails</span> this PC fails the check ('+esc_((rd.reasons||[]).join("; "))+') — use the staging below.';
+  else if(rd.verdict==="impossible")verdict='<span class="pill impossible">blocked</span> '+esc_((rd.hard_blocks||[]).join("; "))+' — Windows 11 cannot run on this CPU, bypass or not.';
+  else verdict='<span class="pill unknown">unknown</span> could not fully check this PC ('+esc_((rd.reasons||[]).join("; ")||"CPU not recognised")+').';
+  $("wiReady").innerHTML="This PC: "+bits.join(" · ")+" — "+verdict;
+}
+async function loadWinstall(){
+  try{
+    const d=await api("/api/winstall/isos");
+    wiIsos=d.isos||[];
+    wiOobeUser=d.oobe_user||"Home";
+    if(d.layout_limits)wiLimits=d.layout_limits;
+    if(d.phases&&d.phases.length)wiPhaseNames=d.phases;
+    wiReadiness=d.readiness||null; wiReadyLine(wiReadiness);
+    $("wiIso").innerHTML=wiIsos.length?
+      ('<option value="">choose ISO…</option>'+wiIsos.map(i=>
+        `<option value="${esc_(i.path)}">${esc_(i.name)} · ${i.size_h}</option>`).join("")):
+      '<option value="">no Windows 10/11 ISO on the stick — copy one on, then ↻ Rescan</option>';
+    wiTargets=d.targets||[];
+    $("wiDst").innerHTML=wiTargets.length?
+      ('<option value="">choose target…</option>'+wiTargets.map(t=>
+        `<option value="${t.path}">${esc_(t.model)} — ${t.path} · ${t.size_h}${t.bus?(" · "+t.bus):""}${t.removable?" (removable)":""}${t.fits?"":" — TOO SMALL"}${t.has_data?" · HAS DATA":" · blank"}</option>`).join("")):
+      '<option value="">plug in the target drive, then ↻ Rescan</option>';
+    // recovered-data sets: newest first from the server; pre-select the newest.
+    const recs=d.recovered||[];
+    $("wiRestore").innerHTML='<option value="">Don\'t restore any files</option>'+recs.map(r=>
+      `<option value="${esc_(r.path)}">${esc_(r.serial)} · ${r.when} · ${r.size_h} (${r.files} files) — on ${esc_(r.drive)}</option>`).join("");
+    if(recs.length)$("wiRestore").value=recs[0].path;   // auto-detect latest, tech can override
+    $("wiEd").innerHTML='<option value="">pick an ISO first</option>';
+    wiPhaseChips(null);
+    wiCheck();
+  }catch(e){$("wiIso").innerHTML='<option value="">could not scan the stick</option>';}
+}
+async function loadWinEditions(){
+  const iso=$("wiIso").value;
+  if(!iso){$("wiEd").innerHTML='<option value="">pick an ISO first</option>';wiCheck();return;}
+  $("wiEd").innerHTML='<option value="">reading editions…</option>';
+  try{
+    const d=await api("/api/winstall/editions?iso="+encodeURIComponent(iso));
+    const eds=d.editions||[];
+    $("wiEd").innerHTML=eds.length?
+      ('<option value="">choose edition…</option>'+eds.map(e=>
+        `<option value="${e.index}">${esc_(e.name||("image "+e.index))}</option>`).join("")):
+      `<option value="">${esc_(d.message||"no editions found in this ISO")}</option>`;
+  }catch(e){$("wiEd").innerHTML='<option value="">could not read editions</option>';}
+  wiCheck();
+}
+function wiModeNote(){
+  const m=$("wiMode").value;
+  $("wiOobe").innerHTML = (m==="customer")
+    ? 'Keeps OOBE: the machine boots into the normal Windows setup screens (with the Microsoft-account requirement relaxed so a local account works offline). Any restored files land in a <span class="mono">Recovered files</span> folder on the desktop after the customer signs in.'
+    : 'Skips OOBE: creates a local <b>admin "Home"</b> (blank password, auto-login) that boots straight to the desktop. Any restored files land in a <span class="mono">Recovered files</span> folder there.';
+}
+/* ---- partition layout (mirrors winstall.layout_plan; the server re-checks) */
+function wiLayout(){
+  const custom=$("wiLayout").value==="custom";
+  if(!custom)return {windows_gib:0,data:false};
+  return {custom:true,windows_gib:parseInt($("wiWinGb").value,10)||0,data:$("wiRest").value==="data",data_label:wiLimits.data_label||"Data"};
+}
+function wiUsableGib(dst){
+  if(!dst)return 0;
+  return Math.floor((Math.floor(dst.size/1048576)-wiLimits.esp_mib-wiLimits.msr_mib-wiLimits.slack_mib)/1024);
+}
+function wiPlanText(dst){
+  // returns {ok, text}; same rules as the server (which has the final say)
+  const lay=wiLayout(), L=wiLimits;
+  if(!dst)return {ok:false,text:""};
+  const usable=wiUsableGib(dst);
+  const gb=n=>n>=1024?(n/1024).toFixed(1)+" TB":n+" GB";
+  if(lay.custom&&!lay.windows_gib)return {ok:false,text:`enter the size of C: (${L.min_windows_gib} – ${usable-(lay.data?L.min_data_gib:0)} GB)`};
+  if(!lay.windows_gib)return {ok:true,text:`EFI ${L.esp_mib} MB · MSR ${L.msr_mib} MB · Windows ${gb(usable)} (rest of the drive)`};
+  if(lay.windows_gib<L.min_windows_gib)return {ok:false,text:`Windows needs at least ${L.min_windows_gib} GB`};
+  const maxw=usable-(lay.data?L.min_data_gib:0);
+  if(lay.windows_gib>maxw)return {ok:false,text:`Windows can be at most ${maxw} GB on this drive`+(lay.data?` with a Data partition of ${L.min_data_gib} GB+`:"")};
+  const rest=usable-lay.windows_gib;
+  let t=`EFI ${L.esp_mib} MB · MSR ${L.msr_mib} MB · Windows ${lay.windows_gib} GB`;
+  if(lay.data)t+=` · ${lay.data_label} ${gb(rest)} (rest of the drive)`;
+  else if(rest>0)t+=` · ${gb(rest)} left unallocated`;
+  return {ok:true,text:t};
+}
+function wiLayoutUi(){
+  const custom=$("wiLayout").value==="custom";
+  $("wiLayoutCustom").style.display=custom?"flex":"none";
+  const dst=wiTargets.find(t=>t.path===$("wiDst").value);
+  $("wiWinMax").textContent=dst?String(wiUsableGib(dst)-($("wiRest").value==="data"?wiLimits.min_data_gib:0)):"?";
+  const pl=wiPlanText(dst);
+  const el=$("wiPlan"); el.textContent=pl.text?("Plan: "+pl.text):""; el.classList.toggle("bad",!pl.ok&&!!pl.text);
+  return pl.ok;
+}
+function wiCheck(){
+  const dst=wiTargets.find(t=>t.path===$("wiDst").value);
+  let warn="";
+  if(dst){
+    if(!dst.fits)warn="⚠ Drive is too small for Windows — use 32 GB or larger.";
+    else if(dst.has_data)warn="⚠ Everything currently on "+dst.path+" will be permanently erased.";
+    else warn="Target is blank — good to go.";
+  }
+  $("wiWarn").textContent=warn;
+  const planOk=wiLayoutUi();
+  const c=$("wiConfirm").value.trim().toUpperCase();
+  const ready=$("wiIso").value&&$("wiEd").value&&dst&&dst.fits&&planOk&&c==="INSTALL";
+  $("wiGo").disabled=!ready;
+  // boot repair needs only a target + the word
+  $("wiRepair").disabled=!(dst&&$("wiRepairConfirm").value.trim().toUpperCase()==="REPAIR");
+  // upgrade staging: a Windows 11 ISO + the target holding Windows 10 + the word
+  const iso=wiIsos.find(i=>i.path===$("wiIso").value);
+  const blocked=wiReadiness&&wiReadiness.verdict==="impossible";
+  $("wiUpgrade").disabled=!(dst&&iso&&iso.release==="11"&&!blocked&&$("wiUpConfirm").value.trim().toUpperCase()==="UPGRADE");
+}
+$("wiIso").addEventListener("change",loadWinEditions);
+$("wiEd").addEventListener("change",wiCheck);
+$("wiDst").addEventListener("change",wiCheck);
+$("wiLayout").addEventListener("change",wiCheck);
+$("wiRest").addEventListener("change",wiCheck);
+$("wiWinGb").addEventListener("input",wiCheck);
+$("wiMode").addEventListener("change",wiModeNote);
+$("wiConfirm").addEventListener("input",wiCheck);
+$("wiRepairConfirm").addEventListener("input",wiCheck);
+$("wiUpConfirm").addEventListener("input",wiCheck);
+wiModeNote();
+function wiBegin(btn){
+  $(btn).disabled=true;$("wiOut").textContent="";$("wiBoot").style.display="none";
+  $("wiIdle").style.display="none";$("wiProgWrap").style.display="flex";
+  $("wiSteps").textContent="";$("wiMsg").textContent="starting…";$("wiBar").style.width="0%";
+}
+$("wiUpgrade").onclick=async()=>{
+  wiBegin("wiUpgrade");
+  try{
+    const r=await fetch("/api/winstall/upgrade",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({iso:$("wiIso").value,dest:$("wiDst").value,confirm:$("wiUpConfirm").value})}).then(x=>x.json());
+    if(!r.ok){$("wiOut").textContent=r.error||"could not start";$("wiUpgrade").disabled=false;}
+  }catch(e){$("wiOut").textContent="could not start upgrade staging";$("wiUpgrade").disabled=false;}
+};
+$("wiRepair").onclick=async()=>{
+  wiBegin("wiRepair");
+  try{
+    const r=await fetch("/api/winstall/repair-boot",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({dest:$("wiDst").value,confirm:$("wiRepairConfirm").value})}).then(x=>x.json());
+    if(!r.ok){$("wiOut").textContent=r.error||"could not start";$("wiRepair").disabled=false;}
+  }catch(e){$("wiOut").textContent="could not start boot repair";$("wiRepair").disabled=false;}
+};
+$("wiRescan").onclick=async()=>{$("wiRescan").disabled=true;await loadWinstall();$("wiRescan").disabled=false;toast("Rescanned");};
+$("wiGo").onclick=async()=>{
+  wiBegin("wiGo");
+  try{
+    const r=await fetch("/api/winstall/start",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({iso:$("wiIso").value,edition:parseInt($("wiEd").value,10),dest:$("wiDst").value,
+        confirm:$("wiConfirm").value,restore_from:$("wiRestore").value,oobe_mode:$("wiMode").value,layout:wiLayout()})}).then(x=>x.json());
+    if(!r.ok){$("wiOut").textContent=r.error||"could not start";$("wiGo").disabled=false;}
+  }catch(e){$("wiOut").textContent="could not start install";$("wiGo").disabled=false;}
+};
+/* ---- progress: phases, liveness, the running command ------------------
+   Three separate signals, because they fail separately:
+     · the bar/percent/message  — moves when the job makes progress
+     · "last update N s ago"    — the server heartbeats every ~5 s even while
+                                  a silent command (format, sync, apply) runs;
+                                  if THIS stops, the connection is gone and we
+                                  poll /api/winstall/state instead
+     · the running command      — what the job is waiting on, and for how long;
+                                  a per-tool time limit on the server kills a
+                                  wedged tool, so "stuck" here means "wait for
+                                  the server to give up and say why"           */
+const WI_QUIET=20, WI_LOST=45, WI_SLOW=180, WI_STUCK=600;
+let wiT0=0, wiLastAt=0, wiTick=null, wiLast=null, wiPoll=null, wiProgAt=0, wiProgKey="";
+function wiFmt(sec){sec=Math.max(0,Math.floor(sec));const m=Math.floor(sec/60),s=sec%60;
+  return m>=60?`${Math.floor(m/60)}h ${m%60}m`:(m?`${m}m ${String(s).padStart(2,"0")}s`:`${s}s`);}
+function wiPhaseChips(ev){
+  const names=(ev&&ev.phases&&ev.phases.length)?ev.phases:wiPhaseNames;
+  const cur=ev?(ev.phase||0):0, st=ev?ev.status:"idle";
+  $("wiPhases").innerHTML=names.map((n,i)=>{
+    const k=i+1; let cls="";
+    if(st==="done"||k<cur)cls="done";
+    else if(k===cur)cls=(st==="failed")?"fail":"now";
+    return `<span class="${cls}">${k} ${esc_(n)}${cls==="done"?" ✓":(cls==="now"?" ●":(cls==="fail"?" ✗":""))}</span>`;
+  }).join("");
+}
+function wiRefreshLive(){
+  const ev=wiLast; if(!ev||ev.status!=="running")return;
+  const now=Date.now();
+  const el=(now-wiT0)/1000, since=(now-wiLastAt)/1000;
+  const dot=$("wiDot"); dot.className="livedot"+(since>WI_LOST?" lost":(since>WI_QUIET?" quiet":""));
+  const bits=[`elapsed ${wiFmt(el)}`];
+  bits.push(since<2?"last update just now":`last update ${Math.floor(since)}s ago`);
+  if(ev.apply&&ev.apply.eta_s!=null)bits.push(`~${wiFmt(ev.apply.eta_s)} left in this phase`);
+  if(since>WI_LOST)bits.push("⚠ no word from the server — checking its state directly…");
+  else if(since>WI_QUIET)bits.push("⚠ heartbeat late");
+  $("wiElapsed").textContent=bits.join(" · ");
+  // the running command, with its own clock (server times, same machine)
+  const cmd=$("wiCmd");
+  if(ev.cmd){
+    const running=Math.max(0,(ev.now-ev.cmd_since))+since;
+    cmd.className="wicmd on"+(running>WI_STUCK?" stuck":(running>WI_SLOW?" slow":""));
+    let hint="";
+    if(running>WI_STUCK)hint=" — this is unusually long; BenchDiag stops a wedged tool at its time limit and reports which one (details in Reports/benchdiag.log)";
+    else if(running>WI_SLOW)hint=" — long steps (format, apply, sync on a slow USB drive) can be quiet for minutes";
+    cmd.textContent=`▶ ${ev.cmd} — running ${wiFmt(running)}${hint}`;
+  }else{cmd.className="wicmd";cmd.textContent="";}
+  if(since>WI_LOST&&!wiPoll){wiPoll=setInterval(wiPollState,5000);}
+}
+async function wiPollState(){
+  try{
+    const d=await api("/api/winstall/state");
+    if(d.job&&(!wiLast||d.job.updated!==wiLast.updated||d.job.status!==wiLast.status))onWinstallEvent(Object.assign({type:"winstall"},d.job));
+  }catch(e){}
+}
+function wiHeartbeat(on){
+  $("wiBarWrap").classList.toggle("live",on);
+  $("wiLive").style.display=on?"flex":"none";
+  if(on&&!wiTick){wiTick=setInterval(wiRefreshLive,1000);}
+  if(!on){ if(wiTick){clearInterval(wiTick);wiTick=null;} if(wiPoll){clearInterval(wiPoll);wiPoll=null;} $("wiCmd").className="wicmd"; }
+}
+function onWinstallEvent(ev){
+  wiLast=ev; wiLastAt=Date.now();
+  $("wiIdle").style.display="none";$("wiProgWrap").style.display="flex";
+  $("wiBar").style.width=(ev.progress||0)+"%";
+  const repair=ev.mode==="repair", upgrade=ev.mode==="upgrade";
+  const kind=repair?"REPAIR":(upgrade?"WIN11 UPGRADE":"INSTALL");
+  const ph=ev.phase?` · phase ${ev.phase}/${(ev.phases||[]).length||"?"} ${ev.phase_name||""}`:"";
+  $("wiMsg").textContent=`${kind} · ${ev.status.toUpperCase()} · ${ev.progress}%${ph} — ${ev.message||""}`;
+  const stPill=$("wiState"); stPill.textContent=ev.status; stPill.className="pill "+(ev.status==="done"?"ok":(ev.status==="failed"?"missing":"check"));
+  wiPhaseChips(ev);
+  if(ev.steps){const el=$("wiSteps");el.textContent=(ev.steps||[]).slice(-80).join("\n");el.scrollTop=el.scrollHeight;}
+  if(ev.boot_note){$("wiBoot").textContent=(upgrade?"Next: ":"Boot: ")+ev.boot_note;$("wiBoot").style.display="block";}
+  if(ev.status==="running"){
+    if(!wiT0||!wiTick)wiT0=(ev.started?ev.started*1000:Date.now());
+    wiHeartbeat(true); wiRefreshLive();
+    if(wiPoll&&(Date.now()-wiLastAt)/1000<WI_QUIET){clearInterval(wiPoll);wiPoll=null;}   // SSE is back
+  }
+  if(ev.status==="done"||ev.status==="failed"){
+    wiHeartbeat(false);wiT0=0;
+    $("wiElapsed").textContent="";
+    $("wiConfirm").value="";$("wiRepairConfirm").value="";$("wiUpConfirm").value="";wiCheck();
+    if(repair)toast(ev.status==="done"?"Boot repaired — reboot the target from its drive":"Boot repair FAILED — see steps");
+    else if(upgrade)toast(ev.status==="done"?"Windows 11 upgrade staged — boot Windows and run it from the desktop":"Upgrade staging FAILED — see steps");
+    else toast(ev.status==="done"?"Windows deployed — set target as boot drive":"Install FAILED — see steps");
+  }
+}
+wiPhaseChips(null);
+
+/* ==== Windows Recovery & Analysis =================================== */
+let winVols=[], curVol=null, curMount="", curUserData=null, aiKeyPresent=false, wifiPick="";
+// drive-map picks for recovery: volume-relative path -> {name,size,dir}
+let mapSel=new Map(), mapSelectMode=false;
+
+async function refreshNet(){
+  try{
+    const s=await api("/api/net/status");
+    $("netDot").className="netdot "+(s.online?"on":"off");
+    const bits=[];
+    if(s.dongle)bits.push("BenchTool dongle ("+esc_(s.dongle)+")");
+    else if(s.wired)bits.push("wired");
+    if(s.wifi_ssid)bits.push("Wi-Fi: "+esc_(s.wifi_ssid));
+    bits.push(s.online?"online":"offline");
+    $("netState").textContent=bits.join(" · ");
+    $("hNet").textContent=s.dongle?"dongle":(s.online?(s.wired?"wired":(s.wifi_ssid?"wifi":"online")):"offline");
+    $("hNet").style.color=(s.online||s.dongle)?"var(--grn)":"var(--dim)";
+  }catch(e){$("netState").textContent="network status unavailable";$("hNet").textContent="net —";}
+}
+$("wifiBtn").onclick=async()=>{
+  const p=$("wifiPanel");
+  if(p.style.display==="none"){
+    p.style.display="block";$("wifiList").textContent="scanning…";
+    try{
+      const {networks}=await api("/api/net/scan");
+      $("wifiList").innerHTML=networks.length?networks.map(n=>
+        `<div class="net-item" data-ssid="${esc_(n.ssid)}" onclick="pickWifi(this)">
+          <span>${n.active?"● ":""}${esc_(n.ssid)}</span>
+          <span class="metrics">${n.signal}% ${n.security==="open"?"":"🔒"}</span></div>`).join(""):
+        "no networks found";
+    }catch(e){$("wifiList").textContent="scan failed";}
+  }else{p.style.display="none";}
+};
+function pickWifi(el){
+  wifiPick=el.dataset.ssid;
+  document.querySelectorAll("#wifiList .net-item").forEach(x=>x.classList.remove("sel"));
+  el.classList.add("sel");
+  $("wifiConnect").style.display="flex";
+  $("wifiSsid").textContent=wifiPick;
+  $("wifiPass").focus();
+}
+$("wifiGo").onclick=async()=>{
+  $("wifiGo").disabled=true;
+  try{
+    const r=await fetch("/api/net/connect",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ssid:wifiPick,password:$("wifiPass").value})}).then(x=>x.json());
+    toast(r.ok?("Connected to "+wifiPick):("Wi-Fi: "+r.message));
+    if(r.ok){$("wifiPanel").style.display="none";$("wifiPass").value="";}
+  }catch(e){toast("Wi-Fi connect failed");}
+  $("wifiGo").disabled=false;refreshNet();
+};
+
+async function refreshHw(){
+  try{
+    const s=await api("/api/hw/scan");
+    const disks=(s.disks||[]).filter(x=>x.type==="disk");
+    const usb=s.usb||[], pci=s.pci_net||[], radios=s.radios||[], diag=s.diagnostics||[], hints=s.kernel_hints||[];
+    $("hwCount").textContent=`· ${disks.length} disk · ${(s.nets||[]).length} net · ${usb.length} usb`;
+
+    // --- verdicts first: the plain-language "what's wrong + fix" ----------
+    let vhtml="";
+    if(diag.length){
+      vhtml=`<div class="hwsec">⚠ Findings</div>`+diag.map(v=>{
+        const c=v.level==="error"?"a":"a";
+        return `<div class="hwverdict ${v.level}">
+          <div class="${c}"><b>${esc_(v.device)}</b> — ${esc_(v.problem)}</div>
+          <div class="d">↳ ${esc_(v.fix)}</div></div>`;
+      }).join("");
+    }
+
+    // --- block devices ----------------------------------------------------
+    const drows=disks.map(d=>{
+      const fs=(s.disks||[]).filter(p=>p.type==="part"&&p.name.startsWith(d.name)).map(p=>p.fstype||"raw").join(",")||d.fstype||"blank";
+      return `<div class="hwrow"><span class="d">${d.bus||"?"}</span>
+        <span>${esc_(d.path)}</span><span>${d.size_h}</span>
+        <span>${esc_(d.model||"")}</span><span class="${fs==='blank'?'a':'g'}">${fs}</span></div>`;
+    }).join("");
+
+    // --- network interfaces ----------------------------------------------
+    const nrows=(s.nets||[]).map(n=>{
+      const cls=n.up?"g":(n.kind==="wifi"?"a":"d");
+      return `<div class="hwrow"><span class="d">${n.kind}</span>
+        <span>${esc_(n.name)}</span><span class="${cls}">${n.up?"up":"down"}</span>
+        <span>${esc_(n.driver||"no driver")}</span></div>`;
+    }).join("");
+
+    // --- USB devices with driver-bound status ----------------------------
+    const urows=usb.map(u=>{
+      const drv=(u.drivers&&u.drivers.length)?u.drivers.join(","):"NO DRIVER";
+      const cls=(u.no_driver)?"a":(u.net_bound||u.drivers.length?"g":"d");
+      const tag=u.looks_wifi?"wifi":(u.looks_storage?"stor":(u.class_name||"usb"));
+      return `<div class="hwrow"><span class="d">${tag}</span>
+        <span>${esc_(u.name)}</span><span class="d">${u.vid}:${u.pid}</span>
+        <span class="${cls}">${esc_(drv)}</span></div>`;
+    }).join("");
+
+    // --- PCI wifi/nic -----------------------------------------------------
+    const prows=pci.map(p=>{
+      const cls=p.driver?"g":(p.wifi?"a":"d");
+      const drv=p.driver||("mod: "+(p.modules||[]).join(",")||"no driver");
+      const short=esc_(p.desc.replace(/^[0-9a-f:.]+\s*/i,"").slice(0,60));
+      return `<div class="hwrow"><span class="d">${p.wifi?"wifi":"nic"}</span>
+        <span>${short}</span><span class="${cls}">${esc_(drv)}</span></div>`;
+    }).join("");
+
+    // --- radios (rfkill) --------------------------------------------------
+    const rrows=radios.map(r=>{
+      return `<div class="hwrow"><span class="d">${r.type}</span>
+        <span>${esc_(r.device||"")}</span>
+        <span class="${r.blocked?'a':'g'}">${r.blocked?('BLOCKED '+(r.hard==='blocked'?'(hard)':'(soft)')):'unblocked'}</span></div>`;
+    }).join("");
+
+    // --- storage remediation button --------------------------------------
+    const hasStorHint=hints.some(h=>["uas","usb-reset","scsi"].includes(h.tag));
+    const storBtn=`<div class="hwsec">USB-NVMe / storage not showing up?</div>
+      <div class="metrics d">Cheap enclosures reset-loop under UAS. This re-enumerates every USB storage bridge in bulk-only mode (fixes most JMS583 / RTL9210 / ASM2362).</div>
+      <button class="mini ${hasStorHint?'':''}" onclick="retryUAS()">↻ Retry USB storage without UAS</button>
+      <span class="metrics d" id="uasMsg"></span>`;
+
+    const sec=(t)=>`<div class="hwsec">${t}</div>`;
+    $("hwBody").innerHTML=
+      (vhtml||"")+
+      sec("Disks")+(drows||`<div class="hwrow d">none</div>`)+
+      sec("Network interfaces")+(nrows||`<div class="hwrow d">none</div>`)+
+      (prows?sec("PCI network (internal)")+prows:"")+
+      (urows?sec("USB devices")+urows:"")+
+      (rrows?sec("Radios (rfkill)")+rrows:"")+
+      storBtn;
+  }catch(e){$("hwBody").textContent="scan unavailable";}
+}
+async function retryUAS(){
+  const m=$("uasMsg"); if(m)m.textContent=" working…";
+  try{
+    const r=await api("/api/hw/retry-uas",{method:"POST",body:JSON.stringify({})});
+    if(m)m.textContent=" "+(r.message||"done");
+    setTimeout(refreshHw,2500);
+    setTimeout(()=>{if(typeof refreshVols==='function')refreshVols();},3000);
+  }catch(e){if(m)m.textContent=" retry failed (need to replug the enclosure)";}
+}
+async function refreshVols(){
+  refreshHw();
+  try{
+    const d=await api("/api/windows/volumes");
+    winVols=d.volumes;aiKeyPresent=d.ai_key;
+    if(curVol){const f=winVols.find(v=>v.device===curVol.device);if(f)curVol=f;}   // pick up unlock/has_key changes
+    if(!winVols.length){$("volList").textContent="No Windows/NTFS drives detected. Plug in the customer's drive.";return;}
+    $("volList").innerHTML=winVols.map((v,i)=>{
+      const icon=v.bitlocker?(v.locked?"🔒":"🔓"):(v.has_windows===true?"⊞":"💽");
+      const st=v.bitlocker?(v.locked?"BitLocker — locked":"BitLocker — unlocked"):"NTFS";
+      /* An unnamed Windows volume has no label at all — Explorer invents
+         "Local Disk" — so it listed as a bare /dev/sdc3 among two named data
+         drives and read as "Recovery can't see the Windows install". */
+      const nm=v.label||v.winletter||v.device;
+      const win=v.has_windows===true?' <span class="winbadge">WINDOWS</span>':"";
+      return `<div class="vol-item ${curVol&&curVol.device===v.device?'sel':''}" onclick="pickVol(${i})">
+        <span class="lock">${icon}</span>
+        <div class="vnm"><div class="t">${esc_(nm)}${win}</div>
+        <div class="s">${v.device}${v.winletter&&v.label?" · "+esc_(v.winletter):""} · ${v.size_gb} GB · ${st}</div></div></div>`;
+    }).join("");
+  }catch(e){$("volList").textContent="could not enumerate drives";}
+}
+async function pickVol(i){
+  curVol=winVols[i];refreshVols();
+  $("unlockBox").style.display="none";$("recBox").style.display="none";
+  $("recOut").textContent="";
+  if(curVol.bitlocker&&curVol.locked){
+    if(curVol.has_key){
+      // the key was entered on the Dashboard (or here) earlier — reuse it, don't ask twice
+      $("recBox").style.display="block";$("recFor").textContent="Unlocking with the key already entered…";
+      try{
+        const r=await fetch("/api/windows/unlock",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({device:curVol.device,recovery_key:""})}).then(x=>x.json());
+        if(r.ok){await refreshVols();openVolume(r.mountpoint);return;}
+        $("recFor").textContent=r.message||"could not unlock";
+      }catch(e){$("recFor").textContent="could not unlock";}
+      return;
+    }
+    $("unlockName").textContent=curVol.label||curVol.device;
+    $("unlockBox").style.display="block";$("rkInput").focus();
+    return;
+  }
+  // plain NTFS (or already-unlocked): mount it read-only, then read it
+  $("recBox").style.display="block";
+  $("recFor").textContent="Mounting "+(curVol.label||curVol.device)+" (read-only)…";
+  $("userData").innerHTML="";
+  try{
+    const r=await fetch("/api/windows/open",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({device:curVol.device})}).then(x=>x.json());
+    if(!r.ok){$("recFor").textContent=r.message||"could not open the volume";return;}
+    openVolume(r.mountpoint);
+  }catch(e){$("recFor").textContent="could not open the volume";}
+}
+$("recRescan").onclick=async()=>{
+  $("recRescan").disabled=true;
+  await refreshVols();
+  if(curMount)await openVolume(curMount);   // re-fetch dests + userdata
+  $("recRescan").disabled=false;
+  toast("Rescanned drives");
+};
+$("unlockGo").onclick=async()=>{
+  const key=$("rkInput").value.trim();
+  $("unlockMsg").textContent="unlocking…";$("unlockGo").disabled=true;
+  try{
+    const r=await fetch("/api/windows/unlock",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({device:curVol.device,recovery_key:key})}).then(x=>x.json());
+    $("unlockMsg").textContent=r.message||"";
+    if(r.ok){
+      $("rkInput").value="";       /* never keep the key in the DOM */
+      $("unlockBox").style.display="none";
+      toast("Drive unlocked (read-only)");
+      openVolume(r.mountpoint);refreshVols();
+    }
+  }catch(e){$("unlockMsg").textContent="unlock failed";}
+  $("unlockGo").disabled=false;
+};
+
+async function openVolume(mount){
+  curMount=mount;
+  $("recBox").style.display="block";
+  resetSam(); resetMap();
+  $("recFor").textContent="Reading "+(curVol.label||curVol.device)+" …";
+  $("userData").innerHTML="";
+  try{
+    const d=await api("/api/windows/userdata",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({mountpoint:mount})});
+    curUserData=d;renderUserData(d);
+    $("recDest").innerHTML=(d.dests||[]).length?
+      ('<option value="">destination…</option>'+(d.dests||[]).map(t=>
+        `<option value="${t.mountpoint}">${esc_(t.label)} · ${t.free_h} free${t.fstype==="vfat"?" (FAT32: no files >4GB)":""}</option>`).join("")):
+      '<option value="">plug in a formatted USB drive, then tap ↻ Rescan</option>';
+    $("aiGo").style.display=d.has_windows?"block":"none";
+    $("recFor").textContent=(d.users||[]).length?"Select files to recover:":
+      (d.has_windows?"Windows is here, but no user folder on it has files to recover."
+                    :"No Windows user folders on this volume — it looks like a data drive.");
+    // offer to format blank drives (e.g. a fresh NVMe in a USB enclosure)
+    const blanks=(d.formattable||[]).filter(x=>!x.has_fs);
+    if(blanks.length && !(d.dests||[]).length){
+      $("fmtBox").style.display="block";
+      $("fmtList").innerHTML=blanks.map((b,i)=>`<div class="fmtitem">
+        💽 ${esc_(b.model)} · ${b.size_h} · ${b.bus||"?"}${b.removable?" (removable)":""}
+        <button class="danger" id="fmt${i}" data-dev="${b.path}" data-armed="0"
+          onclick="formatDrive(${i})">Format to exFAT</button></div>`).join("");
+    }else{$("fmtBox").style.display="none";}
+  }catch(e){$("recFor").textContent="could not read the volume — "+(e.message||e);}
+}
+async function formatDrive(i){
+  const btn=$("fmt"+i), dev=btn.dataset.dev;
+  if(btn.dataset.armed==="0"){                 // first tap arms, second formats
+    btn.dataset.armed="1";btn.textContent="⚠ Tap again to ERASE + format";
+    setTimeout(()=>{if(btn){btn.dataset.armed="0";btn.textContent="Format to exFAT";}},4000);
+    return;
+  }
+  btn.disabled=true;btn.textContent="formatting…";
+  try{
+    const r=await fetch("/api/windows/format-dest",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({device:dev,confirm:"FORMAT "+dev})}).then(x=>x.json());
+    if(r.ok){toast("Formatted — now available as a destination");if(curMount)openVolume(curMount);}
+    else{toast("Format failed: "+r.message);btn.disabled=false;btn.textContent="Format to exFAT";btn.dataset.armed="0";}
+  }catch(e){toast("Format failed");btn.disabled=false;btn.textContent="Format to exFAT";btn.dataset.armed="0";}
+}
+
+/* ---- offline local-account reset (SAM) ----------------------------- */
+let samMount="", samDevice="";
+function resetSam(){
+  samMount="";samDevice="";
+  $("samList").innerHTML="";$("samMsg").textContent="";
+  $("samNote").style.display="none";$("samClose").style.display="none";
+  $("samOpen").disabled=false;$("samOpen").textContent="🔑 Manage local accounts (mounts read-write)";
+  // BitLocker: the key typed on the Dashboard (or here) is reused — never asked for twice
+  const bl=curVol&&curVol.bitlocker;
+  $("samKeyNote").textContent=!bl?"":(curVol.has_key?"BitLocker: re-opened for writing with the key you already entered — no need to type it again.":
+    "BitLocker: unlock this drive on the Dashboard first (that key is reused here).");
+  $("samOpen").disabled=!!(bl&&!curVol.has_key);
+}
+$("samOpen").onclick=async()=>{
+  if(!curVol)return;
+  $("samOpen").disabled=true;$("samMsg").textContent="mounting read-write & reading accounts…";
+  try{
+    const r=await fetch("/api/windows/sam/open",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({device:curVol.device})}).then(x=>x.json());
+    if(!r.ok){$("samMsg").textContent=r.message||"could not open accounts";$("samOpen").disabled=false;return;}
+    samMount=r.mountpoint;samDevice=curVol.device;
+    $("samMsg").textContent="";$("samNote").style.display="block";$("samClose").style.display="inline-block";
+    $("samOpen").textContent="↻ Re-read accounts";$("samOpen").disabled=false;
+    renderSamAccounts(r.accounts||[]);
+  }catch(e){$("samMsg").textContent="could not open accounts";$("samOpen").disabled=false;}
+};
+$("samClose").onclick=async()=>{
+  const dev=samDevice||(curVol&&curVol.device); if(!dev)return;
+  $("samClose").disabled=true;$("samMsg").textContent="putting the volume back to read-only…";
+  try{
+    const r=await fetch("/api/windows/sam/close",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({device:dev})}).then(x=>x.json());
+    $("samMsg").textContent=r.message||"";
+    if(r.ok){
+      if(r.mountpoint&&curVol&&curVol.device===dev)await openVolume(r.mountpoint); else resetSam();
+      $("samMsg").textContent="🔒 "+(r.message||"read-only again");toast("Volume is read-only again");}
+  }catch(e){$("samMsg").textContent="could not close write access";}
+  $("samClose").disabled=false;
+};
+const SAM_LABELS={clear:"Clear password",unlock:"Unlock & enable",promote:"Make admin",convert:"Convert to local + clear password"};
+const SAM_DONE={clear:"Password cleared for ",unlock:"Account unlocked: ",promote:"Promoted to admin: ",convert:"Converted to local: "};
+function samBtnId(action,i){return "sam-"+action+"-"+i;}
+function renderSamAccounts(accts){
+  if(!accts.length){$("samList").innerHTML='<div class="metrics dim">No local accounts found.</div>';return;}
+  const anyMsa=accts.some(a=>a.account_type==="microsoft");
+  $("samList").innerHTML=`<div class="samhead metrics">Accounts on this Windows install:</div>`+
+    accts.map((a,i)=>{
+      const nm=esc_(a.name), msa=a.account_type==="microsoft";
+      const btn=(action,cls)=>`<button class="mini ${cls||''}" id="${samBtnId(action,i)}" data-armed="0" onclick="samAct(${i},'${action}','${nm}')">${SAM_LABELS[action]}</button>`;
+      return `<div class="samrow">
+      <div class="samname">${nm}
+        ${msa?`<span class="sambadge msa" title="${esc_(a.email||'Microsoft account')}">MICROSOFT ACCOUNT</span>`:'<span class="sambadge loc">local</span>'}
+        ${a.admin?'<span class="sambadge adm">ADMIN</span>':''}
+        ${a.disabled?'<span class="sambadge dis">LOCKED/DISABLED</span>':''}
+        ${msa&&a.email?`<div class="metrics dim" style="width:100%">${esc_(a.email)}</div>`:''}</div>
+      ${msa?btn("convert","aibtn"):btn("clear")}
+      ${btn("unlock")}
+      ${a.admin?'':btn("promote")}
+    </div>`;}).join("")+
+    (anyMsa?`<div class="metrics dim" style="margin-top:8px">A <b>Microsoft account</b> signs in against Microsoft (or a Hello PIN), so clearing its password alone won't let you in. <b>Convert to local + clear password</b> unlinks it in the registry, blanks the password and removes the PIN. If a login still asks for a Microsoft password/PIN afterward, the sure way in is to <b>Unlock &amp; enable</b> + <b>Clear password</b> on the built-in <b>Administrator</b> and sign in there.</div>`:"");
+}
+async function samAct(i,action,name){
+  const id=samBtnId(action,i), btn=$(id), label=SAM_LABELS[action];
+  if(btn.dataset.armed==="0"){                    // two-tap: arm, then do
+    btn.dataset.armed="1";btn.textContent="Tap again to confirm";
+    setTimeout(()=>{if(btn){btn.dataset.armed="0";btn.textContent=label;}},4000);
+    return;
+  }
+  btn.disabled=true;btn.textContent="working…";
+  try{
+    const r=await fetch("/api/windows/sam/modify",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({mountpoint:samMount,username:name,action:action,confirm:"CONFIRM"})}).then(x=>x.json());
+    $("samMsg").textContent=r.message||"";
+    if(r.ok){toast((SAM_DONE[action]||"Done: ")+name);renderSamAccounts(r.accounts||[]);}
+    else{btn.disabled=false;btn.textContent=label;btn.dataset.armed="0";}
+  }catch(e){$("samMsg").textContent="operation failed";btn.disabled=false;btn.textContent=label;btn.dataset.armed="0";}
+}
+function renderUserData(d){
+  $("userData").innerHTML=(d.users||[]).map(u=>`
+    <div class="udata"><div class="uname">${esc_(u.name)} — ${u.total_h}</div>
+    ${u.categories.map(c=>`<label class="ucat">
+      <input type="checkbox" data-user="${esc_(u.name)}" data-key="${c.key}" onchange="recCheck()">
+      ${c.key} <span class="metrics">(${c.count} files)</span>
+      <span class="csize">${c.size_h}</span></label>`).join("")}</div>`).join("");
+  recCheck();
+}
+function recCheck(){
+  const cats=document.querySelectorAll("#userData input:checked").length;
+  const picks=mapSel.size;
+  $("recGo").disabled=!((cats||picks) && $("recDest").value);
+  // say what the button will actually copy
+  const bits=[];if(cats)bits.push(cats+" categor"+(cats===1?"y":"ies"));if(picks)bits.push(picks+" from map");
+  $("recGo").textContent="⭳ RECOVER SELECTED"+(bits.length?" ("+bits.join(" + ")+")":"");
+}
+$("recDest").onchange=recCheck;
+$("recGo").onclick=async()=>{
+  const sels=[...document.querySelectorAll("#userData input:checked")].map(x=>
+    ({user:x.dataset.user,key:x.dataset.key}));
+  // drive-map picks ride along as {path} — files or whole folders
+  for(const p of mapSel.keys())sels.push({path:p});
+  $("recProgWrap").style.display="block";$("recGo").disabled=true;$("recOut").textContent="";
+  try{
+    await fetch("/api/windows/recover",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({source:curMount,dest:$("recDest").value,selections:sels})}).then(x=>{
+        if(!x.ok)return x.json().then(j=>{throw new Error(j.error||"failed")});});
+  }catch(e){$("recOut").textContent=String(e.message||e);$("recGo").disabled=false;}
+};
+function onRecoveryEvent(ev){
+  $("recProgWrap").style.display="block";
+  $("recBar").style.width=(ev.progress||0)+"%";
+  $("recMsg").textContent=`${ev.status.toUpperCase()} · ${ev.progress}% · ${ev.copied_h}/${ev.total_h} · ${ev.files_done}/${ev.files_total} files`
+    +(ev.current?` · ${ev.current}`:"");
+  if(ev.status==="done"||ev.status==="failed"){
+    $("recGo").disabled=false;
+    $("recOut").innerHTML=esc_(ev.message)+(ev.errors&&ev.errors.length?`<br>${ev.errors.length} error(s)`:"");
+    toast(ev.status==="done"?"Recovery complete → "+ev.dest_dir:"Recovery failed");
+  }
+}
+$("aiGo").onclick=async()=>{
+  if(!aiKeyPresent){$("aiMsg").textContent="No AI key on this stick — re-flash from the Pi to enable AI analysis.";return;}
+  if(!hlMount){$("aiMsg").textContent="pick a Windows install first";return;}
+  $("aiMsg").textContent="Analyzing event logs, drivers & firmware with AI… (needs internet, ~30 s)";
+  $("aiGo").disabled=true;$("aiResult").innerHTML="";
+  try{
+    // plain fetch: a server error still carries JSON (message + trace), which
+    // reads far better on the kiosk than an HTML error page
+    const r=await fetch("/api/windows/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({mountpoint:hlMount})}).then(x=>x.json());
+    if(!r.ok){$("aiMsg").textContent=r.message||r.error||"analysis failed";
+      if(r.trace)$("aiResult").innerHTML=`<pre class="metrics dim" style="white-space:pre-wrap;max-height:180px;overflow:auto">${esc_(r.trace)}</pre>`;}
+    else{$("aiMsg").textContent=r.model&&r.model!=="demo"?("analysed with "+r.model):"";renderAI(r.diagnosis);}
+  }catch(e){$("aiMsg").textContent="analysis failed: "+(e.message||e);}
+  $("aiGo").disabled=false;
+};
+function renderAI(d){
+  if(!d){$("aiResult").innerHTML="";return;}
+  const sev=(d.severity||"attention").toLowerCase();
+  const rc=(d.root_causes||[]).map(c=>`<li><b>${esc_(c.cause)}</b> <span class="metrics">(${esc_(c.confidence||"")})</span><br>
+    <span class="metrics">${esc_(c.evidence||"")}</span></li>`).join("");
+  const da=(d.driver_actions||[]).map(a=>`<li><b>${esc_(a.driver)}</b>: ${esc_(a.action)} — ${esc_(a.why)}</li>`).join("");
+  const ra=(d.recommended_actions||[]).map(a=>`<li>${esc_(a)}</li>`).join("");
+  const up=(d.updates||[]).map(u=>{const v=(u.verdict||"unknown").toLowerCase();
+    return `<li><span class="pill ${v==="ok"?"ok":(v==="outdated"?"outdated":"unknown")}">${esc_(v)}</span> <b>${esc_(u.item||"")}</b>${u.installed?` <span class="metrics">— ${esc_(u.installed)}</span>`:""}<br><span class="metrics">${esc_(u.advice||"")}</span></li>`;}).join("");
+  $("aiResult").innerHTML=`<div class="aicard">
+    <span class="sev ${sev}">${sev.toUpperCase()}</span>
+    <div class="head">${esc_(d.headline||"")}</div>
+    ${rc?`<h4>Likely causes</h4><ul>${rc}</ul>`:""}
+    ${up?`<h4>BIOS, firmware &amp; driver updates</h4><ul>${up}</ul>`:""}
+    ${da?`<h4>Driver actions</h4><ul>${da}</ul>`:""}
+    ${ra?`<h4>Recommended steps</h4><ul>${ra}</ul>`:""}
+    ${d.customer_summary?`<h4>For the customer</h4><div class="cust">${esc_(d.customer_summary)}</div>`:""}
+  </div>`;
+}
+
+/* ==== Health & AI page ============================================== */
+let hlMount="", hlDevice="", hlLoaded=false, hlBusy=false, hlVols=[], hlAudit=null;
+async function loadHealthVols(force){
+  if(hlBusy)return; hlBusy=true;
+  try{
+    const d=await api("/api/windows/volumes");
+    aiKeyPresent=d.ai_key;
+    const vols=d.volumes||[]; hlVols=vols;
+    const sel=$("hlVol");
+    const usable=v=>!(v.bitlocker&&v.locked&&!v.has_key);
+    sel.innerHTML=vols.length?vols.map(v=>{
+      const locked=v.bitlocker&&v.locked;
+      const win=v.has_windows===true?" · WINDOWS":(v.has_windows===false?" · data only":"");
+      return `<option value="${esc_(v.device)}" ${usable(v)?"":"disabled"}>${esc_(v.label||v.winletter||v.device)} — ${esc_(v.device)} · ${v.size_gb} GB${win}${v.bitlocker?(locked?(v.has_key?" · BitLocker (key on hand)":" · BitLocker LOCKED (unlock it on the Dashboard first)"):" · BitLocker unlocked"):""}</option>`;
+    }).join(""):'<option value="">no Windows/NTFS drives detected — plug the customer\'s drive in, then ↻ Rescan</option>';
+    /* Prefer the volume Recovery already opened, then one we KNOW holds
+       Windows, then anything usable. Picking the first usable volume meant
+       this page opened a 5 TB games drive and reported "no Windows
+       installation on this volume" about a machine that was running Windows
+       at the time — true of that volume, and completely misleading. */
+    let pick=(curVol&&vols.find(v=>v.device===curVol.device&&usable(v)))
+           ||vols.find(v=>v.has_windows===true&&usable(v))
+           ||vols.find(v=>v.has_windows!==false&&usable(v))
+           ||vols.find(usable);
+    if(pick){sel.value=pick.device;}
+    hlLoaded=true;
+    if(pick&&(force||pick.device!==hlDevice))await hlOpen(pick.device);
+    else if(!pick){$("hlBody").style.display="none";$("hlVolMsg").textContent="";}
+  }catch(e){$("hlVol").innerHTML='<option value="">could not enumerate drives</option>';}
+  hlBusy=false;
+}
+async function hlOpen(device){
+  hlDevice=device;hlMount="";
+  $("hlBody").style.display="none";$("aiResult").innerHTML="";$("aiMsg").textContent="";
+  $("hlVolMsg").textContent="opening (read-only)…";
+  try{
+    // Recovery may already have this volume mounted — reuse its mountpoint
+    let mount=(curVol&&curVol.device===device&&curMount)?curMount:"";
+    if(!mount){
+      // a BitLocker volume that is locked but whose key is on hand: unlock with it first
+      const hv=hlVols.find(v=>v.device===device);
+      const u=(hv&&hv.bitlocker&&hv.locked&&hv.has_key)?await fetch("/api/windows/unlock",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({device,recovery_key:""})}).then(x=>x.json()).catch(()=>({ok:false})):{ok:false};
+      const r=(u.ok&&u.mountpoint)?{ok:true,mountpoint:u.mountpoint,has_windows:true}:
+        await fetch("/api/windows/open",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({device})}).then(x=>x.json());
+      if(!r.ok){$("hlVolMsg").textContent=r.message||"could not open the volume";return;}
+      if(!r.has_windows){
+        const other=hlVols.filter(v=>v.has_windows===true&&v.device!==device);
+        $("hlVolMsg").textContent=other.length
+          ?`this volume is data only — Windows is on ${other.map(v=>v.label||v.winletter||v.device).join(", ")}, pick it above`
+          :"no Windows installation on this volume";
+        return;}
+      mount=r.mountpoint;
+    }
+    hlMount=mount;
+    $("hlVolMsg").textContent="reading registry hives…";
+    const a=await fetch("/api/health/audit",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({mountpoint:mount})}).then(x=>x.json());
+    if(!a.ok&&!(a.drivers||[]).length){$("hlVolMsg").textContent=a.message||"audit failed";
+      if(a.readiness)renderHealth(a);return;}
+    $("hlVolMsg").textContent="";
+    renderHealth(a);
+  }catch(e){$("hlVolMsg").textContent="audit failed: "+(e.message||e);}
+}
+function pill(st,txt){return `<span class="pill ${esc_(st)}">${esc_(txt||st)}</span>`;}
+function renderHealth(a){
+  const w=a.windows||{}, rd=a.readiness||{}, b=rd.bios||{}, sum=a.summary||{counts:{}};
+  const c=sum.counts||{};
+  const winSt=w.name?(w.supported?"ok":"outdated"):"unknown";
+  const rdTxt={supported:"passes Microsoft's Windows 11 check",unsupported:"fails the Windows 11 check",impossible:"cannot run Windows 11",unknown:"Windows 11 check: unknown"}[rd.verdict||"unknown"];
+  const rdBits=[`TPM ${rd.tpm||"?"}`,`Secure Boot ${rd.secure_boot===true?"on":(rd.secure_boot===false?"off":"?")}`,rd.uefi?"UEFI":"legacy BIOS",`${rd.ram_gb||"?"} GB RAM`];
+  $("hlCards").innerHTML=`
+    <div class="hlcard"><div class="t">Windows</div>
+      <div class="v">${pill(winSt,w.supported===false?"OUT OF SUPPORT":(w.supported?"SUPPORTED":"?"))} ${esc_(w.name||"not readable")}</div>
+      <div class="s">${w.build?esc_(`${w.product||""} · build ${w.build}.${w.ubr||0}${w.edition?" · "+w.edition:""}`)+"<br>":""}${esc_(w.support||w.message||"")}</div></div>
+    <div class="hlcard"><div class="t">BIOS / firmware</div>
+      <div class="v">${pill(b.status||"unknown")} ${esc_(b.version||"?")}</div>
+      <div class="s">${esc_((b.manufacturer||"")+" "+(b.model||""))}<br>${esc_(b.vendor||"")} · released ${esc_(b.date||"?")}<br>${esc_(b.note||"")}</div></div>
+    <div class="hlcard"><div class="t">Windows 11 readiness</div>
+      <div class="v">${pill(rd.verdict||"unknown")} ${esc_(rdTxt)}</div>
+      <div class="s">${esc_(rdBits.join(" · "))}<br>${esc_(rd.cpu_note||rd.cpu||"")}${(rd.reasons||[]).length?"<br>⚠ "+esc_(rd.reasons.join("; ")):""}${(rd.hard_blocks||[]).length?"<br>⛔ "+esc_(rd.hard_blocks.join("; ")):""}${rd.verdict==="unsupported"?"<br>→ Install Windows tab: stage the unsupported-hardware upgrade":""}</div></div>
+    <div class="hlcard"><div class="t">Drivers</div>
+      <div class="v">${c.outdated?pill("outdated",c.outdated+" old"):""} ${c.missing?pill("missing",c.missing+" missing"):""} ${c.check?pill("check",c.check+" aging"):""} ${c.ok?pill("ok",c.ok+" recent"):""} ${(!c.outdated&&!c.missing&&!c.check&&!c.ok)?pill("unknown","none read"):""}</div>
+      <div class="s">${(a.drivers||[]).length} read from the SYSTEM hive · ${c.inbox||0} Windows built-in. Age only — press <b>Check online</b> for what is actually available.</div></div>`;
+  hlAudit=a;
+  renderHealthTable(a.drivers||[]);
+  $("hlBody").style.display="block";
+}
+const AGE_LABEL={outdated:"old",check:"aging",ok:"recent",inbox:"built-in",missing:"missing",unknown:"unknown"};
+function onlineCell(o){
+  if(!o)return '<span class="metrics dim">—</span>';
+  if(o.verdict==="newer")return `${pill("newer","UPDATE AVAILABLE")} <span class="mono">${esc_(o.latest_version)}</span> <span class="metrics dim">${esc_(o.latest_date||"")}</span>`;
+  if(o.verdict==="current")return `${pill("current","UP TO DATE")} <span class="metrics dim">${esc_(o.latest_version||"")}</span>`;
+  return `${pill("unknown","not listed")} <span class="metrics dim">${esc_(o.note||"")}</span>`;
+}
+function renderHealthTable(rows){
+  const withOnline=rows.some(r=>r.online);
+  $("hlCount").textContent=rows.length?`${rows.length} entries`:"";
+  $("hlTable").innerHTML=`<tr><th>Category</th><th>Device / driver</th><th>Provider</th><th>Installed</th><th>Date</th><th>Age</th>${withOnline?"<th>Available online</th>":""}<th>Note</th></tr>`+
+    rows.map(r=>`<tr><td>${esc_(r.label)}</td><td>${esc_(r.desc)}</td><td>${esc_(r.provider||"")}</td><td class="mono">${esc_(r.version||"")}</td><td class="date">${esc_(r.date||"—")}</td><td>${pill(r.status,AGE_LABEL[r.status]||r.status)}</td>${withOnline?`<td>${onlineCell(r.online)}</td>`:""}<td class="note">${esc_(r.online&&r.online.verdict!=="unknown"?r.online.note:(r.note||""))}</td></tr>`).join("");
+}
+async function hlCheckOnline(){
+  if(!hlMount||!hlAudit)return;
+  const b=$("hlOnline"); b.disabled=true; $("hlOnlineMsg").textContent="asking Windows Update's catalog per device + LVFS for firmware… (~20 s)";
+  try{
+    const r=await fetch("/api/health/online",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({mountpoint:hlMount})}).then(x=>x.json());
+    if(!r.ok){$("hlOnlineMsg").textContent=r.message||"online check failed";b.disabled=false;return;}
+    // fold the online verdicts into the rows we show (match by device + installed version)
+    const by=new Map((r.drivers||[]).map(d=>[d.desc+"|"+(d.version||""),d.online]));
+    hlAudit.drivers=(hlAudit.drivers||[]).map(d=>Object.assign({},d,{online:by.get(d.desc+"|"+(d.version||""))||null}));
+    hlAudit.online=r;
+    renderHealthTable(hlAudit.drivers);
+    const c=r.counts||{};
+    $("hlOnlineMsg").innerHTML=`${c.newer?pill("newer",c.newer+" update"+(c.newer>1?"s":"")+" available"):pill("current","drivers up to date on Windows Update")} ${c.unknown?`<span class="metrics dim">· ${c.unknown} not listed</span>`:""}`;
+    renderFirmwareOnline(r.firmware);
+    renderDriversOnline(r.counts||{});
+  }catch(e){$("hlOnlineMsg").textContent="online check failed: "+(e.message||e);}
+  b.disabled=false;
+}
+function renderDriversOnline(c){
+  // the Drivers card counted by AGE; after a lookup it reports what is actually available
+  const cards=$("hlCards").querySelectorAll(".hlcard"); const card=cards[3]; if(!card)return;
+  card.querySelector(".v").innerHTML=`${c.newer?pill("newer",c.newer+" update"+(c.newer>1?"s":"")+" available"):pill("current","all up to date")} ${c.current?pill("current",c.current+" current"):""} ${c.unknown?pill("unknown",c.unknown+" not listed"):""}`;
+  card.querySelector(".s").innerHTML="checked against the Windows Update catalog by hardware ID"+
+    (c.unknown?" · "+c.unknown+" device(s) Windows Update doesn't carry — check the vendor's own site":"");
+}
+function renderFirmwareOnline(fw){
+  const cards=$("hlCards").querySelectorAll(".hlcard"); const bios=cards[1]; if(!bios||!fw)return;
+  let line;
+  if(fw.available){const d=fw.devices[0]||{};line=`${pill("newer","BIOS UPDATE AVAILABLE")} ${esc_(d.name||"firmware")} ${esc_(d.current||"")} → <b>${esc_(d.latest||"")}</b> on LVFS${d.summary?" — "+esc_(d.summary):""}`;}
+  else if(fw.ok)line=`${pill("current","LVFS")} ${esc_(fw.note||"")}`;
+  else line=`${pill("unknown","LVFS")} ${esc_(fw.note||"")}`;
+  let el=bios.querySelector(".fwline"); if(!el){el=document.createElement("div");el.className="s fwline";el.style.marginTop="6px";bios.appendChild(el);}
+  el.innerHTML=line;
+}
+$("hlOnline").onclick=hlCheckOnline;
+$("hlVol").addEventListener("change",()=>{if($("hlVol").value)hlOpen($("hlVol").value);});
+$("hlRescan").onclick=async()=>{$("hlRescan").disabled=true;await loadHealthVols(true);$("hlRescan").disabled=false;toast("Rescanned drives");};
+
+/* ---- fit any screen (1080p / 1440p / 4K), one frame, no page scroll -- */
+// We scale the UI up with CSS `zoom` so 14px text is readable on a 4K panel.
+// The catch: `zoom:z` also scales `100vh`, so a full-height shell becomes
+// taller than the physical screen and its bottom gets clipped (not scrolled).
+// Fix: measure the real viewport at zoom 1, then size the .app in *pixels*
+// that counteract the zoom — app = viewport / z — so the zoomed shell lands
+// exactly on the screen edges. Inner panels then scroll within, never the page.
+function fitScreen(){
+  const app=document.querySelector(".app");
+  if(!app)return;
+  const root=document.documentElement;
+  root.style.zoom="1";                                   // measure unscaled
+  const vw=root.clientWidth, vh=root.clientHeight;
+  let z=vw/1440;                                          // ~1440px design canvas
+  z=Math.max(0.65, Math.min(z, 3.2));
+  root.style.zoom=z.toFixed(4);
+  app.style.width=Math.round(vw/z)+"px";
+  app.style.height=Math.round(vh/z)+"px";
+}
+window.addEventListener("resize",fitScreen);
+fitScreen();
+// re-apply once after first paint/fonts so an early 0-width read can't stick
+window.addEventListener("load",()=>setTimeout(fitScreen,150));
+
+/* ---- boot ----------------------------------------------------------- */
+setInterval(()=>{$("clock").textContent=new Date().toLocaleTimeString()},1000);
+/* ---- custom dropdowns (native <select> popup is invisible under cage) --- */
+function enhanceSelect(sel){
+  if(sel.dataset.csel)return; sel.dataset.csel="1";
+  const wrap=document.createElement("div"); wrap.className="csel";
+  sel.parentNode.insertBefore(wrap,sel); wrap.appendChild(sel); sel.classList.add("csel-native");
+  const btn=document.createElement("button"); btn.type="button"; btn.className="csel-btn";
+  btn.innerHTML='<span class="csel-label"></span><span class="csel-arrow">▾</span>';
+  const panel=document.createElement("div"); panel.className="csel-panel"; panel.hidden=true;
+  wrap.appendChild(btn); wrap.appendChild(panel);
+  const label=btn.querySelector(".csel-label");
+  let hi=-1;
+  function draw(){
+    const o=sel.options[sel.selectedIndex];
+    label.textContent=o?o.textContent:"";
+    panel.innerHTML="";
+    [...sel.options].forEach((op,i)=>{
+      const d=document.createElement("div");
+      d.className="csel-opt"+(i===sel.selectedIndex?" sel":"")+(op.disabled?" dis":"")+(i===hi?" hi":"");
+      d.textContent=op.textContent;
+      d.onclick=ev=>{ev.stopPropagation(); if(op.disabled)return; pick(i);};
+      panel.appendChild(d);
+    });
+  }
+  function pick(i){ sel.selectedIndex=i; sel.dispatchEvent(new Event("change",{bubbles:true})); draw(); close(); }
+  /* Put the list where the button is, in viewport coordinates, and flip it
+     above the button when there is more room up than down (the last select on
+     a page is always near the bottom edge). All arithmetic is in *visual* px
+     from getBoundingClientRect, divided by the document zoom on the way out
+     because the fixed panel inherits that zoom too. */
+  function place(){
+    const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
+    const r=btn.getBoundingClientRect(), vh=window.innerHeight;
+    panel.style.width=(r.width/z)+"px";
+    panel.style.left=(r.left/z)+"px";
+    panel.style.maxHeight="none"; panel.style.top="0px";
+    const want=panel.getBoundingClientRect().height;
+    const below=vh-r.bottom-10, above=r.top-10;
+    let top, room;
+    if(below>=Math.min(want,150)||below>=above){ room=below; top=r.bottom+4; }
+    else { room=above; top=r.top-4-Math.min(want,room); }
+    panel.style.maxHeight=(Math.max(room,80)/z)+"px";
+    panel.style.top=(top/z)+"px";
+  }
+  function open(){ closeAllCsel(); hi=sel.selectedIndex; document.body.appendChild(panel);
+    panel.hidden=false; wrap.classList.add("open"); draw(); place();
+    addEventListener("resize",place); addEventListener("scroll",place,true);
+    const s=panel.querySelector(".csel-opt.sel"); if(s)s.scrollIntoView({block:"nearest"}); }
+  function close(){ panel.hidden=true; wrap.classList.remove("open");
+    removeEventListener("resize",place); removeEventListener("scroll",place,true); }
+  btn.onclick=ev=>{ ev.stopPropagation(); panel.hidden?open():close(); };
+  // the list is a <body> child now, so a click on its padding or scrollbar
+  // would otherwise reach the document handler and close it mid-choice
+  panel.onclick=ev=>ev.stopPropagation();
+  btn.onkeydown=ev=>{
+    if(["ArrowDown","ArrowUp"].includes(ev.key)){ev.preventDefault(); if(panel.hidden)open();
+      const n=sel.options.length; do{hi=(hi+(ev.key==="ArrowDown"?1:n-1))%n;}while(sel.options[hi]&&sel.options[hi].disabled); draw();
+      const h=panel.querySelector(".csel-opt.hi"); if(h)h.scrollIntoView({block:"nearest"});}
+    else if(ev.key==="Enter"||ev.key===" "){ev.preventDefault(); if(panel.hidden)open(); else if(hi>=0)pick(hi);}
+    else if(ev.key==="Escape")close();
+  };
+  sel.addEventListener("change",draw);
+  new MutationObserver(()=>{hi=sel.selectedIndex;draw();}).observe(sel,{childList:true,subtree:true});
+  wrap._close=close; draw();
+}
+function closeAllCsel(){document.querySelectorAll(".csel").forEach(w=>{if(w._close)w._close();});}
+document.addEventListener("click",closeAllCsel);
+function enhanceSelects(){document.querySelectorAll("select:not(.csel-native)").forEach(enhanceSelect);}
+enhanceSelects();
+
+/* ---- drive map (WizTree-style treemap) ----------------------------- */
+let mapTree=null, mapPath=[], mapRects=[];
+function resetMap(){mapTree=null;mapPath=[];mapRects=[];
+  $("mapWrap").style.display="none";$("mapMsg").style.display="none";
+  $("mapGo").disabled=false;$("mapGo").textContent="🗺 Map drive contents — find the big files";
+  // a different volume → picks from the old one are meaningless
+  mapSel.clear();mapSelectMode=false;$("mapSelMode").style.display="none";renderMapSel();}
+
+/* ---- picking files/folders on the map for recovery ------------------ */
+// path of a node relative to the mounted volume: breadcrumb (minus the drive
+// root) + the node's own name. This is what the backend copies.
+function mapRelPath(node){return mapPath.slice(1).map(n=>n.name).concat(node.name).join("/");}
+function toggleMapSel(node){
+  if(!node||node.other)return;               // "+N smaller items" isn't a real path
+  const p=mapRelPath(node);
+  if(mapSel.has(p))mapSel.delete(p);else mapSel.set(p,{name:node.name,size:node.size||0,dir:!!node.dir});
+  renderMapSel();drawMap();
+}
+function removeMapSel(p){mapSel.delete(p);renderMapSel();drawMap();}
+function clearMapSel(){mapSel.clear();renderMapSel();drawMap();}
+function renderMapSel(){
+  const bar=$("mapSelBar");if(!bar)return;
+  if(!mapSel.size){bar.style.display="none";recCheck();return;}
+  let total=0;for(const v of mapSel.values())total+=v.size;
+  $("mapSelSum").textContent=`☑ ${mapSel.size} picked · ${hsize(total)}`;
+  $("mapSelList").innerHTML=[...mapSel.entries()].map(([p,v])=>
+    `<div>${v.dir?"📁":"📄"} ${esc_(p)} <span class="dim">· ${hsize(v.size)}</span>`+
+    ` <a href="#" onclick="removeMapSel(${JSON.stringify(p).replace(/"/g,"&quot;")});return false" style="color:var(--red);text-decoration:none">✕</a></div>`).join("");
+  bar.style.display="block";recCheck();
+}
+$("mapSelMode").onclick=()=>{
+  mapSelectMode=!mapSelectMode;
+  $("mapSelMode").textContent=(mapSelectMode?"☑":"☐")+" Select files to recover";
+  $("mapSelMode").style.borderColor=mapSelectMode?"var(--grn)":"";
+  $("mapCanvas").style.cursor=mapSelectMode?"cell":"pointer";
+};
+function hsize(n){const u=["B","KB","MB","GB","TB"];let i=0;n=n||0;while(n>=1024&&i<4){n/=1024;i++;}return (i?n.toFixed(1):n)+" "+u[i];}
+$("mapGo").onclick=async()=>{
+  if(!curMount)return;
+  $("mapGo").disabled=true;$("mapMsg").style.display="block";$("mapMsg").textContent="scanning the drive…";
+  try{
+    const r=await fetch("/api/windows/treemap/start",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({mountpoint:curMount})}).then(x=>x.json());
+    if(!r.ok){$("mapMsg").textContent=r.error||"could not start scan";$("mapGo").disabled=false;}
+  }catch(e){$("mapMsg").textContent="could not start scan";$("mapGo").disabled=false;}
+};
+function onTreemapEvent(ev){
+  if(ev.status==="running"){$("mapMsg").style.display="block";$("mapMsg").textContent=ev.message||"scanning…";return;}
+  if(ev.status==="failed"){$("mapMsg").textContent=ev.message||"scan failed";$("mapGo").disabled=false;return;}
+  if(ev.status==="done"&&ev.tree){
+    mapTree=ev.tree;mapPath=[mapTree];
+    $("mapMsg").textContent=ev.message||"done";
+    $("mapWrap").style.display="block";$("mapGo").disabled=false;
+    $("mapGo").textContent="↻ Re-map drive";
+    $("mapSelMode").style.display="";      // picking is possible now
+    drawMap();renderMapSel();              // picks survive a re-map (paths are just strings)
+  }
+}
+const MAP_HUES=[205,145,35,280,0,175,55,320];
+function mapNode(){return mapPath[mapPath.length-1];}
+function drawMap(){
+  const cv=$("mapCanvas"),ctx=cv.getContext("2d");
+  const W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);
+  const node=mapNode(),kids=(node.children||[]).filter(c=>c.size>0);
+  // breadcrumb
+  $("mapCrumb").innerHTML=mapPath.map((n,i)=>
+    `<button onclick="mapTo(${i})">${esc_(i===0?(n.name||"Drive"):n.name)}</button>`+
+    (i<mapPath.length-1?'<span class="sep">›</span>':'')).join("")+
+    `<span class="sep">·</span><span class="dim">${hsize(node.size)}</span>`;
+  mapRects=[];
+  if(!kids.length){ctx.fillStyle="#7fa0b8";ctx.font="13px system-ui";ctx.fillText("(empty or all small files)",14,24);return;}
+  squarifyMap(kids.slice(),2,2,W-4,H-4);
+  // draw
+  for(const r of mapRects){
+    const c=r.node, depth=mapPath.length-1;
+    const hue=MAP_HUES[(depth+ (r.i||0))%MAP_HUES.length];
+    const isDir=c.dir&&!c.other, other=c.other;
+    const picked=!other&&mapSel.has(mapRelPath(c));
+    ctx.fillStyle=other?"#2a3340":`hsl(${hue} ${isDir?55:40}% ${isDir?30:24}%)`;
+    ctx.fillRect(r.x,r.y,r.w,r.h);
+    ctx.strokeStyle="#0a0f16";ctx.lineWidth=1;ctx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);
+    if(picked){ // picked for recovery: green frame + tint so it reads at a glance
+      ctx.fillStyle="rgba(69,230,69,.18)";ctx.fillRect(r.x,r.y,r.w,r.h);
+      ctx.strokeStyle="#45E645";ctx.lineWidth=3;ctx.strokeRect(r.x+1.5,r.y+1.5,r.w-3,r.h-3);
+    }
+    if(r.w>54&&r.h>18){
+      ctx.fillStyle=picked?"#c9ffc9":"#e8f1f8";ctx.font=picked?"bold 11px system-ui":"11px system-ui";
+      const label=(picked?"✓ ":"")+(isDir?"📁 ":"")+c.name;
+      ctx.fillText(clip(ctx,label,r.w-10),r.x+5,r.y+13);
+      if(r.h>32){ctx.fillStyle="#9fb6c8";ctx.fillText(hsize(c.size),r.x+5,r.y+27);}
+    }
+  }
+}
+function clip(ctx,s,max){if(ctx.measureText(s).width<=max)return s;
+  while(s.length>1&&ctx.measureText(s+"…").width>max)s=s.slice(0,-1);return s+"…";}
+// squarified treemap (Bruls et al.) — rectangles kept close to square so the
+// map is readable at a glance, biggest top-left.
+function squarifyMap(items,x,y,w,h){
+  items.sort((a,b)=>b.size-a.size);
+  const total=items.reduce((s,c)=>s+c.size,0)||1;
+  const areaScale=(w*h)/total;
+  const nodes=items.map((c,idx)=>({node:c,i:idx,area:c.size*areaScale}));
+  let rect={x,y,w,h}, row=[];
+  const side=()=>Math.min(rect.w,rect.h);
+  const worst=(r,len)=>{const s=r.reduce((a,b)=>a+b.area,0);
+    const mx=Math.max(...r.map(z=>z.area)),mn=Math.min(...r.map(z=>z.area));
+    return Math.max((len*len*mx)/(s*s),(s*s)/(len*len*mn));};
+  let i=0;
+  while(i<nodes.length){
+    if(!row.length||worst(row,side())>=worst(row.concat(nodes[i]),side())){row.push(nodes[i]);i++;}
+    else{rect=placeRow(row,rect);row=[];}
+  }
+  if(row.length)placeRow(row,rect);
+}
+function placeRow(row,rect){
+  const sum=row.reduce((a,b)=>a+b.area,0);let {x,y,w,h}=rect;
+  if(w>=h){const cw=sum/h;let cy=y;
+    for(const it of row){const ch=Math.max(1,it.area/cw);mapRects.push({node:it.node,i:it.i,x:x,y:cy,w:Math.max(1,cw),h:ch});cy+=ch;}
+    return {x:x+cw,y:y,w:Math.max(0,w-cw),h:h};}
+  const ch=sum/w;let cx=x;
+  for(const it of row){const cw2=Math.max(1,it.area/ch);mapRects.push({node:it.node,i:it.i,x:cx,y:y,w:cw2,h:Math.max(1,ch)});cx+=cw2;}
+  return {x:x,y:y+ch,w:w,h:Math.max(0,h-ch)};
+}
+// Left-click: in select mode everything is a pick; otherwise a folder zooms
+// in and a file (which can't zoom) is picked. Right-click always picks, so a
+// whole folder can be grabbed without zooming into it.
+$("mapCanvas").addEventListener("click",e=>{
+  const r=hitMap(e);if(!r)return;
+  const isFolder=r.node.children&&r.node.children.length;
+  if(mapSelectMode||!isFolder){toggleMapSel(r.node);return;}
+  mapPath.push(r.node);drawMap();
+});
+$("mapCanvas").addEventListener("contextmenu",e=>{
+  e.preventDefault();const r=hitMap(e);if(r)toggleMapSel(r.node);
+});
+$("mapCanvas").addEventListener("mousemove",e=>{
+  const r=hitMap(e);
+  if(!r){$("mapHover").textContent="Hover a box for its size · click a folder to zoom in · click a file (or right-click anything) to pick it for recovery.";return;}
+  const n=r.node, isFolder=n.children&&n.children.length, picked=!n.other&&mapSel.has(mapRelPath(n));
+  let hint=n.other?"(many small items — zoom in to see them)":
+    picked?"picked ✓ · click to un-pick":
+    mapSelectMode?"click to pick for recovery":
+    isFolder?"click to zoom in · right-click to pick the whole folder":"click to pick this file for recovery";
+  $("mapHover").textContent=`${n.name} — ${hsize(n.size)} · ${hint}`;
+});
+function hitMap(e){
+  const cv=$("mapCanvas"),b=cv.getBoundingClientRect();
+  const x=(e.clientX-b.left)*(cv.width/b.width), y=(e.clientY-b.top)*(cv.height/b.height);
+  return mapRects.find(r=>x>=r.x&&x<r.x+r.w&&y>=r.y&&y<r.y+r.h)||null;
+}
+function mapTo(i){mapPath=mapPath.slice(0,i+1);drawMap();}
+
+refresh().then(connect).then(loadEraseTargets).then(loadMigrateTargets).then(loadWinstall).then(loadDash);
+refreshNet(); refreshVols();
+setInterval(refresh,15000); /* safety net if an SSE event is missed */
+setInterval(()=>{refreshNet();refreshVols();},20000);
+</script>
+</body>
+</html>

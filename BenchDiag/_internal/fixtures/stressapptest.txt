@@ -1,0 +1,7 @@
+Log: Commandline - stressapptest -s 60 -W
+Stats: SAT revision 1.0.9_autoconf, 64 bit binary
+Log: Total 12241 MB. Free 7754 MB. Hugepages 0 MB. Targeting 12079 MB (98%)
+Stats: Completed: 663552.00M in 60.00s 11059.16MB/s, with 0 hardware incidents, 0 errors
+Stats: Memory Copy: 663552.00M at 11059.30MB/s
+Stats: Found 0 hardware incidents
+Status: PASS - please verify no corrected errors

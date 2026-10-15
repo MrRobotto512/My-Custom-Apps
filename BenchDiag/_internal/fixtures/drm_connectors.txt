@@ -1,0 +1,3 @@
+/sys/class/drm/card0-HDMI-A-1
+/sys/class/drm/card0-DP-1
+/sys/class/drm/card0-eDP-1

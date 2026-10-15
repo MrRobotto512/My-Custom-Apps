@@ -1,0 +1,4 @@
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+/dev/sdc1 /run/live/medium vfat ro,relatime 0 0
+/dev/sdc2 /run/benchdiag/payload exfat rw,relatime 0 0
+/dev/sdb1 /run/media/backup exfat rw,relatime 0 0

@@ -1,0 +1,2 @@
+stress-ng: info:  [1000] setting to a 10 second run per stressor
+stress-ng: info:  [1000] successful run completed in 10.00s

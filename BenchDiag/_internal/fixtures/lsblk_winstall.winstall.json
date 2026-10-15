@@ -1,0 +1,10 @@
+{"blockdevices":[
+ {"name":"sdc","path":"/dev/sdc","type":"disk","size":61530439680,"model":"SanDisk Ultra (BenchDiag)","tran":"usb","rm":"1","children":[
+   {"name":"sdc1","path":"/dev/sdc1","type":"part","size":4294967296,"fstype":"vfat"},
+   {"name":"sdc2","path":"/dev/sdc2","type":"part","size":57231835136,"fstype":"exfat"}]},
+ {"name":"nvme0n1","path":"/dev/nvme0n1","type":"disk","size":512110190592,"model":"WD PC SN740","tran":"nvme","rm":"0","children":[
+   {"name":"nvme0n1p1","path":"/dev/nvme0n1p1","type":"part","size":272629760,"fstype":"vfat"},
+   {"name":"nvme0n1p3","path":"/dev/nvme0n1p3","type":"part","size":510182490112,"fstype":"ntfs"}]},
+ {"name":"sdb","path":"/dev/sdb","type":"disk","size":1000204886016,"model":"Samsung 990 EVO (enclosure)","tran":"usb","rm":"1","children":[]},
+ {"name":"sdd","path":"/dev/sdd","type":"disk","size":16013942784,"model":"Generic 16GB stick","tran":"usb","rm":"1","children":[]}
+]}

@@ -1,0 +1,14 @@
+/dev/sda:
+
+ATA device, with non-removable media
+	Model Number:       WDC WD10EZEX-08WN4A0
+	Serial Number:      WD-WCC6Y4123456
+Security:
+	Master password revision code = 65534
+		supported
+	not	enabled
+	not	locked
+	not	frozen
+	not	expired: security count
+		supported: enhanced erase
+	128min for SECURITY ERASE UNIT. 128min for ENHANCED SECURITY ERASE UNIT.

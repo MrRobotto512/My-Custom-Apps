@@ -1,0 +1,22 @@
+Info for BITLK device /dev/sda2.
+Version:      	2
+GUID:         	6ad7e4a1-2c4d-4bd8-9ddd-5ed6ce6df1c8
+Created:      	Tue Mar 12 09:41:07 2024
+Description:  	DESKTOP-4K2M7PQ C: 3/12/2024
+Cipher name:  	aes
+Cipher mode:  	xts-plain64
+Cipher key:   	128 bits
+
+Keyslots:
+  0: VMK
+	GUID:       	95ec0f2c-9dc5-4fc1-a9c1-5d4d0a2ebc3c
+	Protection: 	VMK protected with TPM
+	Salt:       	f2b4e1c0d9a8b7c6d5e4f3a2b1c0d9e8
+	Key data size:	44 [bytes]
+  1: VMK
+	GUID:       	62d0c9e1-9e93-4a4c-a1d4-4f0f45d0e0d4
+	Protection: 	VMK protected with recovery passphrase
+	Salt:       	0a1b2c3d4e5f60718293a4b5c6d7e8f9
+	Key data size:	44 [bytes]
+  2: FVEK
+	Key data size:	44 [bytes]

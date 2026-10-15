@@ -1,0 +1,78 @@
+{
+ "PCI\\VEN_10DE&DEV_21C4": {
+  "ok": true,
+  "version": "32.0.15.7688",
+  "date": "2026-05-12",
+  "title": "NVIDIA - Display - 32.0.15.7688",
+  "classification": "Drivers (Video)",
+  "rows": 9
+ },
+ "PCI\\VEN_8086&DEV_9BC5": {
+  "ok": true,
+  "version": "31.0.101.2141",
+  "date": "2026-03-29",
+  "title": "Intel Corporation Display Driver Update (31.0.101.2141)",
+  "classification": "Drivers (Video)",
+  "rows": 8
+ },
+ "PCI\\VEN_8086&DEV_06E0": {
+  "ok": true,
+  "version": "2406.5.5.0",
+  "date": "2024-09-18",
+  "title": "Intel - System - 2406.5.5.0",
+  "classification": "Drivers (Other Hardware)",
+  "rows": 3
+ },
+ "PCI\\VEN_8086&DEV_0684": {
+  "ok": true,
+  "version": "10.1.18383.8213",
+  "date": "2019-08-06",
+  "title": "INTEL - System - 10.1.18383.8213",
+  "classification": "Drivers (Other Hardware)",
+  "rows": 2
+ },
+ "PCI\\VEN_8086&DEV_06A3": {
+  "ok": true,
+  "version": "10.1.18383.8213",
+  "date": "2019-08-06",
+  "title": "INTEL - System - 10.1.18383.8213",
+  "classification": "Drivers (Other Hardware)",
+  "rows": 2
+ },
+ "PCI\\VEN_8086&DEV_06D2": {
+  "ok": true,
+  "version": "19.5.9.1005",
+  "date": "2024-01-30",
+  "title": "Intel Corporation - SCSIAdapter - 19.5.9.1005",
+  "classification": "Drivers (Storage)",
+  "rows": 4
+ },
+ "PCI\\VEN_8086&DEV_0D4C": {
+  "ok": true,
+  "version": "12.19.2.60",
+  "date": "2023-11-02",
+  "title": "Intel - Net - 12.19.2.60",
+  "classification": "Drivers (Networking)",
+  "rows": 5
+ },
+ "PCI\\VEN_8086&DEV_02F0": {
+  "ok": true,
+  "version": "23.140.0.5",
+  "date": "2026-06-03",
+  "title": "Intel - Net - 23.140.0.5",
+  "classification": "Drivers (Networking)",
+  "rows": 12
+ },
+ "INTELAUDIO\\FUNC_01&VEN_10EC": {
+  "ok": false,
+  "note": "not listed on Windows Update"
+ },
+ "USB\\VID_8087&PID_0026": {
+  "ok": true,
+  "version": "23.140.0.3",
+  "date": "2026-06-03",
+  "title": "Intel - Bluetooth - 23.140.0.3",
+  "classification": "Drivers (Other Hardware)",
+  "rows": 6
+ }
+}

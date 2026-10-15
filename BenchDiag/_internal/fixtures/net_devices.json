@@ -1,0 +1,2 @@
+[{"name":"eth0","kind":"ethernet","up":true,"carrier":true,"mac":"a8:5e:45:d1:22:33","driver":"e1000e"},
+ {"name":"wlan0","kind":"wifi","up":false,"carrier":false,"mac":"3c:f0:11:aa:bb:cc","driver":"rtl8xxxu"}]

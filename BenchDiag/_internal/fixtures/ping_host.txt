@@ -1,0 +1,8 @@
+PING deb.debian.org (146.75.30.132) 56(84) bytes of data.
+64 bytes from 146.75.30.132: icmp_seq=1 ttl=57 time=12.4 ms
+64 bytes from 146.75.30.132: icmp_seq=2 ttl=57 time=12.1 ms
+64 bytes from 146.75.30.132: icmp_seq=3 ttl=57 time=12.6 ms
+
+--- deb.debian.org ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2004ms
+rtt min/avg/max/mdev = 12.100/12.366/12.600/0.205 ms

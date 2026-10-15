@@ -692,3 +692,16 @@
 2026-10-07 10:36:29 INFO  [api] GET /api/hw/scan -> 200 19ms
 2026-10-07 10:36:29 INFO  [api] GET /api/windows/volumes -> 200 3ms
 2026-10-07 10:36:29 INFO  [api] GET /api/net/status -> 200 136ms
+2026-10-15 18:30:16 INFO  ==== benchdiag log opened at C:\Users\Robot\Documents\GitHub\My-Custom-Apps\BenchDiag\Reports\benchdiag.log ====
+2026-10-15 18:30:16 INFO  benchdiag v0.1.0 starting (live) — reports at C:\Users\Robot\Documents\GitHub\My-Custom-Apps\BenchDiag\Reports
+2026-10-15 18:30:19 INFO  [api] GET /api/hw/scan -> 200 58ms
+2026-10-15 18:30:19 INFO  [api] GET /api/erase/targets -> 200 1ms
+2026-10-15 18:30:19 INFO  [api] GET /api/windows/volumes -> 200 11ms
+2026-10-15 18:30:19 INFO  [api] GET /api/migrate/targets -> 200 3ms
+2026-10-15 18:30:19 INFO  [api] GET /api/winstall/isos -> 200 3ms
+2026-10-15 18:30:19 INFO  [api] GET /api/bitlocker -> 200 22ms
+2026-10-15 18:30:19 INFO  [api] GET /api/net/status -> 200 181ms
+2026-10-15 18:30:26 INFO  [api] GET /api/windows/volumes -> 200 2ms
+2026-10-15 18:30:26 INFO  [api] POST /api/windows/open -> 200 1ms
+2026-10-15 18:30:26 INFO  [api] POST /api/health/audit -> 200 10ms
+2026-10-15 18:30:34 INFO  [api] GET /api/bitlocker -> 200 13ms

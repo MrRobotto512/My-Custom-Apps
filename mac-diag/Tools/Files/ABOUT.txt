@@ -1,0 +1,68 @@
+Files  (disk map / find / back up / remove)
+===========================================
+
+What it is
+  The "what is filling this Mac, and what do we do with it" tool - the shop's
+  answer to CleanMyMac's Space Lens plus the two jobs that follow it: back the
+  customer's data up before a wipe, or remove what they no longer want.
+
+  Use it from the dashboard's FILES page (Run-Dashboard.command -> Files).
+  Run-Files.command is the Terminal version: it indexes the disk and prints a
+  "what fills it" report (largest folders, customer-data folders, 40 largest
+  files) - browsing and actions are dashboard-only.
+
+How the Files page works
+  1. INDEX THIS MAC  - one pass with du + find (1-5 min). Every folder with its
+     size and every file >= 1 MB go into an index on the stick's run folder;
+     the page then browses from the index instantly and the web server never
+     reads a protected folder itself. Started with the admin password the index
+     includes other users and system-owned files; without it, only what the
+     current user can read (the page says so).
+  2. BROWSE  - breadcrumb (volume > folder > ...), a list sorted by size with a
+     tick box per row, and a bubble map (area = size) of the largest 14 items;
+     click a folder bubble to open it, a file bubble to select it.
+     CUSTOMER DATA chips: Desktop, Documents, Downloads, Pictures, Photos
+     library, Movies, Music, Mail, iPhone/iPad backups, Messages, iCloud Drive -
+     the folders a backup or migration is made of; "+" adds the whole folder.
+     FIND: name contains / kind (photos, videos, audio, documents, archives,
+     installers, disk images) / minimum size - searches the index, ticks add
+     to the same selection.
+  3. ACT on the selection
+     BACK UP...   - pick a mounted volume (external disk, NAS, USB stick); files
+                    are copied with rsync keeping their folder paths under
+                    BenchTool-Backup-<host>-<time>/, then every file is verified
+                    by size (optionally SHA-256), with a manifest inside the
+                    backup folder and a report on the stick. The report says
+                    BACKUP VERIFIED or BACKUP NOT VERIFIED (missing / mismatch
+                    lines listed) - never wipe a Mac on a NOT VERIFIED backup.
+     MOVE TO TRASH - into ~/.Trash/BenchTool-Files-<time>/ (recoverable until the
+                    Trash is emptied). Home-folder paths only.
+     DELETE PERMANENTLY - rm -rf after a double confirm. No undo. Refuses the
+                    roots that hold macOS or every user's data (/, /System,
+                    /Library, /Users, /Applications, a whole volume, ~/Library,
+                    the Photos library bundle, the Trash itself).
+     Removed items are dropped from the index and it is flagged STALE (parent
+     folder sizes are as indexed until you re-index).
+  All three run through the collector's job queue, so they inherit the admin
+  rights the dashboard was started with - no Terminal, no second password.
+
+Reports  (Files-Reports/ next to this file, also on the dashboard's Reports page)
+  Files_<host>_<time>.txt/.json      Run-Files.command "what fills it" report
+  Backup_<host>_<time>.txt/.json/.manifest   per-file manifest with sizes (+ hashes)
+  Trash_<host>_<time>.txt/.json/.manifest    every moved path with its size
+  Delete_<host>_<time>.txt/.json/.manifest   every deleted path with its size
+
+Rules of the shop
+  - Back up BEFORE you remove, and only remove the customer's data with their
+    OK. The page asks; the report proves what was done.
+  - The Photos library is one bundle (.photoslibrary) - back it up whole, never
+    copy pictures out of it, never delete it partially.
+  - Files under 1 MB are counted in folder sizes but not listed one by one.
+  - Other mounted volumes and the Data volume's second mount are skipped by
+    the index; the startup disk is what the page shows.
+
+Switches (Run-Files.command)   -NoSudo   -Quiet (no prompts, for the dashboard)
+
+Files
+  Run-Files.command   Terminal front end (index + report)
+  files.sh            engine: index | backup | trash | delete | prune  (bash 3.2, BSD tools)

@@ -1,0 +1,85 @@
+# adp_codes.tsv - Apple Diagnostics / AHT reference codes (2013+ Macs). code<TAB>meaning<TAB>bench note
+# From Apple's public reference-code list (support.apple.com "Apple Diagnostics reference codes", HT203747). Verify there if a code is missing.
+# macOS 26+ on Apple silicon: the same codes come from Repair Assistant > Mac Resource Inspector (Cmd-D at startup options).
+ADP000	No issues found	Diagnostics passed. A pass does NOT clear intermittent faults - run it 2-3x hot if the complaint is intermittent.
+CNW001	Wi-Fi hardware issue	Wi-Fi/BT card or its antenna/flex. On Apple silicon the card is on the logic board.
+CNW003	Wi-Fi hardware issue	same as CNW001
+CNW004	Wi-Fi hardware issue	same as CNW001
+CNW005	Wi-Fi hardware issue	same as CNW001
+CNW006	Wi-Fi hardware issue	same as CNW001
+CNW007	No Wi-Fi networks detected	Not necessarily a fault - Wi-Fi off, no networks in range, or antenna disconnected. Retest near a router.
+CNW008	No Wi-Fi networks detected	same as CNW007
+NDC001	Camera issue	FaceTime camera / camera flex / display assembly.
+NDC003	Camera issue	same as NDC001
+NDC004	Camera issue	same as NDC001
+NDC005	Camera issue	same as NDC001
+NDC006	Camera issue	same as NDC001
+NDD001	USB hardware issue	USB controller/port - check for a stuck device or liquid damage at the port.
+NDK001	Keyboard issue	Keyboard / keyboard flex / top case.
+NDK003	Keyboard issue	same as NDK001
+NDK004	Keyboard issue	same as NDK001
+NDL001	Bluetooth hardware issue	Wi-Fi/BT card or antenna. Often pairs with CNW codes.
+NDR001	Trackpad issue	Trackpad / trackpad flex (look for a swollen battery pushing it).
+NDR003	Trackpad issue	same as NDR001
+NDR004	Trackpad issue	same as NDR001
+NDT001	Thunderbolt hardware issue	TB controller / USB-C port - liquid damage and bent pins first.
+NDT002	Thunderbolt hardware issue	same as NDT001
+NDT003	Thunderbolt hardware issue	same as NDT001
+NDT004	Thunderbolt hardware issue	same as NDT001
+NDT005	Thunderbolt hardware issue	same as NDT001
+NDT006	Thunderbolt hardware issue	same as NDT001
+NNN001	Serial number not detected	Logic board was replaced without the serial being written, or board-level damage. Not a hardware fault by itself.
+PFM001	System Management Controller (SMC) issue	Intel: SMC reset first (shut down, Shift-Ctrl-Option + power 10 s). Persisting = logic board.
+PFM002	System Management Controller (SMC) issue	same as PFM001
+PFM003	System Management Controller (SMC) issue	same as PFM001
+PFM004	System Management Controller (SMC) issue	same as PFM001
+PFM005	System Management Controller (SMC) issue	same as PFM001
+PFM006	System Management Controller (SMC) issue	same as PFM001
+PFM007	System Management Controller (SMC) issue	same as PFM001
+PFR001	Firmware issue	Reinstall macOS / DFU revive (Apple silicon + T2) before condemning the board.
+PPF001	Fan issue	Fan not spinning / wrong RPM - fan, fan cable, or the sensor telling it to spin.
+PPF003	Fan issue	same as PPF001
+PPF004	Fan issue	same as PPF001
+PPM001	Memory module issue	Removable RAM: reseat/swap modules one at a time. Onboard: logic board.
+PPM002	Onboard memory issue	Soldered RAM - logic board level.
+PPM003	Onboard memory issue	same as PPM002
+PPM004	Onboard memory issue	same as PPM002
+PPM005	Onboard memory issue	same as PPM002
+PPM006	Onboard memory issue	same as PPM002
+PPM007	Onboard memory issue	same as PPM002
+PPM008	Onboard memory issue	same as PPM002
+PPM009	Onboard memory issue	same as PPM002
+PPM010	Onboard memory issue	same as PPM002
+PPM011	Onboard memory issue	same as PPM002
+PPM012	Onboard memory issue	same as PPM002
+PPM013	Onboard memory issue	same as PPM002
+PPM014	Onboard memory issue	same as PPM002
+PPM015	Onboard memory issue	same as PPM002
+PPN001	Power management issue	SMC/PMU - reset SMC (Intel); check charger + battery data with MacDiag.
+PPP001	Power adapter issue	Try a known-good Apple adapter AND cable before blaming the Mac.
+PPP002	Power adapter issue	same as PPP001
+PPP003	Power adapter not connected	Plug in the adapter and rerun - the test wants to see charging.
+PPP007	Power adapter issue	same as PPP001
+PPR001	Processor issue	Rerun. Repeat PPR001 = logic board.
+PPT001	Battery not detected	Battery connector / battery flex / dead battery. On a desktop: ignore.
+PPT002	Battery needs service soon	Still working, capacity low - quote a battery.
+PPT003	Battery needs service soon	same as PPT002
+PPT004	Battery requires service	Battery is not functioning normally - replace.
+PPT005	Battery not installed correctly	Reseat the battery connector.
+PPT006	Battery requires service	same as PPT004
+PPT007	Battery requires service	same as PPT004
+VDC001	SD card reader issue	Card reader / logic board. Check for a card stuck inside.
+VDC003	SD card reader issue	same as VDC001
+VDC005	SD card reader issue	same as VDC001
+VDC007	SD card reader issue	same as VDC001
+VDH002	Storage device issue	SSD/HDD failing - back up first (see MacDiag SMART). Soldered SSD = logic board.
+VDH004	Storage device issue	same as VDH002
+VDH005	Unable to start macOS Recovery	Recovery partition missing/damaged - use Internet Recovery (Option-Cmd-R) or DFU restore.
+VFD001	Display issue	Display panel / cable / backlight. Test with an external monitor to split panel vs GPU.
+VFD002	Display issue	same as VFD001
+VFD003	Display issue	same as VFD001
+VFD004	Display issue	same as VFD001
+VFD005	Display issue	same as VFD001
+VFD006	Graphics processor issue	GPU fault - logic board (Intel dGPU models: classic reflow/replace candidates).
+VFD007	Display issue	same as VFD001
+VFF001	Audio hardware issue	Speakers / audio board / codec.

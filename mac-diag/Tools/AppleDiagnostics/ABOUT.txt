@@ -1,0 +1,60 @@
+Apple Diagnostics / AHT Finder
+==============================
+
+What it is
+  Gets Apple's own hardware test onto the bench for the Mac in front of you,
+  and decodes what it says.
+
+  Macs from mid-2013 on + every Apple silicon Mac
+    Apple Diagnostics is in firmware. The tool prints the exact key sequence
+    for THIS Mac (Intel: D at boot, Option-D over the internet if the local
+    copy is gone; Apple silicon: hold power > startup options > Command-D) and
+    decodes the reference codes (PPT004, VDH002, PFM00x ...) into plain words +
+    the likely part (adp_codes.tsv - Apple's public list).
+
+  Apple silicon Macs on macOS 26 (Tahoe) and later
+    Command-D now opens REPAIR ASSISTANT (it replaced Apple Diagnostics in
+    macOS 26). The tool detects this and prints the new flow: Mac Resource
+    Inspector (the classic diagnostics pass - same reference codes), Display
+    Anomalies, Keyboard / Trackpad / Touch ID, and Audio tests. After a
+    repair, System Settings > General > About > Parts & Service > "Restart &
+    Finish Repair" runs the calibration (battery, Touch ID, display, logic
+    board, lid angle sensor, top case) that used to need Apple's AST 2.
+    The same pane labels serviced parts Genuine / Used / Unknown / Unverified
+    - the tool explains what each means for a trade-in grade.
+
+  Macs 2006 - early 2013 (Apple Hardware Test era)
+    AHT is a per-model disk image Apple still serves. The tool reads the model
+    identifier + board-id, finds the download code in aht_codes.tsv (78
+    board-ids, from MaxTechnics/AHTFinder), downloads the .dmg (Apple first,
+    GitHub mirror if Apple is down), caches it in AHT-Images/ on this stick and
+    builds a bootable AHT USB from a SECOND stick: erase (GPT / JHFS+) ->
+    copy the image's System folder -> bless diags.efi. Hold Option at power-on
+    and pick "AHT"; tick "Perform extended testing" (the quick test misses bad
+    RAM). Option-D on 2011+ Macs runs the same AHT over the internet.
+
+How to run
+  Double-click  Run-AppleDiagnostics.command  and follow the prompts.
+    Run-AppleDiagnostics.command -Code PPT004 VDH002        decode codes only
+    Run-AppleDiagnostics.command -Model MacBookPro8,2 -Board Mac-94245A3940C91C80
+                                         look up a Mac that cannot boot (read
+                                         the model off the bottom case / About
+                                         This Mac on any OS; board-id via
+                                         `ioreg -l | grep board-id`)
+  Building the AHT USB needs the admin password (bless) and destroys the
+  target stick - it lists external physical disks only, excludes this
+  Diagnostics stick, and makes you type the disk id + YES.
+
+Reading Repair Assistant / Apple Diagnostics codes
+  ADP000 = pass. Anything else is a family code: PPT battery, PPF fan, PFM SMC,
+  PPM memory, VDH storage, VFD display (VFD006 = GPU), CNW Wi-Fi, NDT
+  Thunderbolt, PPP power adapter (PPP003 = just not plugged in). A pass does
+  NOT clear an intermittent fault - run it 2-3 times, warm.
+
+Files written here (stay on the USB, not committed)
+  AHT-Images/<code>.dmg                       cached AHT images (3-25 MB each)
+  AppleDiagnostics-Reports/*.txt / .json      identity + codes decoded
+  AppleDiagnostics-last-run.log
+
+Credits: AHT table + mirror from AHTFinder by Maxim Coppieters (MPL-2.0),
+github.com/MaxTechnics/AHTFinder. Script rewritten for BenchTool.

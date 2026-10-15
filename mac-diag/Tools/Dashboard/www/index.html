@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BenchTool · Mac Dashboard</title>
+<style>
+:root{
+  --bg:#0a0c10;--side:#0d1016;--card:#11141b;--card2:#151923;--line:#1e2431;--text:#e6e9ef;--muted:#7f889a;--dim:#4a5261;
+  --green:#4dff5a;--blue:#3f8dff;--magenta:#d24bff;--yellow:#ffd53b;--red:#ff4f4f;--orange:#ff9d3b;--cyan:#3ef0ff;--purple:#9a6bff;
+  --mono:"SF Mono",Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
+body{display:flex;overflow:hidden}
+a{color:var(--blue)}
+#side{width:220px;flex:0 0 220px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:14px 10px;height:100vh}
+#side .brand{font-weight:700;letter-spacing:.5px;padding:8px 10px 14px;font-size:15px;color:#fff}
+#side .brand small{display:block;color:var(--muted);font-weight:400;font-size:11px;margin-top:2px}
+#side nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow:auto}
+#side .nav{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:#c7cdd8;cursor:pointer;font-size:14px;border:1px solid transparent}
+#side .nav .ic{width:18px;text-align:center;opacity:.85;font-size:15px}
+#side .nav:hover{background:#151a24}
+#side .nav.on{background:#1b2a4a;border-color:#2a4373;color:#fff}
+#side .sep{display:flex;align-items:center;gap:8px;color:var(--blue);font-size:10px;letter-spacing:2px;padding:12px 12px 4px}
+#side .sep:after{content:"";flex:1;height:1px;background:#24304a}
+#side .foot{border-top:1px solid var(--line);padding-top:10px;margin-top:8px;font-size:12px;color:var(--muted)}
+#side .foot .host{color:#fff;font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#side .foot .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);margin-right:6px;vertical-align:middle}
+#side .foot .dot.bad{background:var(--red);box-shadow:0 0 6px var(--red)}
+#main{flex:1;display:flex;flex-direction:column;height:100vh;min-width:0}
+#head{display:flex;align-items:center;justify-content:space-between;padding:16px 26px 10px;border-bottom:1px solid var(--line)}
+#head h1{margin:0;font-size:30px;font-weight:600;letter-spacing:.3px}
+#head .quick{display:flex;gap:22px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+#head .quick b{color:#fff;font-weight:600}
+#content{flex:1;overflow:auto;padding:16px 22px 26px}
+section.page{display:none}section.page.on{display:block}
+.grid{display:grid;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;position:relative;min-width:0}
+.card h2{margin:0 0 6px;font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px}
+.card h2 .ic{font-size:16px;opacity:.9}
+.card h2 .val{margin-left:auto;font-family:var(--mono);font-weight:600;font-size:19px}
+.card .sub{color:var(--muted);font-size:12px;margin:-2px 0 8px}
+.card .legend{display:flex;gap:16px;font-size:12px;color:#aab2c0;margin:4px 0 8px}
+.card .legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.card.g{border-color:#1d3b23}.card.b{border-color:#1d2f52}.card.y{border-color:#4a3d13}.card.r{border-color:#4a1d1d}.card.m{border-color:#3d1d52}.card.o{border-color:#4a2e13}
+.c-green{color:var(--green)}.c-blue{color:var(--blue)}.c-yellow{color:var(--yellow)}.c-red{color:var(--red)}.c-magenta{color:var(--magenta)}.c-orange{color:var(--orange)}.c-cyan{color:var(--cyan)}
+canvas.chart{width:100%;height:230px;display:block;background:#0b0e14;border:1px solid #1a2130;border-radius:6px}
+canvas.chart.tall{height:300px}
+/* LED bars */
+.led{display:flex;gap:3px;height:22px;margin:8px 0 2px}
+.led i{flex:1;border-radius:2px;background:#171b24;border:1px solid #1e2431}
+.led i.on{border-color:transparent}
+.led.green i.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.led.blue i.on{background:var(--blue);box-shadow:0 0 6px var(--blue)}
+.led.yellow i.on{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.led.red i.on{background:var(--red);box-shadow:0 0 6px var(--red)}
+.led.orange i.on{background:var(--orange);box-shadow:0 0 6px var(--orange)}
+.led.magenta i.on{background:var(--magenta);box-shadow:0 0 6px var(--magenta)}
+.led.dim i.on{opacity:.55;box-shadow:none}
+.vmeters{display:flex;gap:10px;justify-content:space-around;height:100%}
+.vm{display:flex;flex-direction:column;align-items:center;flex:1;min-width:40px}
+.vm .lab{font-size:11px;font-weight:600;letter-spacing:.5px;margin-bottom:6px}
+.vm .bar{flex:1;width:100%;display:flex;flex-direction:column-reverse;gap:2px;min-height:300px}
+.vm .bar i{flex:1;background:#171b24;border-radius:2px}
+.vm .num{font-family:var(--mono);font-size:12px;margin-top:8px;color:#dfe4ee}
+.vm.green .lab{color:var(--green)}.vm.green .bar i.on{background:var(--green);box-shadow:0 0 7px var(--green)}
+.vm.magenta .lab{color:var(--magenta)}.vm.magenta .bar i.on{background:var(--magenta);box-shadow:0 0 7px var(--magenta)}
+.vm.blue .lab{color:var(--blue)}.vm.blue .bar i.on{background:var(--blue);box-shadow:0 0 7px var(--blue)}
+.vm.yellow .lab{color:var(--yellow)}.vm.yellow .bar i.on{background:var(--yellow);box-shadow:0 0 7px var(--yellow)}
+.vm.red .lab{color:var(--red)}.vm.red .bar i.on{background:var(--red);box-shadow:0 0 7px var(--red)}
+.vm .bar i.on.hot{background:var(--red);box-shadow:0 0 7px var(--red)}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--muted);font-weight:500;text-align:left;padding:4px 8px;border-bottom:1px solid var(--line);font-size:12px;cursor:pointer;white-space:nowrap}
+td{padding:5px 8px;border-bottom:1px solid #141821;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:380px}
+td.n,th.n{text-align:right;font-family:var(--mono)}
+tr.hi td{background:#14251a}
+tr:hover td{background:#171c27}
+.tag{display:inline-block;padding:1px 7px;white-space:normal;border-radius:6px;font-size:11px;font-family:var(--mono);border:1px solid}
+.tag.ok{color:var(--green);border-color:#1d3b23}.tag.bad{color:var(--red);border-color:#4a1d1d;background:#2a1010}.tag.warn{color:var(--yellow);border-color:#4a3d13}.tag.info{color:var(--blue);border-color:#1d2f52}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 12px;font-size:13px}
+.kv b{color:var(--muted);font-weight:500}
+.kv span{font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tile .big{font-family:var(--mono);font-size:19px;font-weight:600;margin-left:auto}
+.btn{white-space:nowrap;background:#1b2a4a;border:1px solid #2a4373;color:#fff;padding:8px 14px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600}
+.btn:hover{background:#223660}.btn.sm{padding:4px 10px;font-size:12px}.btn.red{background:#4a1d1d;border-color:#7a2a2a}
+input.q{background:#0b0e14;border:1px solid var(--line);color:#fff;padding:7px 10px;border-radius:8px;width:260px;font-size:13px}
+pre.log{background:#070910;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12px;line-height:1.45;max-height:420px;overflow:auto;white-space:pre-wrap;color:#c7cdd8;margin:0}
+.flags{display:flex;flex-wrap:wrap;gap:8px}
+.flag{padding:6px 10px;border-radius:8px;border:1px solid;font-size:12px}
+.flag.bad{border-color:#7a2a2a;background:#2a1010;color:#ffb3b3}.flag.ok{border-color:#1d3b23;background:#0f1c12;color:#a8ffb0}.flag.warn{border-color:#4a3d13;background:#211b08;color:#ffe08a}
+.tool{display:flex;flex-direction:column;gap:8px}
+.tool p{margin:0;color:#aab2c0;font-size:12.5px;line-height:1.4}
+.tool .row{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin-top:auto}
+.toast{position:fixed;right:20px;bottom:20px;background:#1b2a4a;border:1px solid #2a4373;padding:10px 14px;border-radius:10px;font-size:13px;display:none;z-index:9}
+.status{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;padding:8px 26px;border-top:1px solid var(--line);font-family:var(--mono)}
+.status .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.status .dot.bad{background:var(--red);box-shadow:0 0 6px var(--red)}
+.status .dot.wait{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.grid.g-summary{grid-template-columns:230px minmax(0,1.6fr) minmax(0,1.2fr)}
+.grid.g-two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.grid.g-reports{grid-template-columns:minmax(260px,380px) minmax(0,1fr)}
+.tiles.t-four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+pre.log{overflow-wrap:anywhere;word-break:break-word}
+td.wrap{white-space:normal}
+@media (max-width:1250px){
+  .grid.g-summary{grid-template-columns:230px minmax(0,1fr)}
+  .grid.g-summary > .card:nth-child(3){grid-column:1 / -1}
+  .tiles.t-four{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:1100px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.g-two,.grid.g-reports{grid-template-columns:minmax(0,1fr)}
+  .grid.g-reports > .card:first-child{max-height:340px;overflow:auto}
+}
+@media (max-width:820px){
+  .grid.g-summary{grid-template-columns:minmax(0,1fr)}
+  .vm .bar{min-height:160px}
+  .tiles,.tiles.t-four{grid-template-columns:minmax(0,1fr)}
+  #head h1{font-size:22px}
+  #head .quick{display:none}
+}
+/* ---- Tests page ---- */
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{background:#0f1420;border:1px solid var(--line);color:#aab2c0;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600}
+.tab.on{background:#1b2a4a;border-color:#2a4373;color:#fff}.tab.done{border-color:#1d3b23}.tab.bad{border-color:#7a2a2a;color:#ffb3b3}
+.tpanel{display:none}.tpanel.on{display:block}
+.tp{margin:0 0 10px;color:#aab2c0;font-size:12.5px;line-height:1.45}
+.tp-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.tp-hint{margin-top:10px;padding:8px 10px;border:1px dashed #23304a;border-radius:8px;color:#8d97a8;font-size:12px;line-height:1.45}
+.vrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.vb{border:1px solid var(--line);background:#0f1420;color:#aab2c0;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;font-family:var(--mono)}
+.vb.pass.on{color:var(--green);border-color:#1d3b23;background:#0f1c12}.vb.fail.on{color:var(--red);border-color:#7a2a2a;background:#2a1010}.vb.skip.on{color:#c9d1e0;border-color:#3a4256;background:#1a1f2b}
+.vrow input.q{flex:1;min-width:140px}
+#ds-ov{position:fixed;inset:0;z-index:50;display:none;cursor:none;background:#000}
+#ds-ov.on{display:block}
+#ds-ov .lab{position:absolute;left:14px;bottom:12px;font:12px var(--mono);color:#888;background:rgba(0,0,0,.6);padding:4px 8px;border-radius:6px;transition:opacity .3s}
+#ds-ov .txt{position:absolute;inset:0;padding:40px;overflow:hidden;font:13px/1.5 -apple-system,Helvetica,Arial,sans-serif;color:#000;background:#fff}
+#ds-ov .txt p{margin:0 0 10px}
+#kb-wrap{outline:none;border:1px solid var(--line);border-radius:10px;padding:10px;background:#0b0e14}
+#kb-wrap:focus{border-color:#2a4373}
+#kb-grid{display:flex;flex-direction:column;gap:4px;user-select:none}
+.kb-row{display:flex;gap:4px}
+.key{flex:1 1 0;min-width:0;height:34px;border:1px solid #232a3a;border-radius:6px;background:#121826;color:#8d97a8;font:11px var(--mono);display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap}
+.key.hit{background:#0f1c12;border-color:#1d3b23;color:var(--green)}.key.down{background:#1b2a4a;border-color:#2a4373;color:#fff}.key.chat{background:#2a1010;border-color:#7a2a2a;color:var(--red)}.key.na{opacity:.35}
+.key.w15{flex-grow:1.5}.key.w2{flex-grow:2}.key.w25{flex-grow:2.5}.key.w6{flex-grow:6}.key.h{height:16px;font-size:9px}
+#tk-area{position:relative;height:320px;border:1px solid var(--line);border-radius:10px;background:#0b0e14;overflow:hidden;touch-action:none;user-select:none}
+#tk-zones{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(4,1fr)}
+#tk-zones i{border:1px solid #141a26}#tk-zones i.on{background:rgba(77,255,90,.12);border-color:#1d3b23}
+#tk-canvas{position:absolute;inset:0;width:100%;height:100%}
+#tk-msg{position:absolute;left:12px;bottom:8px;pointer-events:none}
+#cam-video{width:100%;max-height:300px;background:#000;border-radius:10px;margin-top:8px;display:block}
+#mic-meter{border:1px solid var(--line);border-radius:6px;background:#0b0e14}
+.ck td{vertical-align:middle;white-space:normal}
+.ck .vb{padding:3px 8px;font-size:11px}
+input.q.sm{padding:4px 8px;font-size:12px;width:100%;min-width:120px}
+/* ---- Clean page ---- */
+table.cl td{white-space:normal}
+tr.dim td{opacity:.5}
+.cl-items{font:12px var(--mono);color:#c7cdd8;background:#070910;border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-height:260px;overflow:auto;white-space:nowrap}
+.cl-items div{padding:1px 0}
+/* ---- Files page ---- */
+select.q{background:#0b0e14;border:1px solid var(--line);color:#fff;padding:7px 10px;border-radius:8px;font-size:13px;width:auto}
+.fl-min{white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.fl-usedbar{height:8px;border-radius:4px;background:#0b0e14;border:1px solid var(--line);margin-top:10px;overflow:hidden}
+.fl-usedbar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--magenta));transition:width .4s}
+.fl-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:14px;margin:0 0 10px;min-height:24px}
+.fl-crumbs a{color:var(--blue);cursor:pointer;text-decoration:none;padding:2px 6px;border-radius:6px}
+.fl-crumbs a:hover{background:#151923}
+.fl-crumbs .cur{color:var(--text);font-weight:600;padding:2px 6px}
+.fl-crumbs .sep{color:var(--dim)}
+table.fl td{white-space:normal;vertical-align:middle}
+table.fl td.nm{cursor:pointer}
+table.fl td.nm:hover{color:var(--blue)}
+table.fl .ic{display:inline-block;width:18px;text-align:center;margin-right:6px}
+table.fl tr.sel td{background:rgba(210,75,255,.08)}
+.fl-sbar{height:6px;border-radius:3px;background:#0b0e14;overflow:hidden}
+.fl-sbar i{display:block;height:100%;background:var(--blue)}
+.fl-browse{align-items:start}
+.fl-listwrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.fl-listwrap table{margin:0}
+.fl-listwrap thead th{position:sticky;top:0;background:var(--card);z-index:1}
+.fl-mapwrap{position:sticky;top:10px;display:flex;flex-direction:column}
+#fl-map{width:100%;height:520px;display:block;background:#0b0e14;border:1px solid var(--line);border-radius:10px}
+@media (max-width:900px){ #fl-map{height:360px} .fl-listwrap{max-height:360px} .fl-mapwrap{position:static} }
+#fl-map g{cursor:pointer}
+#fl-map g:hover circle{stroke:var(--text);stroke-width:2}
+#fl-map circle{stroke:#0b0e14;stroke-width:1.5;transition:opacity .15s}
+#fl-map g.sel circle{stroke:var(--magenta);stroke-width:2.5}
+#fl-map text{fill:#fff;font-size:11px;text-anchor:middle;pointer-events:none;font-family:var(--mono)}
+#fl-map text.sz{fill:rgba(255,255,255,.75);font-size:9px}
+.fl-chips{display:flex;flex-wrap:wrap;gap:8px}
+.fl-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:5px 6px 5px 12px;background:#151923;font-size:13px}
+.fl-chip a{cursor:pointer;color:var(--text)}
+.fl-chip a:hover{color:var(--blue)}
+.fl-chip .n{color:var(--muted);font-size:12px}
+.fl-chip button{border:0;border-radius:12px;width:22px;height:22px;background:#23304a;color:var(--text);cursor:pointer;font-weight:700;line-height:1}
+.fl-chip button:hover{background:var(--magenta)}
+.fl-chip.sel{border-color:var(--magenta)}
+.fl-sel{display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow:auto}
+.fl-sel span{font:12px var(--mono);border:1px solid var(--line);border-radius:6px;padding:3px 8px;background:#0b0e14;white-space:nowrap}
+.fl-sel span b{color:var(--muted);font-weight:400;margin-left:6px}
+.fl-sel span i{cursor:pointer;color:var(--red);font-style:normal;margin-left:6px}
+@media (max-width:900px){ .fl-browse{grid-template-columns:minmax(0,1fr)} }
+/* setup mode (a Mac still at Setup Assistant: no admin, no real user, no stick) */
+body.setup #side .nav[data-page="procs"],body.setup #side .nav[data-page="startup"],body.setup #side .nav[data-page="users"],body.setup #side .nav[data-page="services"],body.setup #side .nav[data-page="clean"],body.setup #side .nav[data-page="files"],body.setup .setup-hide{display:none !important}
+.fan-res{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px}
+.in-verdict{font-size:44px;font-weight:800;letter-spacing:1px;font-family:var(--mono)}
+.in-reasons .flag{display:inline-block;margin:3px 6px 3px 0}
+.in-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+</style>
+</head>
+<body>
+<aside id="side">
+  <div class="brand">BenchTool<small>Mac Diagnostics · Dashboard</small></div>
+  <nav>
+    <div class="nav" data-page="intake"><span class="ic">🛬</span>Intake</div>
+    <div class="nav on" data-page="summary"><span class="ic">◎</span>Summary</div>
+    <div class="nav" data-page="perf"><span class="ic">∿</span>Performance</div>
+    <div class="nav" data-page="procs"><span class="ic">☰</span>Processes</div>
+    <div class="nav" data-page="sysinfo"><span class="ic">ⓘ</span>System Info</div>
+    <div class="nav" data-page="startup"><span class="ic">⏻</span>Startup items</div>
+    <div class="nav" data-page="users"><span class="ic">👥</span>Users</div>
+    <div class="nav" data-page="services"><span class="ic">⚙</span>Services</div>
+    <div class="nav" data-page="disks"><span class="ic">◍</span>Disks</div>
+    <div class="sep">BENCH</div>
+    <div class="nav" data-page="tools"><span class="ic">🧰</span>Tools</div>
+    <div class="nav" data-page="tests"><span class="ic">✓</span>Tests</div>
+    <div class="nav" data-page="clean"><span class="ic">🧹</span>Clean</div>
+    <div class="nav" data-page="files"><span class="ic">🗂</span>Files</div>
+    <div class="nav" data-page="reports"><span class="ic">📄</span>Reports</div>
+  </nav>
+  <div class="foot"><div class="host" id="f-host">—</div><div id="f-model">—</div><div id="f-ver" style="margin-top:4px;font-family:var(--mono);font-size:11px">dashboard 1.7</div><div style="margin-top:6px"><span class="dot" id="f-dot"></span><span id="f-state">connecting</span></div>
+    <div style="margin-top:8px"><button class="btn sm red" onclick="quitDash()">Stop dashboard</button></div></div>
+</aside>
+<div id="main">
+  <div id="head"><h1 id="title">Summary</h1>
+    <div class="quick"><span>CPU <b id="q-cpu">—</b></span><span>MEM <b id="q-mem">—</b></span><span>GPU <b id="q-gpu">—</b></span><span>UP <b id="q-up">—</b></span></div></div>
+  <div id="content">
+
+  <!-- SUMMARY -->
+  <section class="page on" id="p-summary">
+    <div class="grid g-summary">
+      <div class="card"><div class="vmeters">
+        <div class="vm green"><div class="lab">CPU</div><div class="bar" id="vm-cpu"></div><div class="num" id="vn-cpu">—</div></div>
+        <div class="vm magenta"><div class="lab">MEM</div><div class="bar" id="vm-mem"></div><div class="num" id="vn-mem">—</div></div>
+        <div class="vm blue"><div class="lab">GPU</div><div class="bar" id="vm-gpu"></div><div class="num" id="vn-gpu">—</div></div>
+        <div class="vm yellow"><div class="lab">DISK</div><div class="bar" id="vm-disk"></div><div class="num" id="vn-disk">—</div></div>
+      </div></div>
+      <div class="card"><h2><span class="ic">▣</span>CPU Overview<span class="val c-green" id="s-cpu">—</span></h2>
+        <div class="legend"><span><i style="background:var(--green)"></i>Utilization</span><span><i style="background:var(--blue)"></i>GPU</span><span><i style="background:var(--orange)"></i>Temperature</span></div>
+        <canvas class="chart" id="ch-cpu"></canvas>
+        <div class="sub" style="margin-top:8px;display:flex;justify-content:space-between"><span id="s-cores">— logical processors</span><span id="s-load">load —</span><span id="s-therm">—</span></div>
+      </div>
+      <div class="card"><h2><span class="ic">☰</span>Top processes<span class="sub" style="margin-left:auto" id="s-nproc">—</span></h2>
+        <table><thead><tr><th class="n">PID</th><th>Name</th><th class="n">CPU</th><th class="n">Memory</th></tr></thead><tbody id="s-procs"></tbody></table>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <div class="card m"><h2><span class="ic">▤</span>Memory Utilization<span class="val" id="s-memv">—</span></h2>
+        <canvas class="chart" id="ch-mem" style="height:170px"></canvas>
+        <div class="sub" style="margin-top:8px;display:flex;justify-content:space-between"><span id="s-memfree">Available —</span><span id="s-memcache">Cached —</span><span id="s-swap">Swap —</span><span id="s-mp">Pressure —</span></div>
+      </div>
+    </div>
+    <div class="tiles" style="margin-top:14px">
+      <div class="card g tile"><h2><span class="ic">◍</span>Disks<span class="big c-green" id="t-disk">—</span></h2><div class="sub" id="t-disk-sub">—</div><div class="led green" id="led-disk"></div></div>
+      <div class="card b tile"><h2><span class="ic">⇅</span>Network<span class="big c-blue" id="t-net">—</span></h2><div class="sub" id="t-net-sub">—</div><div class="led blue" id="led-net"></div></div>
+      <div class="card y tile"><h2><span class="ic">⚡</span>Energy<span class="big c-yellow" id="t-bat">—</span></h2><div class="sub" id="t-bat-sub">—</div><div class="led yellow" id="led-bat"></div></div>
+      <div class="card b tile"><h2><span class="ic">▭</span>GPU<span class="big c-blue" id="t-gpu">—</span></h2><div class="sub" id="t-gpu-sub">—</div><div class="led blue" id="led-gpu"></div></div>
+      <div class="card o tile"><h2><span class="ic">🌡</span>Thermals<span class="big c-orange" id="t-therm">—</span></h2><div class="sub" id="t-therm-sub">—</div><div class="led orange" id="led-therm"></div></div>
+      <div class="card r tile"><h2><span class="ic">🔒</span>Trade-in check<span class="big" id="t-trade">—</span></h2><div class="flags" id="t-flags"><span class="sub">reading…</span></div></div>
+    </div>
+  </section>
+
+  <!-- PERFORMANCE -->
+  <section class="page" id="p-perf">
+    <div class="grid g-two">
+      <div class="card g"><h2>CPU<span class="val c-green" id="pf-cpu">—</span></h2><canvas class="chart tall" id="ch-pcpu"></canvas><div class="sub" id="pf-load" style="margin-top:8px"></div></div>
+      <div class="card m"><h2>Memory<span class="val c-magenta" id="pf-mem">—</span></h2><canvas class="chart tall" id="ch-pmem"></canvas><div class="sub" id="pf-memsub" style="margin-top:8px"></div></div>
+      <div class="card b"><h2>GPU<span class="val c-blue" id="pf-gpu">—</span></h2><canvas class="chart tall" id="ch-pgpu"></canvas></div>
+      <div class="card b"><h2>Network<span class="val c-cyan" id="pf-net">—</span></h2><div class="legend"><span><i style="background:var(--cyan)"></i>In</span><span><i style="background:var(--blue)"></i>Out</span></div><canvas class="chart tall" id="ch-pnet"></canvas></div>
+      <div class="card y"><h2>Disk throughput<span class="val c-yellow" id="pf-disk">—</span></h2><canvas class="chart tall" id="ch-pdisk"></canvas></div>
+      <div class="card"><h2>Right now</h2><div class="kv" id="pf-kv"></div></div>
+    </div>
+  </section>
+
+  <!-- PROCESSES -->
+  <section class="page" id="p-procs">
+    <div class="card"><h2>Processes<span class="sub" style="margin-left:14px" id="pr-count"></span><span style="margin-left:auto"><input class="q" id="pr-q" placeholder="filter…" oninput="renderProcs()"></span></h2>
+      <table><thead><tr><th class="n" onclick="sortProcs('pid')">PID</th><th onclick="sortProcs('name')">Name</th><th onclick="sortProcs('user')">User</th><th class="n" onclick="sortProcs('cpu')">CPU %</th><th class="n" onclick="sortProcs('mem')">MEM %</th><th class="n" onclick="sortProcs('rss')">Memory</th><th>Path</th></tr></thead><tbody id="pr-body"></tbody></table></div>
+  </section>
+
+  <!-- SYSTEM INFO -->
+  <section class="page" id="p-intake">
+    <div class="in-grid">
+      <div class="card r"><h2>Trade-in verdict<span class="in-verdict" id="in-verdict" style="margin-left:auto">…</span></h2>
+        <div class="in-reasons flags" id="in-reasons"><span class="sub">reading…</span></div>
+        <div class="row" style="margin-top:12px;flex-wrap:wrap;gap:8px;align-items:center">
+          <input id="in-ticket" placeholder="ticket #" style="width:110px"> <input id="in-tech" placeholder="tech" style="width:110px">
+          <button class="btn" id="in-send" onclick="inSend()">⇪ Send to bench</button><span class="sub" id="in-sent"></span>
+        </div>
+        <div class="sub" id="in-bench" style="margin-top:6px"></div></div>
+      <div class="card b"><h2>Identity</h2><div class="kv" id="in-id"></div></div>
+      <div class="card y"><h2>Battery</h2><div class="kv" id="in-batt"></div></div>
+      <div class="card g"><h2>Storage &amp; charger</h2><div class="kv" id="in-disk"></div></div>
+      <div class="card r"><h2>Ownership</h2><div class="flags" id="in-flags"></div><div class="kv" id="in-own" style="margin-top:10px"></div></div>
+      <div class="card b"><h2>Next</h2><p class="sub">Run <b>Tests</b> (display, keyboard chatter, trackpad, speakers, camera + mic, ports) and fill the <b>Checklist</b> — saving it also sends it to the bench in setup mode. This page is what the dongle's intake gate shows; everything here works without an admin password.</p></div>
+    </div>
+  </section>
+  <section class="page" id="p-sysinfo">
+    <div class="grid g-two">
+      <div class="card"><h2>Hardware</h2><div class="kv" id="si-hw"></div></div>
+      <div class="card"><h2>Software</h2><div class="kv" id="si-sw"></div></div>
+      <div class="card r"><h2>Trade-in / ownership</h2><div class="flags" id="si-flags"></div><div class="kv" id="si-own" style="margin-top:10px"></div></div>
+      <div class="card"><h2>Security posture</h2><div class="kv" id="si-sec"></div></div>
+    </div>
+  </section>
+
+  <!-- STARTUP -->
+  <section class="page" id="p-startup">
+    <div class="card"><h2>Startup items<span class="sub" style="margin-left:14px">third-party launch agents / daemons + login items (Apple's own are hidden)</span><span style="margin-left:auto"><button class="btn sm" onclick="load('startup',renderStartup,true)">Refresh</button></span></h2>
+      <table><thead><tr><th>Status</th><th>Label</th><th>Where</th><th>Program</th></tr></thead><tbody id="st-body"></tbody></table></div>
+  </section>
+
+  <!-- USERS -->
+  <section class="page" id="p-users">
+    <div class="card"><h2>Users</h2><table><thead><tr><th>Name</th><th class="n">UID</th><th>Admin</th><th>Hidden</th><th>Home</th><th>Last login</th></tr></thead><tbody id="us-body"></tbody></table></div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="page" id="p-services">
+    <div class="card"><h2>Services<span class="sub" style="margin-left:14px">launchctl list for this user (non-Apple)</span><span style="margin-left:auto"><input class="q" id="sv-q" placeholder="filter…" oninput="renderServices()"></span></h2>
+      <table><thead><tr><th>Label</th><th class="n">PID</th><th class="n">Last exit</th></tr></thead><tbody id="sv-body"></tbody></table></div>
+  </section>
+
+  <!-- DISKS -->
+  <section class="page" id="p-disks">
+    <div class="grid g-two" id="dk-grid"></div>
+  </section>
+
+  <!-- TOOLS -->
+  <section class="page" id="p-tools">
+    <div class="tiles t-four">
+      <div class="card g tool"><h2>MacDiag</h2><p>Read-only health check: battery, storage + SMART, throttling, panics + shutdown causes, startup items, security, network — and the trade-in blockers. Gemini verdict + customer note.</p><div class="row"><span style="display:flex;gap:6px;align-items:center"><button class="btn" id="rb-MacDiag" onclick="runTool('MacDiag')">▶ Run</button><button class="vb" onclick="runTerminal('MacDiag')" title="run in a Terminal window instead (asks for the password there)">Terminal</button></span><span class="sub" id="tl-MacDiag"></span></div></div>
+      <div class="card r tool"><h2>Malware Triage</h2><p>Is this Mac infected or hijacked? Persistence, browser hijacks, proxies/DNS, unsigned processes, hidden users, PUPs, remote-support tools. Removal plan from Gemini.</p><div class="row"><span style="display:flex;gap:6px;align-items:center"><button class="btn" id="rb-MalwareTriage" onclick="runTool('MalwareTriage')">▶ Run</button><button class="vb" onclick="runTerminal('MalwareTriage')" title="run in a Terminal window instead (asks for the password there)">Terminal</button></span><span class="sub" id="tl-MalwareTriage"></span></div></div>
+      <div class="card b tool"><h2>Apple Diagnostics / AHT</h2><p>Key combo for this Mac, reference-code decoder, and for 2006–2013 Macs the right AHT image + a bootable AHT USB.</p><div class="row"><span style="display:flex;gap:6px;align-items:center"><button class="btn" id="rb-AppleDiagnostics" onclick="runTool('AppleDiagnostics')">▶ Run</button><button class="vb" onclick="runTerminal('AppleDiagnostics')" title="run in a Terminal window instead (asks for the password there)">Terminal</button></span><span class="sub" id="tl-AppleDiagnostics"></span></div></div>
+      <div class="card m tool"><h2>Clean Up</h2><p>Junk + purgeable space the safe way: scan, tick categories, move to the Trash (recoverable), Time Machine snapshots, large old files, maintenance ops. Has its own page.</p><div class="row"><button class="btn" onclick="showPage('clean')">▶ Open Clean page</button><span class="sub" id="tl-CleanUp"></span></div></div>
+      <div class="card b tool"><h2>Files</h2><p>Space-Lens-style disk map: index once, drill down by size (list + bubble map), find by name/kind, back up selected folders to an external volume with a verified manifest, move to the Trash or delete permanently. Has its own page.</p><div class="row"><button class="btn" onclick="showPage('files')">▶ Open Files page</button><span class="sub" id="tl-Files"></span></div></div>
+      <div class="card y tool"><h2>Installer Maker</h2><p>One or several macOS installers on one USB, full-installer download from Apple, installer → ISO for VMs.</p><div class="row"><button class="btn" onclick="runTerminal('InstallerMaker')">▶ Run in Terminal</button><span class="sub" id="tl-InstallerMaker"></span></div></div>
+    </div>
+    <div class="tp-hint" id="tools-sudo-hint" style="margin-top:14px;display:none">The dashboard was started <b>without the admin password</b>, so tools run from here get reduced coverage (no fan/temperature, system caches, smartctl, panic reporter). Use the <b>Terminal</b> button to be asked for the password, or restart the dashboard and enter it once.</div>
+    <div class="card" style="margin-top:14px"><h2>Live log<span class="sub" style="margin-left:14px">▶ Run executes the tool in the background with the dashboard's admin rights (no Terminal, no prompts); output streams here and the report lands on the stick</span>
+      <span style="margin-left:auto"><select id="lg-app" onchange="pollLog(true)" style="background:#0b0e14;color:#fff;border:1px solid var(--line);border-radius:8px;padding:6px"><option>MacDiag</option><option>MalwareTriage</option><option>AppleDiagnostics</option><option>InstallerMaker</option></select></span></h2>
+      <pre class="log" id="lg-pre">(pick a tool)</pre></div>
+  </section>
+
+  <!-- TESTS -->
+  <section class="page" id="p-tests">
+    <div class="card" style="margin-bottom:14px"><h2>Hardware tests<span class="sub" style="margin-left:14px">post-repair / intake QC — run each test, mark it, save the checklist to the stick</span><span style="margin-left:auto" class="sub" id="ts-progress"></span></h2>
+      <div class="tabs" id="ts-tabs">
+        <button class="tab on" data-t="display">Display</button><button class="tab" data-t="keyboard">Keyboard</button><button class="tab" data-t="trackpad">Trackpad</button><button class="tab" data-t="audio">Speakers</button><button class="tab" data-t="camera">Camera · Mic</button><button class="tab" data-t="ports">Ports · Charging</button><button class="tab" data-t="checklist">Checklist</button>
+      </div></div>
+
+    <div class="tpanel on" id="tp-display">
+      <div class="grid g-two">
+        <div class="card b"><h2>Display panels</h2>
+          <p class="tp">Full-screen panels for dead / stuck pixels, colour uniformity, backlight bleed and lines. Best in a dim room. <b>Click or press any key</b> for the next panel, <b>Esc</b> to stop.</p>
+          <div class="tp-row"><button class="btn" onclick="dispStart()">▶ Start panels</button><span class="sub">red · green · blue · white · black · 50% grey · gradient · 1-px grid · checker · text</span></div>
+          <div class="tp-hint">Look for: bright/dark dots that do not move · a tint on one side of white · glow at the edges on black · vertical/horizontal lines on grey · banding on the gradient · moiré or a dark patch on the grid · blurry text (bad panel or wrong resolution).</div>
+        </div>
+        <div class="card"><h2>Result</h2><div id="v-display"></div>
+          <div class="tp-hint" style="margin-top:10px">Flicker / PWM: film the grey panel with a phone camera at 1/1000 s — rolling bars = backlight driver. Dead pixels: Apple's service threshold is model-specific; note the count and where.</div></div>
+      </div>
+    </div>
+
+    <div class="tpanel" id="tp-keyboard">
+      <div class="card b"><h2>Keyboard<span style="margin-left:auto" class="sub" id="kb-count">—</span></h2>
+        <p class="tp">Press every key. A key turns <span class="c-green">green</span> when it registers, <span class="c-red">red</span> if it double-types (chatter). Hold <b>fn</b> for the top row (macOS eats the brightness/volume keys otherwise). ⌘Q / ⌘W / ⌘Tab cannot be blocked by a web page — press ⌘ on its own. Touch ID / power key cannot be tested here.</p>
+        <div id="kb-wrap" tabindex="0" onclick="this.focus()"><div class="sub" style="margin-bottom:6px">click here first, then type — <span id="kb-focus">not focused</span></div><div id="kb-grid"></div></div>
+        <div class="tp-row"><button class="btn sm" onclick="kbReset()">Reset</button><span class="sub" id="kb-untested"></span></div>
+      </div>
+      <div class="grid g-two" style="margin-top:14px">
+        <div class="card"><h2>Result — keys</h2><div id="v-keyboard"></div></div>
+        <div class="card"><h2>Result — backlight <span class="sub" style="margin-left:8px">manual: hold fn + F5 / F6</span></h2><div id="v-kbd_backlight"></div></div>
+      </div>
+    </div>
+
+    <div class="tpanel" id="tp-trackpad">
+      <div class="card b"><h2>Trackpad</h2>
+        <p class="tp">Move the pointer over every zone, click, two-finger click (right-click), scroll both ways, drag a line, double-click, and force click (Safari only). Zones go green as the pointer crosses them — a zone that never lights is a dead spot.</p>
+        <div id="tk-area"><div id="tk-zones"></div><canvas id="tk-canvas"></canvas><div id="tk-msg" class="sub">move / click / scroll / drag here</div></div>
+        <div class="flags" id="tk-flags" style="margin-top:10px"></div>
+        <div class="tp-row"><button class="btn sm" onclick="tkReset()">Reset</button></div>
+      </div>
+      <div class="card" style="margin-top:14px"><h2>Result</h2><div id="v-trackpad"></div></div>
+    </div>
+
+    <div class="tpanel" id="tp-audio">
+      <div class="grid g-two">
+        <div class="card b"><h2>Speakers</h2>
+          <p class="tp">Set the Mac's volume to about 60 % first. Listen for a dead channel, crackle, rattle (blown cone / debris) or a buzz at low frequencies.</p>
+          <div class="tp-row"><button class="btn" onclick="auTone(-1)">◀ Left</button><button class="btn" onclick="auTone(1)">Right ▶</button><button class="btn" onclick="auTone(0)">Both</button><button class="btn" onclick="auSweep()">Sweep 100 Hz → 12 kHz</button><button class="btn" onclick="auNoise()">Pink noise</button><button class="btn" onclick="auBass()">Bass 60 Hz</button></div>
+          <div class="tp-row"><span class="sub">level</span><input type="range" id="au-vol" min="0" max="100" value="45" style="width:180px"><span class="sub" id="au-state">idle</span></div>
+          <div class="tp-hint">Sweep: a dip or rattle at one frequency = damaged cone or loose grille. Bass: buzz = blown woofer / debris under the speaker (liquid). One side silent with the balance centred = speaker or amp on that side, or a top-case flex.</div>
+        </div>
+        <div class="card"><h2>Result</h2><div id="v-speakers"></div></div>
+      </div>
+    </div>
+
+    <div class="tpanel" id="tp-camera">
+      <div class="grid g-two">
+        <div class="card b"><h2>Camera + microphone</h2>
+          <p class="tp">The browser will ask for permission once. Wave at the camera, then tap next to the mic (top of the keyboard on MacBooks) — the meter should jump. No camera at all = camera flex / display assembly, common on 2019-2021 MacBook Pros.</p>
+          <div class="tp-row"><button class="btn" onclick="camStart()">▶ Start camera + mic</button><button class="btn sm" onclick="camStop()">Stop</button><span class="sub" id="cam-state">stopped</span></div>
+          <video id="cam-video" autoplay playsinline muted></video>
+          <div class="tp-row" style="margin-top:8px"><span class="sub">mic level</span><canvas id="mic-meter" width="360" height="18"></canvas><span class="n" id="mic-peak">—</span></div>
+          <div class="sub" id="cam-devices"></div>
+        </div>
+        <div class="card"><h2>Result — camera</h2><div id="v-camera"></div><h2 style="margin-top:14px">Result — microphone</h2><div id="v-mic"></div></div>
+      </div>
+    </div>
+
+    <div class="tpanel" id="tp-ports">
+      <div class="grid g-two">
+        <div class="card y"><h2>Charger<span class="sub" style="margin-left:auto" id="pt-age"></span></h2>
+          <div class="kv" id="pt-charger"><b>status</b><span>reading…</span></div>
+          <div class="tp-hint">Move the charger from port to port and press <b>Record charger</b> on the row for that port. Every port on the same Mac should negotiate the same wattage; one port stuck at 5 V / 15 W or "not charging" = damaged port, CD3217/PD controller, or liquid on that side. Battery draw shows what is really flowing in.</div>
+        </div>
+        <div class="card b"><h2>Connected now<span class="sub" style="margin-left:auto" id="pt-new"></span></h2>
+          <div id="pt-usb" class="sub">reading…</div>
+          <div id="pt-tb" class="sub" style="margin-top:8px"></div>
+          <div class="tp-hint">Plug a USB stick or the charger into each port in turn; a new device flashes here. Thunderbolt ports show their receptacle number so you can tell which physical port answered.</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px"><h2>Per-port log<span style="margin-left:auto"><button class="btn sm" onclick="ptAddRow()">+ port</button></span></h2>
+        <div style="overflow-x:auto"><table><thead><tr><th>Port</th><th>Charger</th><th>Device seen</th><th>Note</th><th></th></tr></thead><tbody id="pt-rows"></tbody></table></div>
+      </div>
+      <div class="grid g-two" style="margin-top:14px">
+        <div class="card"><h2>Result — ports (data)</h2><div id="v-ports"></div></div>
+        <div class="card"><h2>Result — charging (every port)</h2><div id="v-charging"></div></div>
+      </div>
+    </div>
+
+    <div class="tpanel" id="tp-checklist">
+      <div class="card"><h2>QC checklist<span class="sub" style="margin-left:14px" id="ck-summary"></span>
+          </h2>
+        <div class="tp-row" style="margin:4px 0 10px"><input class="q" id="ck-ticket" placeholder="ticket #" style="width:120px"><input class="q" id="ck-tech" placeholder="tech initials" style="width:110px"><button class="btn" onclick="qcSave()">💾 Save to stick</button><button class="btn sm red" onclick="qcClear()">Clear all</button></div>
+        <div style="overflow-x:auto"><table><thead><tr><th style="width:60px">Result</th><th>Item</th><th>Note</th></tr></thead><tbody id="ck-body"></tbody></table></div>
+        <div class="tp-hint" style="margin-top:10px">Everything marked here is written to <b>Dashboard/QC-Reports/</b> on the stick as a text report + JSON (the Reports page lists them under QC). Items with a tab are filled in by the tests; the rest are ticked by hand.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLEAN -->
+  <section class="page" id="p-clean">
+    <div class="card" style="margin-bottom:14px"><h2>Clean up<span class="sub" style="margin-left:14px">junk + purgeable space — scan first, tick, move to the Trash (recoverable), empty the Trash as a separate step</span></h2>
+      <div class="tp-row">
+        <button class="btn" id="cl-scan" onclick="clScan()">🔍 Scan this Mac</button>
+        <span class="sub" id="cl-state">not scanned yet</span>
+        <span style="margin-left:auto" class="n" id="cl-free"></span>
+      </div>
+      <div class="tiles t-four" style="margin-top:12px">
+        <div class="card b tile"><h2><span class="ic">◍</span>Free now<span class="big c-blue" id="cl-t-free">—</span></h2><div class="sub">on the startup disk</div></div>
+        <div class="card y tile"><h2><span class="ic">♻</span>Purgeable<span class="big c-yellow" id="cl-t-purg">—</span></h2><div class="sub" id="cl-t-purg-sub">macOS frees this on demand — mostly local Time Machine snapshots</div></div>
+        <div class="card g tile"><h2><span class="ic">🧹</span>Cleanable<span class="big c-green" id="cl-t-cand">—</span></h2><div class="sub">in the categories below (before ticking)</div></div>
+        <div class="card m tile"><h2><span class="ic">✓</span>Selected<span class="big c-magenta" id="cl-t-sel">—</span></h2><div class="sub" id="cl-t-sel-sub">tick categories, snapshots, large files</div></div>
+      </div>
+      <div class="tp-hint" id="cl-sudo-hint" style="display:none">The dashboard was started without the admin password — system caches, system logs and Time Machine snapshots cannot be cleaned in this session. Restart the dashboard and enter the password to include them.</div>
+    </div>
+
+    <div class="grid g-two">
+      <div class="card"><h2>Categories<span class="sub" style="margin-left:12px">pre-ticked = safe to clear; <span class="tag warn">ask</span> = the customer's data, never pre-ticked</span></h2>
+        <div style="overflow-x:auto"><table class="cl"><thead><tr><th style="width:34px"></th><th>Category</th><th class="n">Size</th><th class="n">Items</th><th></th></tr></thead><tbody id="cl-cats"><tr><td colspan="5" class="sub">run a scan</td></tr></tbody></table></div>
+      </div>
+      <div>
+        <div class="card y"><h2>Time Machine snapshots<span class="sub" style="margin-left:10px" id="cl-snap-sub"></span></h2>
+          <label class="tp-row" style="cursor:pointer"><input type="checkbox" id="cl-snaps" onchange="clTotals()"> <span>delete local snapshots (frees the "purgeable" space now — Time Machine makes new ones on its own)</span></label>
+          <div class="sub" id="cl-snap-list" style="margin-top:6px"></div></div>
+        <div class="card r" style="margin-top:14px"><h2>Empty the Trash</h2>
+          <label class="tp-row" style="cursor:pointer"><input type="checkbox" id="cl-empty" onchange="clTotals()"> <span><b class="c-red">Permanent.</b> Empties the whole Trash — including what this clean-up just moved there. Only with the customer's OK; otherwise leave it and let them empty it at home.</span></label></div>
+        <div class="card" style="margin-top:14px"><h2>Maintenance<span class="sub" style="margin-left:10px">known-safe system ops (most need admin)</span></h2>
+          <div class="tp-row"><button class="btn sm" onclick="clMaint('spotlight')">Rebuild Spotlight index</button><button class="btn sm" onclick="clMaint('dns')">Flush DNS</button><button class="btn sm" onclick="clMaint('periodic')">Run periodic scripts</button><button class="btn sm" onclick="clMaint('lsregister')">Reset “Open With” list</button><button class="btn sm" onclick="clMaint('purge')">Purge disk cache</button><span class="sub" id="cl-maint-state"></span></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px"><h2>Large, old files<span class="sub" style="margin-left:12px">&gt; 500 MB, untouched 6+ months, outside Library — report only, tick one by one</span></h2>
+      <div style="overflow-x:auto"><table class="cl"><thead><tr><th style="width:34px"></th><th>File</th><th class="n">Size</th><th class="n">Last changed</th></tr></thead><tbody id="cl-large"><tr><td colspan="4" class="sub">run a scan</td></tr></tbody></table></div></div>
+
+    <div class="card" style="margin-top:14px"><h2>Run<span style="margin-left:auto"><button class="btn" id="cl-go" onclick="clClean()" disabled>🧹 Move selected to the Trash</button></span></h2>
+      <pre class="log" id="cl-log" style="max-height:260px">(nothing running)</pre>
+      <div id="cl-result" style="margin-top:10px"></div></div>
+  </section>
+
+  <!-- FILES -->
+  <section class="page" id="p-files">
+    <div class="card" style="margin-bottom:14px"><h2>Files<span class="sub" style="margin-left:14px">find what fills the disk, back it up to an external volume, remove it — index once, then browse instantly</span></h2>
+      <div class="tp-row">
+        <button class="btn" id="fl-index" onclick="flIndex()">🗂 Index this Mac</button>
+        <span class="sub" id="fl-state">not indexed yet</span>
+        <span style="margin-left:auto" class="n" id="fl-used"></span>
+      </div>
+      <div class="fl-usedbar"><i id="fl-usedfill" style="width:0"></i></div>
+      <div class="tp-hint" id="fl-sudo-hint" style="display:none">Indexed without the admin password — other users' folders and system-owned files are not in the index. Restart the dashboard with the password and re-index to see everything.</div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="fl-crumbs" id="fl-crumbs"><span class="sub">index this Mac to start browsing</span></div>
+      <div class="grid g-two fl-browse">
+        <div>
+          <div class="fl-listwrap"><table class="fl"><thead><tr><th style="width:30px"><input type="checkbox" id="fl-all" onchange="flTickAll(this.checked)" title="tick everything in this folder"></th><th>Name</th><th class="n">Size</th><th style="width:130px"></th></tr></thead><tbody id="fl-list"><tr><td colspan="4" class="sub">nothing to show</td></tr></tbody></table></div>
+          <div class="sub" id="fl-list-sub" style="margin-top:6px"></div>
+        </div>
+        <div class="fl-mapwrap"><svg id="fl-map" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"></svg><div class="sub" id="fl-map-sub" style="text-align:center">bubble = size · click a bubble to open it</div></div>
+      </div>
+    </div>
+
+    <div class="grid g-two">
+      <div class="card b"><h2>Customer data<span class="sub" style="margin-left:12px">the folders a backup or migration is made of</span></h2>
+        <div class="fl-chips" id="fl-map-chips"><span class="sub">index first</span></div>
+        <div class="sub" style="margin-top:8px">click a chip to open the folder · <b>+</b> adds the whole folder to the selection</div></div>
+      <div class="card"><h2>Find<span class="sub" style="margin-left:12px">files ≥ 1 MB by name and kind</span></h2>
+        <div class="tp-row"><input class="q" id="fl-q" placeholder="name contains…" style="width:200px" onkeydown="if(event.key==='Enter')flFind()">
+          <select class="q" id="fl-type"><option value="">any kind</option><option value="photo">photos</option><option value="video">videos</option><option value="audio">audio</option><option value="doc">documents</option><option value="archive">archives</option><option value="installer">installers / apps</option><option value="image">disk images / VMs</option></select>
+          <span class="fl-min"><span class="sub">min</span><input class="q" id="fl-min" type="number" min="1" value="1" style="width:70px"><span class="sub">MB</span></span>
+          <button class="btn sm" onclick="flFind()">Search</button><span class="sub" id="fl-find-state"></span></div>
+        <div style="overflow-x:auto;max-height:320px;overflow-y:auto;margin-top:8px"><table class="fl"><thead><tr><th style="width:30px"></th><th>File</th><th class="n">Size</th><th class="n">Changed</th></tr></thead><tbody id="fl-find"><tr><td colspan="4" class="sub">no search yet</td></tr></tbody></table></div></div>
+    </div>
+
+    <div class="card m" style="margin-top:14px" id="fl-selcard"><h2>Selection<span class="n" id="fl-sel-sum" style="margin-left:12px;font-size:15px">nothing selected</span><span style="margin-left:auto"><button class="btn sm" onclick="flClear()">Clear</button></span></h2>
+      <div class="fl-sel" id="fl-sel-list"></div>
+      <div class="tp-row" style="margin-top:10px">
+        <button class="btn" id="fl-bk" onclick="flBackupPanel()" disabled>💾 Back up…</button>
+        <button class="btn" id="fl-tr" onclick="flRemove('trash')" disabled>🗑 Move to Trash</button>
+        <button class="btn red" id="fl-del" onclick="flRemove('delete')" disabled>✕ Delete permanently</button>
+      </div>
+      <div id="fl-bkpanel" style="display:none;margin-top:10px" class="tp-hint">
+        <div class="tp-row"><span>Destination</span><select class="q" id="fl-dest"></select><button class="btn sm" onclick="flDests()">↻</button>
+          <label class="tp-row" style="cursor:pointer"><input type="checkbox" id="fl-chk"> <span>verify with SHA-256 (slower, proves every byte)</span></label>
+          <button class="btn" id="fl-bk-go" onclick="flBackup()">Start backup</button></div>
+        <div class="sub" id="fl-dest-sub" style="margin-top:6px">copies go to <span class="n">BenchTool-Backup-&lt;host&gt;-&lt;time&gt;/</span> on the destination, keeping the original folder paths; every file is size-checked and listed in a manifest</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px"><h2>Run<span class="sub" style="margin-left:12px" id="fl-run-state">idle</span></h2>
+      <pre class="log" id="fl-log" style="max-height:240px">(nothing running)</pre>
+      <div id="fl-result" style="margin-top:10px"></div></div>
+  </section>
+
+  <!-- REPORTS -->
+  <section class="page" id="p-reports">
+    <div class="grid g-reports">
+      <div class="card"><h2>Reports<span style="margin-left:auto"><button class="btn sm" onclick="load('reports',renderReports,true)">Refresh</button></span></h2><div class="sub" id="rp-status"></div>
+        <table><thead><tr><th>App</th><th>When</th><th>Verdict</th></tr></thead><tbody id="rp-body"></tbody></table></div>
+      <div class="card"><h2 id="rp-title">Viewer</h2><pre class="log" id="rp-pre" style="max-height:none;min-height:500px">Select a report.</pre></div>
+    </div>
+  </section>
+
+  </div>
+  <div class="status"><span class="dot" id="st-dot"></span><span id="st-text">connecting…</span><span style="margin-left:auto" id="st-clock"></span></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- helpers ----------
+const $ = (id) => document.getElementById(id);
+const fmtB = (b) => { b = +b || 0; if (b >= 1099511627776) return (b/1099511627776).toFixed(2)+' TB'; if (b >= 1073741824) return (b/1073741824).toFixed(2)+' GB'; if (b >= 1048576) return (b/1048576).toFixed(1)+' MB'; if (b >= 1024) return (b/1024).toFixed(0)+' KB'; return b+' B'; };
+const fmtRate = (b) => { b = +b || 0; if (b >= 1048576) return (b/1048576).toFixed(1)+' MB/s'; if (b >= 1024) return (b/1024).toFixed(0)+' KB/s'; return b.toFixed(0)+' B/s'; };
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function toast(m){ const t=$('toast'); t.textContent=m; t.style.display='block'; clearTimeout(t._t); t._t=setTimeout(()=>t.style.display='none',3500); }
+
+// One request at a time: the nc fallback server can only serve sequentially.
+let chain = Promise.resolve();
+function api(route, q, asText){
+  const url = '/api/' + route + (q ? '?' + q : '');
+  // the nc fallback server has a few ms between connections -> retry plain network failures
+  const once = () => fetch(url, {cache:'no-store'}).then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return asText ? r.text() : r.json(); });
+  const run = (n) => once().catch(e => { if (n > 0 && !/^HTTP/.test(e.message)) return new Promise(r => setTimeout(r, 250)).then(() => run(n-1)); throw e; });
+  const runR = () => run(4);
+  const p = chain.then(runR, runR);
+  chain = p.catch(()=>{});
+  return p;
+}
+
+// ---------- LED bars ----------
+function ledInit(id, n){ const el=$(id); el.innerHTML=''; for(let i=0;i<n;i++) el.appendChild(document.createElement('i')); }
+function led(id, pct, hotFrom){ const el=$(id); const n=el.children.length; const lit=Math.round(clamp(pct,0,100)/100*n); for(let i=0;i<n;i++){ const c=el.children[i]; c.className = i<lit ? 'on' + (hotFrom!=null && i/n*100>=hotFrom ? ' hot':'') : ''; } }
+['led-disk','led-net','led-bat','led-gpu','led-therm'].forEach(id=>ledInit(id,30));
+['vm-cpu','vm-mem','vm-gpu','vm-disk'].forEach(id=>ledInit(id,28));
+
+// ---------- charts ----------
+class Chart{
+  constructor(id, opts){ this.c=$(id); this.o=Object.assign({max:100,min:0,auto:false,unit:'%',fill:true},opts||{}); }
+  draw(series){ // series: [{data:[], color, fill}]
+    const c=this.c, dpr=window.devicePixelRatio||1, W=c.clientWidth, H=c.clientHeight; if(!W||!H) return;
+    if(c.width!==W*dpr||c.height!==H*dpr){ c.width=W*dpr; c.height=H*dpr; }
+    const g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+    const pl=this.o.fmt?64:36, pr=10, pt=10, pb=18, w=W-pl-pr, h=H-pt-pb;
+    let max=this.o.max; if(this.o.auto){ max=1; series.forEach(s=>s.data.forEach(v=>{ if(v>max) max=v; })); max*=1.15; }
+    // grid
+    g.strokeStyle='#182030'; g.lineWidth=1; g.beginPath();
+    for(let i=0;i<=4;i++){ const y=pt+h*i/4; g.moveTo(pl,y+.5); g.lineTo(pl+w,y+.5); }
+    for(let i=0;i<=8;i++){ const x=pl+w*i/8; g.moveTo(x+.5,pt); g.lineTo(x+.5,pt+h); }
+    g.stroke();
+    g.fillStyle='#6d7686'; g.font='11px '+getComputedStyle(document.body).getPropertyValue('--mono'); g.textAlign='right';
+    for(let i=0;i<=2;i++){ const v=max*(1-i/2); g.fillText(this.o.unit==='%'?Math.round(v)+'%':this.o.fmt?this.o.fmt(v):v.toFixed(0), pl-6, pt+h*i/2+4); }
+    const N=this.o.points||180;
+    series.forEach(s=>{
+      const d=s.data.slice(-N); if(d.length<2) return;
+      const step=w/(N-1), x0=pl+w-step*(d.length-1);
+      const px=i=>x0+i*step, py=v=>pt+h-clamp(v,0,max)/max*h;
+      g.save(); g.shadowColor=s.color; g.shadowBlur=10; g.strokeStyle=s.color; g.lineWidth=2; g.lineJoin='round';
+      g.beginPath(); d.forEach((v,i)=>{ i?g.lineTo(px(i),py(v)):g.moveTo(px(i),py(v)); }); g.stroke();
+      g.restore();
+      if(s.fill!==false && this.o.fill){ g.globalAlpha=.16; g.fillStyle=s.color; g.beginPath(); g.moveTo(px(0),pt+h); d.forEach((v,i)=>g.lineTo(px(i),py(v))); g.lineTo(px(d.length-1),pt+h); g.closePath(); g.fill(); g.globalAlpha=1; }
+      // end marker
+      g.fillStyle='#fff'; g.beginPath(); g.moveTo(pl+w+8,py(d[d.length-1])); g.lineTo(pl+w+2,py(d[d.length-1])-4); g.lineTo(pl+w+2,py(d[d.length-1])+4); g.fill();
+    });
+  }
+}
+const charts = {
+  cpu:new Chart('ch-cpu'), mem:new Chart('ch-mem',{unit:'%'}),
+  pcpu:new Chart('ch-pcpu'), pmem:new Chart('ch-pmem'), pgpu:new Chart('ch-pgpu'),
+  pnet:new Chart('ch-pnet',{auto:true,unit:'B',fmt:v=>fmtRate(v)}), pdisk:new Chart('ch-pdisk',{auto:true,unit:'MB',fmt:v=>v.toFixed(1)+' MB/s'})
+};
+const H = {cpu:[],mem:[],gpu:[],net_in:[],net_out:[],disk:[],temp:[]};
+function push(k,v){ H[k].push(+v||0); if(H[k].length>600) H[k].shift(); }
+
+// ---------- pages ----------
+const titles={intake:'Intake / trade-in gate',summary:'Summary',perf:'Performance',procs:'Processes',sysinfo:'System Info',startup:'Startup items',users:'Users',services:'Services',disks:'Disks',tools:'Tools',tests:'Hardware tests',clean:'Clean up',files:'Files',reports:'Reports'};
+let page='summary';
+document.querySelectorAll('#side .nav').forEach(n=>n.addEventListener('click',()=>showPage(n.dataset.page)));
+function showPage(p){ page=p; document.querySelectorAll('#side .nav').forEach(n=>n.classList.toggle('on',n.dataset.page===p)); document.querySelectorAll('section.page').forEach(s=>s.classList.toggle('on',s.id==='p-'+p)); $('title').textContent=titles[p]||p; onPage(p); }
+const cache={};
+function load(route, render, force){ if(cache[route] && !force){ render(cache[route]); return; } api(route).then(d=>{ cache[route]=d; render(d); }).catch(e=>toast(route+': '+e.message)); }
+function onPage(p){
+  if(p==='intake') intakeShown();
+  if(p==='procs') load('processes',d=>{ PROCS=d; renderProcs(); },true);
+  if(p==='sysinfo') load('sysinfo',renderSysinfo);
+  if(p==='startup') load('startup',renderStartup);
+  if(p==='users') load('users',renderUsers);
+  if(p==='services') load('services',d=>{ SERVICES=d; renderServices(); });
+  if(p==='disks') load('disks',renderDisks,true);
+  if(p==='reports') load('reports',renderReports,true);
+  if(p==='tests') testsShown(); else { clearTimeout(PT_TIMER); }
+  if(p==='clean') cleanShown();
+  if(p==='files') filesShown();
+  if(p==='tools') { pollLog(true); load('reports',d=>{ cache.reports=d; renderToolStatus(d); },true); }
+  if(p==='perf') drawPerf();
+}
+
+// ---------- live stats ----------
+let last=null, sys=null, fails=0;
+function tick(){
+  api('stats').then(s=>{
+    fails=0; setState(true, s.waiting ? 'collector warming up' : 'live · '+new Date(s.ts*1000).toLocaleTimeString());
+    if(s.waiting) return;
+    if(!last || s.ts!==last.ts){ push('cpu',s.cpu); push('mem',s.mem.pct); push('gpu',s.gpu); push('net_in',s.net.in); push('net_out',s.net.out); push('disk',s.disk.mbps); push('temp',s.thermal.die_c||0); }
+    last=s; renderSummary(s); if(page==='perf') drawPerf();
+  }).catch(e=>{ fails++; if(fails>=3) setState(false, 'no data ('+e.message+') — retrying'); });
+}
+function setState(ok, txt){ $('st-dot').className='dot '+(ok?'':'bad'); $('st-text').textContent=txt; $('f-dot').className='dot '+(ok?'':'bad'); $('f-state').textContent=ok?'connected':'disconnected'; }
+function renderSummary(s){
+  const cpu=+s.cpu, mem=+s.mem.pct, gpu=+s.gpu, dpct=+s.disk.pct;
+  $('q-cpu').textContent=cpu.toFixed(1)+'%'; $('q-mem').textContent=mem.toFixed(0)+'%'; $('q-gpu').textContent=gpu.toFixed(0)+'%'; $('q-up').textContent=s.uptime||'—';
+  $('s-cpu').textContent=cpu.toFixed(1)+'%'; $('s-cores').textContent=s.ncpu+' logical processors'; $('s-load').textContent='load '+s.load;
+  led('vm-cpu',cpu,85); led('vm-mem',mem,90); led('vm-gpu',gpu); led('vm-disk',dpct,90);
+  $('vn-cpu').textContent=cpu.toFixed(1)+'%'; $('vn-mem').textContent=mem.toFixed(0)+'%'; $('vn-gpu').textContent=gpu.toFixed(0)+'%'; $('vn-disk').textContent=dpct.toFixed(0)+'%';
+  const th=s.thermal; let thermTxt='';
+  if(th.die_c>0) thermTxt='CPU '+th.die_c.toFixed(0)+'°C'+(th.fan_rpm>0?' · fan '+th.fan_rpm+' rpm':'');
+  else if(th.pressure) thermTxt='thermal pressure: '+th.pressure;
+  else if(s.as) thermTxt='Apple silicon · run with admin for thermals';
+  if(th.speed_limit<100) thermTxt+=(thermTxt?' · ':'')+'THROTTLED to '+th.speed_limit+'%';
+  $('s-therm').textContent=thermTxt||'Speed Apple managed';
+  charts.cpu.draw([{data:H.cpu,color:'#4dff5a'},{data:H.gpu,color:'#3f8dff',fill:false},{data:H.temp,color:'#ff9d3b',fill:false}]);
+  $('s-memv').textContent=fmtB(s.mem.used)+' / '+fmtB(s.mem.total);
+  $('s-memfree').textContent='Available '+fmtB(s.mem.total-s.mem.used); $('s-memcache').textContent='Cached '+fmtB(s.mem.cached);
+  $('s-swap').textContent='Swap '+(s.mem.swap_mb>0?s.mem.swap_mb.toFixed(0)+' MB':'Zero'); $('s-mp').textContent='Pressure '+(100-(+s.mem.free_pct||0))+'%';
+  charts.mem.draw([{data:H.mem,color:'#d24bff'}]);
+  $('s-nproc').textContent=s.nproc+' total';
+  $('s-procs').innerHTML=(s.procs||[]).slice(0,12).map(p=>`<tr class="${p.cpu>=5?'hi':''}"><td class="n">${p.pid}</td><td>${esc(p.name)}</td><td class="n c-green">${p.cpu.toFixed(1)}%</td><td class="n">${fmtB(p.rss)}</td></tr>`).join('');
+  // tiles
+  $('t-disk').textContent=s.disk.mbps.toFixed(1)+' MB/s'; $('t-disk-sub').textContent='Startup disk '+fmtB(s.disk.used)+' of '+fmtB(s.disk.total)+' used ('+dpct+'%)'+(DISK_HEALTH?' · '+DISK_HEALTH:''); led('led-disk',dpct);
+  const nt=s.net.in+s.net.out; $('t-net').textContent=fmtRate(nt); $('t-net-sub').textContent='R: '+fmtRate(s.net.in)+'  S: '+fmtRate(s.net.out); led('led-net',clamp(nt/1048576*10,0,100));
+  const b=s.battery;
+  if(b.present){ $('t-bat').textContent=b.pct+'%'; $('t-bat-sub').textContent=(b.state||'')+(b.left?' · '+b.left+' left':'')+' · '+(b.source||''); led('led-bat',b.pct); }
+  else { $('t-bat').textContent=(th.power_w>0?th.power_w.toFixed(1)+' W':'AC'); $('t-bat-sub').textContent='Desktop Mac · AC power'+(th.power_w>0?' · '+th.power_w.toFixed(1)+' W package':''); led('led-bat',100); }
+  $('t-gpu').textContent=gpu.toFixed(0)+'%'; $('t-gpu-sub').textContent=(sys&&sys.gpu)||'—'; led('led-gpu',gpu);
+  const tv = th.die_c>0 ? th.die_c.toFixed(0)+' °C' : (th.pressure||(th.speed_limit<100?th.speed_limit+'%':'nominal'));
+  $('t-therm').textContent=tv; $('t-therm-sub').textContent=thermTxt||'Nominal thermal pressure';
+  led('led-therm', th.die_c>0 ? clamp(th.die_c,0,100) : (th.speed_limit<100 ? 100-th.speed_limit : (th.pressure&&th.pressure!=='Nominal'?70:20)));
+}
+function drawPerf(){
+  if(!last) return; const s=last;
+  $('pf-cpu').textContent=(+s.cpu).toFixed(1)+'%'; $('pf-mem').textContent=(+s.mem.pct).toFixed(0)+'%'; $('pf-gpu').textContent=(+s.gpu).toFixed(0)+'%';
+  $('pf-net').textContent=fmtRate(s.net.in+s.net.out); $('pf-disk').textContent=s.disk.mbps.toFixed(1)+' MB/s';
+  $('pf-load').textContent='load average '+s.load+' on '+s.ncpu+' cores';
+  $('pf-memsub').textContent='used '+fmtB(s.mem.used)+' · cached '+fmtB(s.mem.cached)+' · swap '+s.mem.swap_mb.toFixed(0)+' MB · free '+s.mem.free_pct+'%';
+  charts.pcpu.draw([{data:H.cpu,color:'#4dff5a'}]); charts.pmem.draw([{data:H.mem,color:'#d24bff'}]); charts.pgpu.draw([{data:H.gpu,color:'#3f8dff'}]);
+  charts.pnet.draw([{data:H.net_in,color:'#3ef0ff'},{data:H.net_out,color:'#3f8dff'}]); charts.pdisk.draw([{data:H.disk,color:'#ffd53b'}]);
+  const kv=[['CPU',(+s.cpu).toFixed(1)+'%'],['Load',s.load],['Memory used',fmtB(s.mem.used)],['Memory pressure',(100-s.mem.free_pct)+'%'],['Swap',s.mem.swap_mb.toFixed(0)+' MB'],['GPU',s.gpu+'%'],['Net in / out',fmtRate(s.net.in)+' / '+fmtRate(s.net.out)],['Disk',s.disk.mbps.toFixed(2)+' MB/s'],['Processes',s.nproc],['Uptime',s.uptime]];
+  if(s.thermal.die_c>0) kv.push(['CPU die',s.thermal.die_c+' °C']); if(s.thermal.fan_rpm>0) kv.push(['Fan',s.thermal.fan_rpm+' rpm']); if(s.thermal.pressure) kv.push(['Thermal pressure',s.thermal.pressure]); if(s.thermal.power_w>0) kv.push(['Package power',s.thermal.power_w+' W']); if(s.thermal.speed_limit<100) kv.push(['CPU speed limit',s.thermal.speed_limit+'%']);
+  $('pf-kv').innerHTML=kv.map(([k,v])=>`<b>${k}</b><span>${esc(v)}</span>`).join('');
+}
+
+// ---------- processes ----------
+let PROCS=[], SORT={k:'cpu',d:-1};
+function sortProcs(k){ SORT = SORT.k===k ? {k,d:-SORT.d} : {k, d:(k==='name'||k==='user')?1:-1}; renderProcs(); }
+function renderProcs(){
+  const q=($('pr-q').value||'').toLowerCase();
+  const rows=PROCS.filter(p=>!q||(p.name+' '+p.path+' '+p.user).toLowerCase().includes(q)).sort((a,b)=>{ const x=a[SORT.k],y=b[SORT.k]; return (x>y?1:x<y?-1:0)*SORT.d; });
+  $('pr-count').textContent=rows.length+' shown';
+  $('pr-body').innerHTML=rows.map(p=>`<tr class="${p.cpu>=10?'hi':''}"><td class="n">${p.pid}</td><td>${esc(p.name)}</td><td>${esc(p.user)}</td><td class="n c-green">${p.cpu.toFixed(1)}</td><td class="n">${p.mem.toFixed(1)}</td><td class="n">${fmtB(p.rss)}</td><td style="color:var(--muted)">${esc(p.path)}</td></tr>`).join('');
+}
+setInterval(()=>{ if(page==='procs') load('processes',d=>{ PROCS=d; renderProcs(); },true); },5000);
+
+// ---------- sysinfo ----------
+function flagsFor(si){
+  const f=[]; const al=(si.activation_lock||'').toLowerCase();
+  if(al.includes('enabled')) f.push(['bad','Activation Lock ENABLED']); else if(al) f.push(['ok','Activation Lock off']);
+  if(si.find_my_token) f.push(['bad','Find My token in NVRAM']);
+  const en=(si.enrollment||'').toLowerCase();
+  if(en.includes('dep: yes')) f.push(['bad','DEP / Apple Business Manager enrolled']); else if(en.includes('mdm enrollment: yes')) f.push(['warn','MDM profile installed']); else if(en) f.push(['ok','Not MDM enrolled']);
+  if(si.icloud) f.push(['warn','iCloud signed in: '+si.icloud]); else f.push(['ok','No iCloud account']);
+  if((si.filevault||'').includes('On')) f.push(['info','FileVault on']);
+  if((si.sip||'').toLowerCase().includes('disabled')) f.push(['warn','SIP disabled']);
+  if((si.gatekeeper||'').toLowerCase().includes('disabled')) f.push(['warn','Gatekeeper disabled']);
+  if(si.proxy) f.push(['warn','System proxy configured']);
+  return f;
+}
+function renderFlags(el, si){ const f=flagsFor(si); el.innerHTML=f.map(([c,t])=>`<span class="flag ${c}">${esc(t)}</span>`).join('')||'<span class="sub">nothing to report</span>'; return f; }
+// ---------- Intake / trade-in gate (setup mode leads with it) ----------
+let IN={}; let MIC_DB=null; let FAN={};
+function intakeShown(){ $('in-verdict').textContent='…'; api('intake').then(d=>{ IN.d=d; cache.sysinfo=d.sysinfo; sys=d.sysinfo; inRender(); }).catch(e=>{ $('in-verdict').textContent='?'; toast('intake: '+e.message); }); }
+function inVerdict(){ const d=IN.d||{}, si=d.sysinfo||{}, b=d.battery||{}, dk=d.disk||{}; const R=[]; let lvl=0; const up=n=>{ lvl=Math.max(lvl,n); };
+  flagsFor(si).forEach(([c,t])=>{ if(c==='bad'){ R.push(['bad',t]); up(2); } else if(c==='warn'){ R.push(['warn',t]); up(1); } else if(c==='ok') R.push(['ok',t]); });
+  if(b.present){ if(b.pfs>0){ R.push(['bad','Battery reports a permanent failure']); up(2); }
+    if(b.pct<80){ R.push(['warn','Battery health '+b.pct+'% (service below 80%)']); up(1); } else R.push(['ok','Battery health '+b.pct+'%']);
+    if(b.cycles>=1000){ R.push(['warn',b.cycles+' cycles (1000 = rated life)']); up(1); } else if(b.cycles>=0) R.push(['ok',b.cycles+' cycles']);
+    if(b.temp_c>=45){ R.push(['warn','Battery '+b.temp_c+' °C']); up(1); } }
+  else { R.push(['warn','No battery found (desktop, or battery not detected)']); up(1); }
+  if(dk.smart){ if(/fail/i.test(dk.smart)){ R.push(['bad','Disk SMART: '+dk.smart]); up(2); } else if(/verified/i.test(dk.smart)) R.push(['ok','Disk SMART verified']); else R.push(['info','Disk SMART: '+dk.smart]); }
+  if(b.external && b.adapter_w>0 && b.adapter_w<20){ R.push(['warn','Charger negotiated only '+b.adapter_w+' W (try the other ports)']); up(1); }
+  return {lvl:lvl, reasons:R, word:lvl===2?'NO-GO':lvl===1?'CHECK':'GO'}; }
+function inRender(){ const d=IN.d||{}, si=d.sysinfo||{}, b=d.battery||{}, dk=d.disk||{}; const v=inVerdict(); IN.v=v;
+  const el=$('in-verdict'); el.textContent=v.word; el.className='in-verdict '+(v.lvl===2?'c-red':v.lvl===1?'c-yellow':'c-green');
+  $('in-reasons').innerHTML=v.reasons.map(([c,t])=>`<span class="flag ${c}">${esc(t)}</span>`).join('')||'<span class="sub">nothing to report</span>';
+  const kv=(id,rows)=>{ $(id).innerHTML=rows.filter(r=>r[1]!==''&&r[1]!=null&&r[1]!==undefined).map(([k,x])=>`<b>${k}</b><span title="${esc(x)}">${esc(x)}</span>`).join(''); };
+  kv('in-id',[['Model',si.market||si.model],['Identifier',si.model_id],['Chip',si.chip],['Memory',si.memory],['Serial',si.serial],['macOS',si.os?si.os+' ('+si.build+')':''],['GPU',si.gpu],['Display',si.display],['Security chip',si.t2],['Touch ID',d.touchid?(d.touchid.sensor?'sensor detected':'NO sensor detected'):''],['Running as',si.user]]);
+  kv('in-batt',b.present?[['Health',b.pct+'%  ('+b.max+' / '+b.design+' mAh)'],['Cycles',b.cycles>=0?b.cycles:'?'],['Temperature',b.temp_c?b.temp_c+' °C':''],['Permanent failure',b.pfs>0?'YES ('+b.pfs+')':'no'],['Battery serial',b.serial],['Manufactured',b.mfg],['State',b.pmset],['Charging',b.external?(b.charging?'yes':'plugged in, not charging'):'on battery']]:[['Battery','none detected']]);
+  kv('in-disk',[['Disk',dk.name],['Size',dk.size],['Type',dk.ssd?'SSD':'HDD / unknown'],['SMART',dk.smart||'n/a'],['Charger',b.external?(b.adapter_w?b.adapter_w+' W':'connected')+(b.adapter?' · '+b.adapter:''):'not connected']]);
+  renderFlags($('in-flags'),si); kv('in-own',[['Activation Lock',si.activation_lock||'n/a (older Intel)'],['Enrollment',si.enrollment],['iCloud',si.icloud||'not signed in']]);
+  $('in-bench').textContent=d.bench?('bench: '+d.bench):'no bench URL (start with -Bench http://<bench>:8377/x/<app>) — Send is disabled';
+  $('in-send').disabled=!d.bench; }
+function tidText(){ const t=(IN.d||{}).touchid; if(!t) return document.body.classList.contains('setup')?'sensor check loads with the Intake page':''; return (t.sensor?'Touch ID sensor detected (driver present)':'NO Touch ID sensor in the IO registry — unpaired/absent after a top-case or board swap?')+(t.bioutil?' · '+t.bioutil:'')+(document.body.classList.contains('setup')?' · enrol + unlock is tested by Setup Assistant\'s own Touch ID step (no account exists here); Apple Repair Assistant (hold power → Options → ⌘D) is the full hardware test':''); }
+function fanTest(){ if(FAN.busy) return; const btn=$('fan-btn'); FAN={busy:true,base:null,peak:null,samples:[]}; if(btn) btn.disabled=true;
+  const out=t=>{ FAN.text=t; const e=$('fan-res'); if(e) e.textContent=t; };
+  const micOn=MIC_DB!==null;
+  out(micOn?'measuring the room for 3 s…':'starting load (open Camera · Mic first to also measure fan noise)…');
+  const start=()=>{ apiPost('job',{type:'stress',secs:60}).then(r=>{ if(!r.ok) throw new Error(r.error||'queue'); const id=r.id; let t0=Date.now();
+      const poll=()=>{ if(micOn&&MIC_DB!==null&&(Date.now()-t0)>15000) FAN.samples.push(MIC_DB);
+        api('jobstatus','id='+id).then(j=>{ if(j.state==='done'){ finish(j.result||{}); return; } out('load running '+Math.round((Date.now()-t0)/1000)+' s'+(micOn?' · mic now '+(MIC_DB||0).toFixed(0)+' dBFS (room '+FAN.base.toFixed(0)+')':'')); setTimeout(poll,2000); }).catch(e=>{ out('load test: '+e.message); FAN.busy=false; if(btn) btn.disabled=false; }); };
+      setTimeout(poll,2000); }).catch(e=>{ out('load test failed: '+e.message); FAN.busy=false; if(btn) btn.disabled=false; }); };
+  const finish=res=>{ FAN.busy=false; if(btn) btn.disabled=false; const parts=[]; if(res.ok){ parts.push('CPU speed limit '+res.cpu_limit_before+'% → '+res.cpu_limit_after+'%'+(res.throttled?' (THROTTLED)':'')); if(res.batt_temp_before>0) parts.push('battery '+res.batt_temp_before+' → '+res.batt_temp_after+' °C'); }
+    if(micOn&&FAN.samples.length){ FAN.samples.sort((a,b)=>a-b); const p90=FAN.samples[Math.floor(FAN.samples.length*0.9)]; const rise=p90-FAN.base; parts.push('mic '+FAN.base.toFixed(0)+' → '+p90.toFixed(0)+' dBFS ('+(rise>=0?'+':'')+rise.toFixed(0)+' dB'+(rise>=6?' — fans audible':rise>=3?' — faint':' — no fan noise heard: listen / check vents')+')'); }
+    out('load '+(res.secs||60)+' s on '+(res.ncpu||'?')+' cores: '+(parts.join(' · ')||'no data')); FAN.result=res; FAN.rise=(micOn&&FAN.samples.length)?FAN.samples[Math.floor(FAN.samples.length*0.9)]-FAN.base:null; };
+  if(micOn){ const arr=[]; const t=setInterval(()=>{ if(MIC_DB!==null) arr.push(MIC_DB); },100); setTimeout(()=>{ clearInterval(t); arr.sort((a,b)=>a-b); FAN.base=arr.length?arr[Math.floor(arr.length/2)]:MIC_DB; start(); },3000); } else start(); }
+function inReport(){ const d=IN.d||{}; const v=IN.v||inVerdict(); const q=(typeof qcJson==='function')?qcJson():null;
+  return {tool:'MacIntake',version:'1.0',generated:new Date().toISOString(),ticket:$('in-ticket').value.trim()||($('ck-ticket')?$('ck-ticket').value.trim():''),tech:$('in-tech').value.trim()||($('ck-tech')?$('ck-tech').value.trim():''),
+    verdict:v.word,level:v.lvl,reasons:v.reasons,serial:(d.sysinfo||{}).serial||'',model:(d.sysinfo||{}).market||(d.sysinfo||{}).model||'',model_id:(d.sysinfo||{}).model_id||'',sysinfo:d.sysinfo||null,battery:d.battery||null,disk:d.disk||null,setup:!!d.setup,qc:q}; }
+function inSend(){ if(!IN.d) return toast('intake not loaded yet'); $('in-sent').textContent='sending…';
+  apiPost('bench',inReport()).then(r=>{ if(r.ok){ const rp=r.reply||{}; $('in-sent').textContent='sent ✓ '+(rp.saved?rp.saved:'')+(rp.session?' · session '+rp.session:''); toast('sent to bench'); } else { $('in-sent').textContent='failed: '+(r.error||r.status||'?'); toast('bench: '+(r.error||r.status||'?')); } })
+  .catch(e=>{ $('in-sent').textContent='failed: '+e.message; toast('bench: '+e.message); }); }
+function renderSysinfo(si){
+  sys=si; $('f-host').textContent=si.host||'—'; $('f-model').textContent=si.market||si.model||'';
+  const kv=(el,rows)=>{ $(el).innerHTML=rows.filter(r=>r[1]!==''&&r[1]!=null).map(([k,v])=>`<b>${k}</b><span title="${esc(v)}">${esc(v)}</span>`).join(''); };
+  kv('si-hw',[['Model',si.market||si.model],['Identifier',si.model_id],['Chip',si.chip],['Cores',si.cores],['Architecture',si.arch],['Memory',si.memory],['GPU',si.gpu],['Display',si.display],['Serial',si.serial],['Board ID',si.board_id],['Security chip',si.t2]]);
+  kv('si-sw',[['macOS',si.os+' ('+si.build+')'],['Booted',si.booted],['Computer name',si.host],['User',si.user],['Admins',si.admins],['XProtect',si.xprotect],['Time Machine',si.time_machine||'none'],['DNS',si.dns]]);
+  const f=renderFlags($('si-flags'),si); kv('si-own',[['Activation Lock',si.activation_lock||'n/a (older Intel)'],['Enrollment',si.enrollment],['iCloud',si.icloud||'not signed in']]);
+  kv('si-sec',[['SIP',si.sip],['Gatekeeper',si.gatekeeper],['FileVault',si.filevault],['Proxy',si.proxy?'configured':'none']]);
+  const bad=f.filter(x=>x[0]==='bad').length, warn=f.filter(x=>x[0]==='warn').length;
+  $('t-trade').textContent=bad?'BLOCKED':warn?'CHECK':'CLEAR'; $('t-trade').className='big '+(bad?'c-red':warn?'c-yellow':'c-green'); renderFlags($('t-flags'),si);
+}
+
+// ---------- startup / users / services / disks ----------
+function renderStartup(d){ $('st-body').innerHTML=d.map(i=>`<tr><td>${i.exists?'<span class="tag ok">ok</span>':'<span class="tag warn">missing</span>'}</td><td>${esc(i.label)}</td><td style="color:var(--muted)">${esc(i.where)}</td><td style="color:var(--muted)" title="${esc(i.file)}">${esc(i.program)}</td></tr>`).join('')||'<tr><td colspan=4 class="sub">no third-party startup items</td></tr>'; }
+function renderUsers(d){ $('us-body').innerHTML=d.map(u=>`<tr><td>${esc(u.name)}</td><td class="n">${u.uid}</td><td>${u.admin?'<span class="tag info">admin</span>':''}</td><td>${u.hidden?'<span class="tag bad">hidden</span>':''}</td><td style="color:var(--muted)">${esc(u.home)}</td><td style="color:var(--muted)">${esc(u.last_login)}</td></tr>`).join(''); }
+let SERVICES=[];
+function renderServices(){ const q=($('sv-q').value||'').toLowerCase(); $('sv-body').innerHTML=SERVICES.filter(s=>!q||s.label.toLowerCase().includes(q)).map(s=>`<tr><td>${esc(s.label)}</td><td class="n">${s.pid==='-'?'':esc(s.pid)}</td><td class="n">${esc(s.status)}</td></tr>`).join(''); }
+// smartctl health block (collector.sh + Tools/_bin/smartctl, admin only)
+function renderHealth(k){
+  const h=k.health; if(!h) return '<div class="sub" style="margin-top:8px">drive health counters: run the dashboard with the admin password (bundled smartctl)</div>';
+  if(h.type==='none') return `<div class="sub" style="margin-top:8px">smartctl: ${esc(h.error||'no SMART data (bridged / unsupported controller)')}</div>`;
+  const v=h.verdict||'fine'; const cls=v==='replace'?'bad':v==='watch'?'warn':'ok'; const word=v==='replace'?'REPLACE':v==='watch'?'WATCH':'HEALTHY';
+  const n=x=>(x===undefined||x===null||x<0)?null:x; const wear=n(h.wear); const spare=n(h.spare);
+  const cell=(lab,val,bad)=>`<div><div class="sub">${lab}</div><div class="n ${bad?'c-red':''}" style="font-size:14px">${val}</div></div>`;
+  const cells=[];
+  cells.push(cell('health',esc(h.health||'?'),/fail/i.test(h.health||'')));
+  if(h.type==='nvme'){ cells.push(cell('spare blocks',spare===null?'?':spare+'%'+(n(h.spare_thr)!==null?' <span class="sub">(min '+h.spare_thr+'%)</span>':''),spare!==null&&n(h.spare_thr)!==null&&spare<=h.spare_thr));
+    cells.push(cell('media errors',n(h.media_errors)===null?'?':h.media_errors,n(h.media_errors)>0)); cells.push(cell('unsafe shutdowns',n(h.unsafe)===null?'?':h.unsafe,false)); }
+  else { cells.push(cell('reallocated',n(h.realloc)===null?'?':h.realloc,n(h.realloc)>0)); cells.push(cell('pending',n(h.pending)===null?'?':h.pending,n(h.pending)>0)); cells.push(cell('CRC errors',n(h.crc)===null?'?':h.crc,n(h.crc)>0)); }
+  cells.push(cell('written',n(h.tbw)===null?'?':h.tbw+' TB',false)); cells.push(cell('power on',n(h.hours)===null?'?':Math.round(h.hours)+' h'+(h.hours>8760?' <span class="sub">('+(h.hours/8760).toFixed(1)+' y)</span>':''),false));
+  cells.push(cell('cycles',n(h.cycles)===null?'?':h.cycles,false)); cells.push(cell('temp',n(h.temp)===null?'?':h.temp+'°C',n(h.temp)>=70));
+  const wearBar=wear===null?'':`<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>wear <span style="color:var(--muted)">(${h.type==='nvme'?'Percentage Used':'SSD life used'})</span></span><span class="n">${wear}%</span></div><div class="led ${wear>=90?'red':wear>=70?'yellow':'green'} dim" id="wr-${esc(k.dev)}"></div></div>`;
+  return `<div style="margin-top:10px;padding-top:8px;border-top:1px solid #1c2233"><div style="display:flex;justify-content:space-between;align-items:center"><span class="sub">smartctl · ${esc(h.type.toUpperCase())}${h.failed?' · <span class="c-red">'+esc(h.failed)+'</span>':''}${h.crit&&!/^0x0+$/.test(h.crit)?' · <span class="c-red">critical '+esc(h.crit)+'</span>':''}</span><span class="tag ${cls}">${word}</span></div>${wearBar}<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px 10px;margin-top:8px">${cells.join('')}</div></div>`;
+}
+function renderDisks(d){
+  $('dk-grid').innerHTML=d.map(k=>{ const sm=(k.smart||'').toLowerCase(); const hv=k.health&&k.health.verdict; const tag=hv==='replace'?'<span class="tag bad">REPLACE DRIVE</span>':sm.includes('fail')?'<span class="tag bad">SMART FAILING</span>':hv==='watch'?'<span class="tag warn">WATCH</span>':sm.includes('verified')||hv==='fine'?'<span class="tag ok">SMART ok</span>':'<span class="tag info">SMART n/a</span>';
+    const vols=k.volumes.map(v=>{ const p=v.total?Math.round(v.used/v.total*100):0; return `<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>${esc(v.mount)} <span style="color:var(--muted)">(${esc(v.dev)})</span></span><span class="n">${fmtB(v.used)} / ${fmtB(v.total)} · ${p}%</span></div><div class="led ${p>90?'red':'green'} dim" id="ld-${esc(v.dev)}"></div></div>`; }).join('');
+    return `<div class="card ${(sm.includes('fail')||hv==='replace')?'r':hv==='watch'?'y':'g'}"><h2>${esc(k.dev)} <span class="sub" style="margin-left:6px">${esc(k.name)}</span><span class="val">${fmtB(k.size)}</span></h2><div class="sub">${esc(k.protocol)} · SSD: ${esc(k.ssd)} · ${esc(k.location)} · ${tag}</div>${vols||'<div class="sub">no mounted volumes</div>'}${renderHealth(k)}</div>`; }).join('')||'<div class="card"><div class="sub">no physical disks reported</div></div>';
+  d.forEach(k=>{ k.volumes.forEach(v=>{ const el=document.getElementById('ld-'+v.dev); if(el){ ledInit('ld-'+v.dev,30); led('ld-'+v.dev, v.total?v.used/v.total*100:0); } });
+    const w=document.getElementById('wr-'+k.dev); if(w){ ledInit('wr-'+k.dev,30); led('wr-'+k.dev, Math.min(100,k.health.wear)); } });
+}
+
+// ---------- tools / reports ----------
+function runTerminal(app){ api('run','app='+app).then(r=>{ if(r.ok){ toast(app+' started in a new Terminal window'); $('lg-app').value=app; pollLog(true); } else toast('could not start: '+r.error); }).catch(e=>toast('run failed: '+e.message)); }
+// ▶ Run = queue a tool_run job: the collector (Terminal rights + the sudo ticket) runs Run-<app>.command -Quiet
+let TOOL_JOBS={};
+function runTool(app){ if(TOOL_JOBS[app]){ toast(app+' is already running'); return; } const b=$('rb-'+app); if(b) b.disabled=true; $('tl-'+app).textContent='queued…'; $('lg-app').value=app;
+  apiPost('job',{type:'tool_run',app:app}).then(r=>{ if(!r.ok) throw new Error(r.error||'queue failed'); TOOL_JOBS[app]={id:r.id,t0:Date.now()}; toast(app+' started (background, no Terminal)'); pollLog(true); toolWatch(app); }).catch(e=>{ if(b) b.disabled=false; $('tl-'+app).textContent='could not start: '+e.message; toast('run failed: '+e.message); }); }
+function toolWatch(app){ const j=TOOL_JOBS[app]; if(!j) return; api('jobstatus','id='+encodeURIComponent(j.id)).then(st=>{ const secs=Math.round((Date.now()-j.t0)/1000);
+    if(st.state==='done'){ delete TOOL_JOBS[app]; const b=$('rb-'+app); if(b) b.disabled=false; const ok=st.result&&st.result.ok; toast(app+(ok?' finished':' finished with errors (see the log)')); setTimeout(()=>load('reports',d=>{ cache.reports=d; renderToolStatus(d); },true),2500); pollLog(true); return; }
+    $('tl-'+app).textContent=(st.state==='queued'?'queued… '+secs+' s':'running… '+secs+' s'); j.timer=setTimeout(()=>toolWatch(app),2000); }).catch(()=>{ j.timer=setTimeout(()=>toolWatch(app),4000); }); }
+let logTimer=null;
+function pollLog(now){ clearTimeout(logTimer); if(page!=='tools') return; const app=$('lg-app').value; api('log','app='+app,true).then(t=>{ const pre=$('lg-pre'); const atEnd=pre.scrollTop+pre.clientHeight>=pre.scrollHeight-20; pre.textContent=t||'(no output yet)'; if(atEnd) pre.scrollTop=pre.scrollHeight; }).catch(()=>{}); logTimer=setTimeout(()=>pollLog(false),3000); if(!now) load('reports',d=>{ cache.reports=d; renderToolStatus(d); },true); }
+function renderToolStatus(reps){ api('status').then(st=>{ $('tools-sudo-hint').style.display=st.sudo?'none':'block'; }).catch(()=>{}); ['MacDiag','MalwareTriage','AppleDiagnostics','InstallerMaker','CleanUp','Files'].forEach(a=>{ if(TOOL_JOBS[a]) return; const r=reps.filter(x=>x.app===a).sort((x,y)=>y.ts-x.ts)[0]; $('tl-'+a).innerHTML=r?`last: ${new Date(r.ts*1000).toLocaleString()} · <b class="${/INFECT|ATTENTION|BLOCK|NOT VERIFIED/.test(r.verdict)?'c-red':/SEVERAL|SUSPIC|MINOR|MOSTLY|DELETED/.test(r.verdict)?'c-yellow':'c-green'}">${esc(r.verdict||'done')}</b>`:'no run yet'; }); }
+function renderReports(d){ d.sort((a,b)=>b.ts-a.ts); $('rp-body').innerHTML=d.map(r=>`<tr style="cursor:pointer" onclick="openReport('${esc(r.file)}','${esc(r.app)}')"><td>${esc(r.app)}</td><td style="color:var(--muted)">${new Date(r.ts*1000).toLocaleString()}</td><td class="wrap"><span class="tag ${/INFECT|ATTENTION|BLOCK|^FAIL|NOT VERIFIED/.test(r.verdict)?'bad':/SEVERAL|SUSPIC|MINOR|MOSTLY|INCOMPLETE|DELETED/.test(r.verdict)?'warn':'ok'}">${esc(r.verdict||'—')}</span></td></tr>`).join('')||'<tr><td colspan=3 class="sub">no reports found yet — run a tool from the Tools page, then Refresh (reports are picked up every 10 s)</td></tr>';
+  api('status').then(st=>{ $('rp-status').textContent=(st.mirror?'reading the collector mirror':'reading the stick directly')+' · '+st.reports+' report file(s)'+(st.synced?' · synced '+new Date(st.synced*1000).toLocaleTimeString():'')+' · tools in '+st.profile; }).catch(()=>{}); }
+function openReport(f,app){ $('rp-title').textContent=app+' · '+f; $('rp-pre').textContent='loading…'; api('report','f='+encodeURIComponent(f),true).then(t=>$('rp-pre').textContent=t).catch(e=>$('rp-pre').textContent='error: '+e.message); }
+function quitDash(){ if(!confirm('Stop the dashboard server?')) return; api('quit').then(()=>{ setState(false,'stopped'); toast('Dashboard stopped — you can close this tab'); }).catch(()=>setState(false,'stopped')); }
+
+// ================= hardware tests (Tests page) =================
+// Every test runs in the browser; the collector/api only feed the ports page and store the checklist.
+const QC_ITEMS=[
+  {id:'display',     tab:'display',  label:'Display — dead/stuck pixels, uniformity, backlight bleed, lines'},
+  {id:'keyboard',    tab:'keyboard', label:'Keyboard — every key registers, no chatter'},
+  {id:'kbd_backlight',tab:'keyboard',label:'Keyboard backlight (fn+F5/F6)', manual:true},
+  {id:'trackpad',    tab:'trackpad', label:'Trackpad — tracking, click, right-click, scroll, drag, force click'},
+  {id:'speakers',    tab:'audio',    label:'Speakers — left, right, sweep, bass, no distortion'},
+  {id:'camera',      tab:'camera',   label:'Camera'},
+  {id:'mic',         tab:'camera',   label:'Microphone'},
+  {id:'ports',       tab:'ports',    label:'USB / Thunderbolt — every port enumerates a device'},
+  {id:'charging',    tab:'ports',    label:'Charging — every port negotiates full wattage'},
+  {id:'touchid',     manual:true,    label:'Touch ID / power key (enrol + unlock)'},
+  {id:'wifi',        manual:true,    label:'Wi-Fi — joins, full signal near the router, no drops when the lid is moved'},
+  {id:'bluetooth',   manual:true,    label:'Bluetooth — pairs a device, range across the room'},
+  {id:'lid',         manual:true,    label:'Lid / hinge — sleeps on close, wakes on open, no creak or play'},
+  {id:'fans',        manual:true,    label:'Fans / noise — spin under load, no grinding, vents clear'},
+  {id:'battery',     manual:true,    label:'Battery — cycles + capacity from MacDiag, no swelling (trackpad click feels normal)'},
+  {id:'cosmetic',    manual:true,    label:'Cosmetics — screen, case, feet, LCI stickers in USB-C ports'},
+  {id:'firstaid',    manual:true,    label:'Disk Utility First Aid on the startup volume'}
+];
+let QC={}; try{ QC=JSON.parse(localStorage.getItem('bm_qc')||'{}')||{}; }catch(e){ QC={}; }
+function qcSaveLocal(){ try{ localStorage.setItem('bm_qc',JSON.stringify(QC)); }catch(e){} }
+function qcGet(id){ return QC[id]||(QC[id]={r:'',note:''}); }
+function qcSet(id,r){ const q=qcGet(id); q.r=(q.r===r?'':r); qcSaveLocal(); renderVerdicts(); }
+function qcNote(id,v){ qcGet(id).note=v; qcSaveLocal(); }
+function verdictHtml(id){ const q=qcGet(id); return `<div class="vrow" data-v="${id}"><button class="vb pass ${q.r==='pass'?'on':''}" onclick="qcSet('${id}','pass')">PASS</button><button class="vb fail ${q.r==='fail'?'on':''}" onclick="qcSet('${id}','fail')">FAIL</button><button class="vb skip ${q.r==='skip'?'on':''}" onclick="qcSet('${id}','skip')">SKIP</button><input class="q sm" placeholder="note (what / where)" value="${esc(q.note||'')}" oninput="qcNote('${id}',this.value)"></div>`; }
+function renderVerdicts(){
+  QC_ITEMS.forEach(i=>{ const el=document.getElementById('v-'+i.id); if(el) el.innerHTML=verdictHtml(i.id); });
+  const body=$('ck-body'); if(body) body.innerHTML=QC_ITEMS.map(i=>{ const q=qcGet(i.id); return `<tr class="ck"><td><span class="tag ${q.r==='pass'?'ok':q.r==='fail'?'bad':q.r==='skip'?'info':'warn'}">${q.r?q.r.toUpperCase():'—'}</span></td><td>${esc(i.label)}${i.tab?' <span class="sub" style="cursor:pointer" onclick="tsTab(\''+i.tab+'\')">↗ test</span>':''}${i.id==='fans'?' <button class="vb" id="fan-btn" onclick="fanTest()">▶ 60 s load test</button><div class="fan-res" id="fan-res">'+esc(FAN.text||'')+'</div>':''}${i.id==='touchid'?'<div class="fan-res" id="tid-res">'+esc(tidText())+'</div>':''}</td><td>${verdictHtml(i.id)}</td></tr>`; }).join('');
+  const n=QC_ITEMS.length, p=QC_ITEMS.filter(i=>qcGet(i.id).r==='pass').length, f=QC_ITEMS.filter(i=>qcGet(i.id).r==='fail').length, s=QC_ITEMS.filter(i=>qcGet(i.id).r==='skip').length;
+  const txt=`${p} pass · ${f} fail · ${s} skip · ${n-p-f-s} open`; $('ts-progress').textContent=txt; if($('ck-summary')) $('ck-summary').textContent=qcResult().label+' — '+txt;
+  document.querySelectorAll('#ts-tabs .tab').forEach(t=>{ const items=QC_ITEMS.filter(i=>i.tab===t.dataset.t); if(!items.length) return; t.classList.toggle('bad',items.some(i=>qcGet(i.id).r==='fail')); t.classList.toggle('done',items.length&&items.every(i=>qcGet(i.id).r)); });
+}
+function qcResult(){ const f=QC_ITEMS.filter(i=>qcGet(i.id).r==='fail').length, open=QC_ITEMS.filter(i=>!qcGet(i.id).r).length; return f?{label:'FAIL ('+f+' failed)',key:'FAIL'}:open?{label:'INCOMPLETE ('+open+' untested)',key:'INCOMPLETE'}:{label:'PASS',key:'PASS'}; }
+function qcClear(){ if(!confirm('Clear every result and note?')) return; QC={}; qcSaveLocal(); renderVerdicts(); kbReset(); tkReset(); }
+function tsTab(t){ document.querySelectorAll('#ts-tabs .tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t)); document.querySelectorAll('.tpanel').forEach(p=>p.classList.toggle('on',p.id==='tp-'+t)); TS_TAB=t; if(t==='ports') ptPoll(true); if(t==='keyboard') setTimeout(()=>$('kb-wrap').focus(),50); if(t==='trackpad'&&TK.fit) setTimeout(TK.fit,30); if(t==='checklist') renderVerdicts(); }
+let TS_TAB='display';
+document.querySelectorAll('#ts-tabs .tab').forEach(b=>b.addEventListener('click',()=>tsTab(b.dataset.t)));
+function testsShown(){ renderVerdicts(); if(!$('kb-grid').children.length) kbBuild(); if(!$('tk-zones').children.length) tkBuild(); if(!$('pt-rows').children.length) ptBuildRows(); if(TS_TAB==='ports') ptPoll(true); }
+
+// ---- display panels ----
+const DS_PANELS=[{n:'RED',bg:'#f00'},{n:'GREEN',bg:'#0f0'},{n:'BLUE',bg:'#00f'},{n:'WHITE',bg:'#fff'},{n:'BLACK — look for backlight bleed',bg:'#000'},{n:'50% GREY — look for lines / patches / flicker',bg:'#808080'},{n:'GRADIENT — look for banding',bg:'linear-gradient(90deg,#000,#fff)'},{n:'1-PX GRID — look for moiré / dark patches',bg:'repeating-linear-gradient(0deg,#000 0 1px,#fff 1px 2px)'},{n:'CHECKER',bg:'repeating-conic-gradient(#000 0 25%,#fff 0 50%) 0 0/16px 16px'},{n:'TEXT — sharpness',txt:true}];
+let dsIdx=0, dsOv=null;
+function dsEnsure(){ if(dsOv) return dsOv; dsOv=document.createElement('div'); dsOv.id='ds-ov'; dsOv.innerHTML='<div class="txt" style="display:none"></div><div class="lab"></div>'; document.body.appendChild(dsOv);
+  dsOv.addEventListener('click',()=>dsNext()); dsOv.addEventListener('contextmenu',e=>{ e.preventDefault(); dsNext(); }); return dsOv; }
+function dsShow(){ const p=DS_PANELS[dsIdx]; const ov=dsEnsure(); const t=ov.querySelector('.txt'); if(p.txt){ t.style.display='block'; if(!t.innerHTML){ let s=''; for(let i=0;i<6;i++) s+=`<p style="font-size:${9+i*3}px">The quick brown fox jumps over the lazy dog 0123456789 — ${i%2?'Ligatures: fi fl ff ffi ffl · Q q g y':'Sharp edges: | / \\ [ ] { } * # @ %'} · lorem ipsum dolor sit amet, consectetur adipiscing elit</p>`; s+='<p style="font-size:11px;color:#666">Thin text should be crisp corner to corner. Soft, doubled or rainbow-fringed text = wrong scaled resolution or a damaged panel.</p>'; t.innerHTML=s; } ov.style.background='#fff'; } else { t.style.display='none'; ov.style.background=p.bg; }
+  const lab=ov.querySelector('.lab'); lab.textContent=`${dsIdx+1}/${DS_PANELS.length} · ${p.n} · click / any key = next · Esc = stop`; lab.style.opacity=1; clearTimeout(lab._t); lab._t=setTimeout(()=>lab.style.opacity=0,2500); }
+function dsStart(){ dsIdx=0; const ov=dsEnsure(); ov.classList.add('on'); dsShow(); try{ (ov.requestFullscreen||ov.webkitRequestFullscreen||function(){}).call(ov); }catch(e){} document.addEventListener('keydown',dsKey,true); }
+function dsNext(){ dsIdx++; if(dsIdx>=DS_PANELS.length) return dsStop(); dsShow(); }
+function dsStop(){ const ov=dsEnsure(); ov.classList.remove('on'); document.removeEventListener('keydown',dsKey,true); try{ if(document.fullscreenElement) document.exitFullscreen(); else if(document.webkitFullscreenElement) document.webkitExitFullscreen(); }catch(e){} toast('Panels done — mark the display result'); }
+function dsKey(e){ e.preventDefault(); e.stopPropagation(); if(e.key==='Escape') dsStop(); else if(e.key==='ArrowLeft'){ dsIdx=Math.max(0,dsIdx-1); dsShow(); } else if(!e.repeat) dsNext(); }
+function dispStart(){ dsStart(); }
+
+// ---- keyboard ----
+// [code, label, width-class] — a US MacBook layout; codes are physical (KeyboardEvent.code) so any language layout maps
+const KB_ROWS=[
+  [['Escape','esc','w15'],['F1','F1'],['F2','F2'],['F3','F3'],['F4','F4'],['F5','F5'],['F6','F6'],['F7','F7'],['F8','F8'],['F9','F9'],['F10','F10'],['F11','F11'],['F12','F12'],['_touchid','⏻ / Touch ID','na']],
+  [['Backquote','` ~'],['Digit1','1'],['Digit2','2'],['Digit3','3'],['Digit4','4'],['Digit5','5'],['Digit6','6'],['Digit7','7'],['Digit8','8'],['Digit9','9'],['Digit0','0'],['Minus','- _'],['Equal','= +'],['Backspace','delete','w15']],
+  [['Tab','tab','w15'],['KeyQ','Q'],['KeyW','W'],['KeyE','E'],['KeyR','R'],['KeyT','T'],['KeyY','Y'],['KeyU','U'],['KeyI','I'],['KeyO','O'],['KeyP','P'],['BracketLeft','[ {'],['BracketRight','] }'],['Backslash','\\ |']],
+  [['CapsLock','caps','w2'],['KeyA','A'],['KeyS','S'],['KeyD','D'],['KeyF','F'],['KeyG','G'],['KeyH','H'],['KeyJ','J'],['KeyK','K'],['KeyL','L'],['Semicolon','; :'],['Quote','\' "'],['Enter','return','w15']],
+  [['ShiftLeft','shift','w25'],['KeyZ','Z'],['KeyX','X'],['KeyC','C'],['KeyV','V'],['KeyB','B'],['KeyN','N'],['KeyM','M'],['Comma',', <'],['Period','. >'],['Slash','/ ?'],['ShiftRight','shift','w25']],
+  [['_fn','fn','na'],['ControlLeft','ctrl'],['AltLeft','opt'],['MetaLeft','cmd','w15'],['Space','','w6'],['MetaRight','cmd','w15'],['AltRight','opt'],['ArrowLeft','◀'],['ArrowUp','▲'],['ArrowDown','▼'],['ArrowRight','▶']]
+];
+const KB_STATE={hit:{},chat:{},up:{},total:0};
+function kbBuild(){ const g=$('kb-grid'); g.innerHTML=''; KB_STATE.total=0; KB_ROWS.forEach(r=>{ const d=document.createElement('div'); d.className='kb-row'; r.forEach(k=>{ const e=document.createElement('div'); e.className='key '+(k[2]||''); e.id='key-'+k[0]; e.textContent=k[1]; e.title=k[0]; d.appendChild(e); if(k[2]!=='na') KB_STATE.total++; }); g.appendChild(d); });
+  const w=$('kb-wrap'); w.addEventListener('focus',()=>$('kb-focus').textContent='focused — type away'); w.addEventListener('blur',()=>$('kb-focus').textContent='not focused (click the keyboard area)'); w.addEventListener('keydown',kbDown); w.addEventListener('keyup',kbUp); kbCount(); }
+function kbDown(e){ const el=document.getElementById('key-'+e.code); e.preventDefault(); if(!el) return; el.classList.add('down'); if(e.repeat) return;
+  const t=performance.now(); if(KB_STATE.up[e.code]&&t-KB_STATE.up[e.code]<35){ KB_STATE.chat[e.code]=(KB_STATE.chat[e.code]||0)+1; el.classList.add('chat'); }
+  KB_STATE.hit[e.code]=(KB_STATE.hit[e.code]||0)+1; el.classList.add('hit'); kbCount(); }
+function kbUp(e){ const el=document.getElementById('key-'+e.code); if(el) el.classList.remove('down'); KB_STATE.up[e.code]=performance.now(); if(e.code==='CapsLock'){ /* macOS sends only keydown for caps sometimes */ } }
+function kbCount(){ const hit=Object.keys(KB_STATE.hit).length, chat=Object.keys(KB_STATE.chat); $('kb-count').textContent=`${hit} / ${KB_STATE.total} keys · ${chat.length?chat.length+' chattering: '+chat.join(' '):'no chatter'}`;
+  const un=[]; KB_ROWS.forEach(r=>r.forEach(k=>{ if(k[2]!=='na'&&!KB_STATE.hit[k[0]]) un.push(k[1]||'space'); })); $('kb-untested').textContent=un.length?'untested: '+un.slice(0,30).join(' ')+(un.length>30?' …':''):'every key registered'; }
+function kbReset(){ KB_STATE.hit={}; KB_STATE.chat={}; KB_STATE.up={}; document.querySelectorAll('#kb-grid .key').forEach(e=>e.classList.remove('hit','chat','down')); if($('kb-count')) kbCount(); }
+function kbSummary(){ const hit=Object.keys(KB_STATE.hit).length, chat=Object.keys(KB_STATE.chat); return `${hit}/${KB_STATE.total} keys registered${chat.length?', chatter on '+chat.join(' '):', no chatter'}`; }
+
+// ---- trackpad ----
+const TK={zones:{},click:0,right:0,dbl:0,scrollX:0,scrollY:0,drag:0,force:0,forceSupported:false,pinch:false,lastPt:null,down:false,path:0};
+function tkBuild(){ const z=$('tk-zones'); z.innerHTML=''; for(let i=0;i<24;i++){ const e=document.createElement('i'); e.dataset.i=i; z.appendChild(e); }
+  const a=$('tk-area'), c=$('tk-canvas'); const ctx=c.getContext('2d');
+  const fit=()=>{ if(a.clientWidth&&(c.width!==a.clientWidth||c.height!==a.clientHeight)){ c.width=a.clientWidth; c.height=a.clientHeight; } }; fit(); TK.fit=fit; window.addEventListener('resize',fit);
+  const zoneOf=(x,y)=>{ const r=a.getBoundingClientRect(); const cx=Math.min(5,Math.max(0,Math.floor((x-r.left)/r.width*6))), cy=Math.min(3,Math.max(0,Math.floor((y-r.top)/r.height*4))); return cy*6+cx; };
+  a.addEventListener('pointermove',e=>{ const i=zoneOf(e.clientX,e.clientY); if(!TK.zones[i]){ TK.zones[i]=1; z.children[i].classList.add('on'); }
+    if(TK.down&&TK.lastPt){ const r=a.getBoundingClientRect(); ctx.strokeStyle='#3ef0ff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(TK.lastPt[0]-r.left,TK.lastPt[1]-r.top); ctx.lineTo(e.clientX-r.left,e.clientY-r.top); ctx.stroke(); TK.path+=Math.hypot(e.clientX-TK.lastPt[0],e.clientY-TK.lastPt[1]); if(TK.path>150) TK.drag=1; }
+    TK.lastPt=[e.clientX,e.clientY]; tkFlags(); });
+  a.addEventListener('pointerdown',e=>{ if(e.button===0){ TK.click++; TK.down=true; TK.lastPt=[e.clientX,e.clientY]; } if(e.button===2) TK.right++; tkFlags(); });
+  a.addEventListener('pointerup',()=>{ TK.down=false; tkFlags(); }); a.addEventListener('pointerleave',()=>{ TK.down=false; });
+  a.addEventListener('contextmenu',e=>{ e.preventDefault(); });
+  a.addEventListener('dblclick',()=>{ TK.dbl++; tkFlags(); });
+  a.addEventListener('wheel',e=>{ e.preventDefault(); if(e.ctrlKey){ TK.pinch=true; } else { TK.scrollX+=Math.abs(e.deltaX); TK.scrollY+=Math.abs(e.deltaY); } tkFlags(); },{passive:false});
+  a.addEventListener('gesturestart',e=>{ e.preventDefault(); TK.pinch=true; tkFlags(); });
+  if('onwebkitmouseforcewillbegin' in a){ TK.forceSupported=true; a.addEventListener('webkitmouseforcedown',()=>{ TK.force++; tkFlags(); }); }
+  tkFlags(); }
+function tkFlags(){ const zn=Object.keys(TK.zones).length; const f=(ok,lab,extra)=>`<span class="flag ${ok===null?'warn':ok?'ok':'warn'}">${lab}${extra?' · '+extra:''}</span>`;
+  $('tk-flags').innerHTML=f(zn===24,'tracking coverage',zn+'/24 zones')+f(TK.click>0,'click',TK.click||'')+f(TK.right>0,'right / two-finger click',TK.right||'')+f(TK.scrollY>200,'scroll ↕',Math.round(TK.scrollY))+f(TK.scrollX>200,'scroll ↔',Math.round(TK.scrollX))+f(TK.drag>0,'drag')+f(TK.dbl>0,'double-click')+f(TK.pinch,'pinch / zoom')+(TK.forceSupported?f(TK.force>0,'force click',TK.force||''):'<span class="flag warn">force click — Safari only</span>');
+  $('tk-msg').textContent=zn<24?'move over every zone · click · two-finger click · scroll · drag · double-click':'coverage complete — check the flags'; }
+function tkReset(){ Object.assign(TK,{zones:{},click:0,right:0,dbl:0,scrollX:0,scrollY:0,drag:0,force:0,pinch:false,path:0}); document.querySelectorAll('#tk-zones i').forEach(e=>e.classList.remove('on')); const c=$('tk-canvas'); if(c) c.getContext('2d').clearRect(0,0,c.width,c.height); if($('tk-flags')) tkFlags(); }
+function tkSummary(){ return `coverage ${Object.keys(TK.zones).length}/24, clicks ${TK.click}, right ${TK.right}, double ${TK.dbl}, scroll ↕${Math.round(TK.scrollY)} ↔${Math.round(TK.scrollX)}, drag ${TK.drag?'yes':'no'}, pinch ${TK.pinch?'yes':'no'}, force ${TK.forceSupported?TK.force:'n/a'}`; }
+
+// ---- speakers (WebAudio) ----
+let AC=null, AU_CUR=null;
+function ac(){ if(!AC){ AC=new (window.AudioContext||window.webkitAudioContext)(); } if(AC.state==='suspended') AC.resume(); return AC; }
+function auVol(){ return (+$('au-vol').value||0)/100*0.8; }
+function auStop(){ if(AU_CUR){ try{ AU_CUR.forEach(n=>n.stop&&n.stop()); }catch(e){} AU_CUR=null; } $('au-state').textContent='idle'; }
+function auOut(pan){ const c=ac(); const g=c.createGain(); g.gain.value=auVol(); let node=g; if(c.createStereoPanner){ const p=c.createStereoPanner(); p.pan.value=pan; g.connect(p); p.connect(c.destination); node=g; } else { const m=c.createChannelMerger(2); const l=c.createGain(), r=c.createGain(); l.gain.value=pan<=0?1:0; r.gain.value=pan>=0?1:0; g.connect(l); g.connect(r); l.connect(m,0,0); r.connect(m,0,1); m.connect(c.destination); } return {c,g}; }
+function auTone(pan){ auStop(); const {c,g}=auOut(pan); const o=c.createOscillator(); o.type='sine'; o.frequency.value=440; o.connect(g); o.start(); o.stop(c.currentTime+1.2); AU_CUR=[o]; $('au-state').textContent=pan<0?'LEFT 440 Hz':pan>0?'RIGHT 440 Hz':'BOTH 440 Hz'; o.onended=()=>$('au-state').textContent='idle'; }
+function auSweep(){ auStop(); const {c,g}=auOut(0); const o=c.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(100,c.currentTime); o.frequency.exponentialRampToValueAtTime(12000,c.currentTime+6); o.connect(g); o.start(); o.stop(c.currentTime+6); AU_CUR=[o]; $('au-state').textContent='sweep 100 Hz → 12 kHz (6 s)'; o.onended=()=>$('au-state').textContent='idle'; }
+function auBass(){ auStop(); const {c,g}=auOut(0); const o=c.createOscillator(); o.type='sine'; o.frequency.value=60; o.connect(g); o.start(); o.stop(c.currentTime+2.5); AU_CUR=[o]; $('au-state').textContent='60 Hz bass — listen for buzz / rattle'; o.onended=()=>$('au-state').textContent='idle'; }
+function auNoise(){ auStop(); const {c,g}=auOut(0); const n=c.sampleRate*3, buf=c.createBuffer(2,n,c.sampleRate); for(let ch=0;ch<2;ch++){ const d=buf.getChannelData(ch); let b0=0,b1=0,b2=0; for(let i=0;i<n;i++){ const w=Math.random()*2-1; b0=0.99765*b0+w*0.0990460; b1=0.96300*b1+w*0.2965164; b2=0.57000*b2+w*1.0526913; d[i]=(b0+b1+b2+w*0.1848)*0.11; } }
+  const s=c.createBufferSource(); s.buffer=buf; s.connect(g); s.start(); AU_CUR=[s]; $('au-state').textContent='pink noise (3 s) — listen for crackle'; s.onended=()=>$('au-state').textContent='idle'; }
+
+// ---- camera + mic ----
+let CAM=null, MIC_RAF=null;
+function camStart(){ camStop(); $('cam-state').textContent='asking for permission…';
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ $('cam-state').textContent='this browser cannot access the camera (needs Safari 11+ / Chrome)'; return; }
+  navigator.mediaDevices.getUserMedia({video:{width:1280,height:720},audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}}).then(st=>{ CAM=st; const v=$('cam-video'); v.srcObject=st; v.play().catch(()=>{});
+    const vt=st.getVideoTracks()[0], at=st.getAudioTracks()[0]; $('cam-state').textContent='live'; $('cam-devices').textContent=(vt?'camera: '+vt.label:'NO CAMERA')+' · '+(at?'mic: '+at.label:'NO MIC');
+    if(at){ const c=ac(); const src=c.createMediaStreamSource(new MediaStream([at])); const an=c.createAnalyser(); an.fftSize=1024; src.connect(an); const data=new Float32Array(an.fftSize); const cv=$('mic-meter'), g=cv.getContext('2d'); let peak=0;
+      const draw=()=>{ an.getFloatTimeDomainData(data); let s=0; for(let i=0;i<data.length;i++) s+=data[i]*data[i]; const rms=Math.sqrt(s/data.length); const db=20*Math.log10(rms||1e-6); MIC_DB=db; peak=Math.max(peak*0.995,db); const w=Math.max(0,Math.min(1,(db+60)/60)); g.clearRect(0,0,cv.width,cv.height); g.fillStyle=db>-6?'#ff4f4f':db>-20?'#ffd53b':'#4dff5a'; g.fillRect(0,0,cv.width*w,cv.height); const pw=Math.max(0,Math.min(1,(peak+60)/60)); g.fillStyle='#fff'; g.fillRect(cv.width*pw-1,0,2,cv.height); $('mic-peak').textContent=(db>-90?db.toFixed(0):'−∞')+' dBFS'; MIC_RAF=requestAnimationFrame(draw); }; draw(); }
+  }).catch(e=>{ $('cam-state').textContent='denied / unavailable: '+e.message; }); }
+function camStop(){ if(MIC_RAF) cancelAnimationFrame(MIC_RAF); MIC_RAF=null; if(CAM){ CAM.getTracks().forEach(t=>t.stop()); CAM=null; } const v=$('cam-video'); if(v) v.srcObject=null; if($('cam-state')) $('cam-state').textContent='stopped'; }
+
+// ---- ports + charging ----
+let PT_TIMER=null, PT_LAST=null, PT_PREV=null, PT_ROWS=[];
+try{ PT_ROWS=JSON.parse(localStorage.getItem('bm_ports')||'[]')||[]; }catch(e){ PT_ROWS=[]; }
+if(!PT_ROWS.length) PT_ROWS=[{n:'Left 1'},{n:'Left 2'},{n:'Right 1'},{n:'Right 2'}];
+function ptSaveRows(){ try{ localStorage.setItem('bm_ports',JSON.stringify(PT_ROWS)); }catch(e){} }
+function ptPoll(now){ clearTimeout(PT_TIMER); if(page!=='tests'||TS_TAB!=='ports') return; const go=()=>api('ports').then(d=>{ PT_LAST=d; ptRender(d); }).catch(e=>{ $('pt-charger').innerHTML='<b>error</b><span>'+esc(e.message)+'</span>'; }).then(()=>{ PT_TIMER=setTimeout(ptPoll,3000); }); if(now) go(); else PT_TIMER=setTimeout(ptPoll,3000); }
+function ptRender(d){ const c=d.charger||{}; $('pt-age').textContent='updated '+new Date().toLocaleTimeString();
+  $('pt-charger').innerHTML=`<b>charger</b><span class="${c.connected?'c-green':'c-yellow'}">${c.connected?'connected':'not connected'}</span><b>negotiated</b><span class="${c.connected&&c.watts<20?'c-red':''}" style="font-size:16px">${c.connected?c.watts+' W':'—'}</span><b>adapter</b><span>${esc(c.name||c.desc||'—')}${c.family?' · '+esc(c.family):''}</span><b>charging</b><span>${esc(c.charging||'—')} · battery ${c.pct}%</span><b>battery draw</b><span class="${c.battery_w<0?'c-yellow':''}">${c.battery_w>0?'+':''}${c.battery_w} W ${c.battery_w<0?'(discharging — charger not keeping up or not charging)':c.battery_w>0?'(charging)':''}</span>`;
+  const usb=d.usb||[], tb=d.thunderbolt||[];
+  $('pt-usb').innerHTML='<b style="color:#fff">USB</b> '+(usb.length?usb.map(u=>`<span class="tag info" style="margin:2px">${esc(u.name)} <span class="sub">${esc(u.speed)}${u.ma?' · '+u.ma+' mA':''}</span></span>`).join(''):'<span class="sub">no USB devices</span>');
+  $('pt-tb').innerHTML='<b style="color:#fff">Thunderbolt / USB4</b> '+(tb.length?tb.map(t=>`<span class="tag ${/Device connected/i.test(t.status)?'ok':'info'}" style="margin:2px">receptacle ${esc(t.receptacle||'?')} · ${esc(t.status)}${t.device?' · '+esc(t.device):''}</span>`).join(''):'<span class="sub">no Thunderbolt buses reported</span>');
+  if(PT_PREV){ const prev=new Set(PT_PREV.usb.map(u=>u.name+u.loc)); const fresh=usb.filter(u=>!prev.has(u.name+u.loc)); const prevTb=new Set(PT_PREV.thunderbolt.filter(t=>/Device connected/i.test(t.status)).map(t=>t.receptacle)); const freshTb=tb.filter(t=>/Device connected/i.test(t.status)&&!prevTb.has(t.receptacle));
+    if(fresh.length||freshTb.length){ const msg='NEW: '+fresh.map(u=>u.name).concat(freshTb.map(t=>'TB receptacle '+t.receptacle+(t.device?' ('+t.device+')':''))).join(', '); $('pt-new').innerHTML='<span class="c-green">'+esc(msg)+'</span>'; toast(msg); PT_NEW=msg; }
+    if(PT_PREV.charger&&!PT_PREV.charger.connected&&c.connected){ toast('charger connected: '+c.watts+' W'); } }
+  PT_PREV=d; }
+let PT_NEW='';
+function ptBuildRows(){ $('pt-rows').innerHTML=PT_ROWS.map((r,i)=>`<tr><td><input class="q sm" value="${esc(r.n)}" oninput="PT_ROWS[${i}].n=this.value;ptSaveRows()" style="width:110px"></td><td class="n">${r.w!==undefined?'<b class="'+(r.w<20?'c-red':'c-green')+'">'+r.w+' W</b>':'—'} <button class="vb" onclick="ptRec(${i},'w')">record charger</button></td><td>${esc(r.d||'—')} <button class="vb" onclick="ptRec(${i},'d')">record device</button></td><td><input class="q sm" value="${esc(r.note||'')}" oninput="PT_ROWS[${i}].note=this.value;ptSaveRows()"></td><td><button class="vb" onclick="PT_ROWS.splice(${i},1);ptSaveRows();ptBuildRows()">✕</button></td></tr>`).join(''); }
+function ptAddRow(){ PT_ROWS.push({n:'Port '+(PT_ROWS.length+1)}); ptSaveRows(); ptBuildRows(); }
+function ptRec(i,k){ if(!PT_LAST){ toast('no reading yet'); return; } if(k==='w'){ PT_ROWS[i].w=PT_LAST.charger.connected?PT_LAST.charger.watts:0; PT_ROWS[i].wn=PT_LAST.charger.name||''; } else { const tbc=(PT_LAST.thunderbolt||[]).filter(t=>/Device connected/i.test(t.status)); PT_ROWS[i].d=PT_NEW||(PT_LAST.usb.length?PT_LAST.usb[PT_LAST.usb.length-1].name:tbc.length?'TB receptacle '+tbc[tbc.length-1].receptacle:'nothing detected'); PT_NEW=''; $('pt-new').textContent=''; } ptSaveRows(); ptBuildRows(); }
+function ptSummary(){ return PT_ROWS.map(r=>`${r.n}: ${r.w!==undefined?r.w+' W':'charger n/t'}${r.d?', '+r.d:''}${r.note?' ('+r.note+')':''}`).join('; ')+(PT_LAST&&PT_LAST.charger.connected?` | last charger: ${PT_LAST.charger.watts} W ${PT_LAST.charger.name||''}, battery ${PT_LAST.charger.battery_w} W`:''); }
+
+// ---- save the checklist ----
+function qcText(){ const si=cache.sysinfo||{}; const res=qcResult(); const now=new Date(); const tk=$('ck-ticket').value.trim(), te=$('ck-tech').value.trim();
+  let t=`QC CHECKLIST  -  BenchTool Mac Diagnostics Dashboard\n======================================================================\nGenerated : ${now.toLocaleString()}\nComputer  : ${si.host||''}\nModel     : ${si.model||''} (${si.model_id||''})  ${si.chip||''}\nSerial    : ${si.serial||''}\nmacOS     : ${si.os||''}\nTicket    : ${tk||'-'}\nTech      : ${te||'-'}\n\nRESULT    : ${res.label}\n\n---- ITEMS ----\n`;
+  QC_ITEMS.forEach(i=>{ const q=qcGet(i.id); t+=`[${(q.r||'open').toUpperCase().padEnd(4)}] ${i.label}\n`; if(q.note) t+=`       note: ${q.note}\n`; });
+  t+=`\n---- DETAILS ----\nKeyboard : ${kbSummary()}\nTrackpad : ${tkSummary()}\nPorts    : ${ptSummary()||'-'}\n`;
+  return t; }
+function qcJson(){ const si=cache.sysinfo||{}; const res=qcResult(); return {tool:'QC',version:'1.0',generated:new Date().toISOString(),host:si.host||'',model:si.model||'',model_id:si.model_id||'',serial:si.serial||'',os:si.os||'',ticket:$('ck-ticket').value.trim(),tech:$('ck-tech').value.trim(),verdict:res.key,result:res.label,
+    items:QC_ITEMS.map(i=>({id:i.id,label:i.label,result:qcGet(i.id).r||'open',note:qcGet(i.id).note||''})),details:{keyboard:{hit:Object.keys(KB_STATE.hit).length,total:KB_STATE.total,chatter:Object.keys(KB_STATE.chat)},trackpad:TK,ports:PT_ROWS,charger:PT_LAST?PT_LAST.charger:null,fans:FAN.result?{result:FAN.result,mic_rise_db:FAN.rise,text:FAN.text}:null,touchid:(IN.d||{}).touchid||null}}; }
+function qcSave(){ const j=qcJson();
+  const body=qcText()+'\n=====BENCHMAC-JSON=====\n'+JSON.stringify(j,null,1)+'\n';
+  fetch('/api/qcsave',{method:'POST',body:body,headers:{'Content-Type':'text/plain'}}).then(r=>r.json()).then(r=>{ if(r.ok){ toast(document.body.classList.contains('setup')?'saved '+r.file+' — sending to the bench':'saved '+r.file+' — copied to Dashboard/QC-Reports on the stick within 10 s'); cache.reports=null; if(document.body.classList.contains('setup')){ if(IN.d) inSend(); else api('intake').then(d=>{ IN.d=d; inSend(); }).catch(()=>{}); } } else toast('save failed: '+(r.error||'?')); }).catch(e=>toast('save failed: '+e.message)); }
+
+// ================= Clean page (job queue -> collector -> cleanup.sh) =================
+let CL_SCAN=null, CL_JOB=null, CL_TIMER=null, CL_OPEN={};
+function apiPost(route, obj){ return fetch('/api/'+route,{method:'POST',body:JSON.stringify(obj),headers:{'Content-Type':'application/json'}}).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }); }
+function fmtG(b){ return fmtB(b||0); }
+function cleanShown(){ if(!CL_SCAN) api('cleanlast').then(d=>{ if(d&&d.categories){ CL_SCAN=d; clRender(); $('cl-state').textContent='last scan '+new Date(d.ts*1000).toLocaleTimeString()+' — rescan after any change'; } }).catch(()=>{}); }
+function clScan(){ $('cl-scan').disabled=true; $('cl-state').textContent='queued…'; $('cl-log').textContent='scan queued for the collector…'; $('cl-result').innerHTML='';
+  apiPost('job',{type:'cleanup_scan'}).then(r=>{ if(!r.ok) throw new Error(r.error||'queue failed'); clWatch(r.id,'scan'); }).catch(e=>{ $('cl-scan').disabled=false; $('cl-state').textContent='error: '+e.message; toast('scan: '+e.message); }); }
+function clWatch(id,kind){ clearTimeout(CL_TIMER); CL_JOB={id,kind};
+  const step=()=>api('jobstatus','id='+encodeURIComponent(id)).then(st=>{ if(st.log) $('cl-log').textContent=st.log; $('cl-state').textContent=kind+' '+st.state+'…';
+    if(st.state==='done'){ clDone(kind,st.result||{}); return; } CL_TIMER=setTimeout(step,1500); }).catch(e=>{ $('cl-state').textContent='status error: '+e.message; CL_TIMER=setTimeout(step,3000); });
+  step(); }
+function clDone(kind,res){ $('cl-scan').disabled=false;
+  if(kind==='scan'){ if(res&&res.categories){ CL_SCAN=res; clRender(); $('cl-state').textContent='scanned '+new Date().toLocaleTimeString(); toast('scan done — '+fmtG(res.candidates_bytes)+' cleanable'); } else { $('cl-state').textContent='scan produced no data'; } }
+  else if(kind==='clean'){ const ok=res&&res.ok; $('cl-state').textContent=ok?'clean-up finished':'clean-up failed';
+    $('cl-result').innerHTML=ok?`<div class="flags"><span class="flag ok">freed ${esc(fmtG(res.freed))}</span><span class="flag ok">free now ${esc(fmtG(res.free_after))} (was ${esc(fmtG(res.free_before))})</span><span class="flag ${res.emptied?'bad':'warn'}">${res.moved} item(s) · ${esc(fmtG(res.moved_bytes))} ${res.emptied?'DELETED (Trash emptied)':'moved to the Trash'}</span>${res.snapshots?`<span class="flag ok">${res.snapshots} snapshot(s) deleted</span>`:''}${res.errors?`<span class="flag bad">${res.errors} error(s) — see the log</span>`:''}</div><div class="sub" style="margin-top:8px">${res.emptied?'':'Recoverable until the Trash is emptied: <span class="n">'+esc(res.trash_folder||'')+'</span><br>'}Report: <a href="#" onclick="showPage('reports');setTimeout(()=>openReport('${esc(res.report||'')}','CleanUp'),600);return false" style="color:var(--blue)">${esc(res.report||'')}</a> · run a new scan to see what is left</div>`:`<div class="flag bad">${esc((res&&res.error)||'no result')}</div>`;
+    CL_SCAN=null; $('cl-go').disabled=true; load('reports',d=>{ cache.reports=d; },true); }
+  else if(kind==='maint'){ $('cl-maint-state').textContent=(res&&res.ok)?'done: '+res.op:'failed: '+((res&&res.op)||'')+' (needs admin?)'; $('cl-state').textContent='maintenance '+((res&&res.ok)?'done':'failed'); } }
+function clRender(){ const d=CL_SCAN; if(!d) return;
+  $('cl-t-free').textContent=fmtG(d.free); $('cl-t-purg').textContent=fmtG(d.purgeable); $('cl-t-cand').textContent=fmtG(d.candidates_bytes); $('cl-free').textContent='';
+  $('cl-sudo-hint').style.display=d.sudo?'none':'block';
+  $('cl-cats').innerHTML=(d.categories||[]).map(c=>{ const dis=!c.available; const chk=c.default&&c.available&&c.bytes>0; const items=(c.items||[]).slice().sort((a,b)=>b.bytes-a.bytes);
+    return `<tr class="${dis?'dim':''}"><td><input type="checkbox" id="cl-c-${c.id}" ${chk?'checked':''} ${dis||!c.count?'disabled':''} onchange="clTotals()"></td><td><b>${esc(c.label)}</b> ${c.risk==='ask'?'<span class="tag warn">ask</span>':''} ${dis?'<span class="tag info">needs admin</span>':''}<div class="sub" style="white-space:normal">${esc(c.desc)}</div></td><td class="n">${dis?'—':fmtG(c.bytes)}</td><td class="n">${dis?'—':c.count}</td><td>${c.count?`<button class="vb" onclick="clToggle('${c.id}')">${CL_OPEN[c.id]?'hide':'items'}</button>`:''}</td></tr>`+
+      (CL_OPEN[c.id]&&c.count?`<tr><td></td><td colspan="4"><div class="cl-items">${items.slice(0,40).map(i=>`<div><span class="n" style="display:inline-block;width:80px;text-align:right;margin-right:10px">${esc(fmtG(i.bytes))}</span>${esc(i.p.replace(/^\/Users\/[^/]+/,'~'))}${i.info?' <span class="sub">'+esc(i.info)+'</span>':''}</div>`).join('')}${items.length>40?'<div class="sub">… '+(items.length-40)+' more</div>':''}</div></td></tr>`:''); }).join('');
+  const sn=d.snapshots||[]; $('cl-snap-sub').textContent=sn.length+' local snapshot(s)'+(d.sudo?'':' — needs admin'); $('cl-snaps').checked=!!(sn.length&&d.sudo); $('cl-snaps').disabled=!(sn.length&&d.sudo); $('cl-snap-list').textContent=sn.map(s=>s.date).join(' · ');
+  const lg=(d.large||[]).slice().sort((a,b)=>b.bytes-a.bytes); $('cl-large').innerHTML=lg.length?lg.map((f,i)=>`<tr><td><input type="checkbox" class="cl-lg" data-p="${esc(f.p)}" data-b="${f.bytes}" onchange="clTotals()"></td><td class="wrap" style="white-space:normal">${esc(f.p.replace(/^\/Users\/[^/]+/,'~'))}</td><td class="n">${esc(fmtG(f.bytes))}</td><td class="n">${esc(f.mtime)}</td></tr>`).join(''):'<tr><td colspan="4" class="sub">none found</td></tr>';
+  $('cl-empty').checked=false; clTotals(); }
+function clToggle(id){ CL_OPEN[id]=!CL_OPEN[id]; clRender(); }
+function clSelection(){ const d=CL_SCAN||{categories:[]}; const cats=d.categories.filter(c=>{ const e=$('cl-c-'+c.id); return e&&e.checked&&!e.disabled; }); const paths=[...document.querySelectorAll('.cl-lg:checked')].map(e=>({p:e.dataset.p,b:+e.dataset.b}));
+  return {cats,paths,snapshots:$('cl-snaps').checked&&!$('cl-snaps').disabled,empty:$('cl-empty').checked,bytes:cats.reduce((s,c)=>s+c.bytes,0)+paths.reduce((s,p)=>s+p.b,0),ask:cats.filter(c=>c.risk==='ask').length}; }
+function clTotals(){ if(!CL_SCAN){ $('cl-go').disabled=true; return; } const s=clSelection(); $('cl-t-sel').textContent=fmtG(s.bytes); $('cl-t-sel-sub').textContent=`${s.cats.length} categor${s.cats.length===1?'y':'ies'} · ${s.paths.length} file(s)${s.snapshots?' · snapshots':''}${s.empty?' · EMPTY TRASH':''}`; $('cl-go').disabled=!(s.cats.length||s.paths.length||s.snapshots||s.empty); }
+function clClean(){ const s=clSelection(); if(!s.cats.length&&!s.paths.length&&!s.snapshots&&!s.empty) return;
+  let msg=`Move ${fmtG(s.bytes)} to the Trash?\n\n`+s.cats.map(c=>'• '+c.label+' ('+fmtG(c.bytes)+')').join('\n')+(s.paths.length?'\n• '+s.paths.length+' large file(s)':'')+(s.snapshots?'\n• delete local Time Machine snapshots':'');
+  if(s.ask) msg+=`\n\n${s.ask} categor${s.ask===1?'y is':'ies are'} the CUSTOMER'S DATA (marked "ask") — do you have their OK?`;
+  if(s.empty) msg+='\n\n⚠ EMPTY TRASH is ticked: everything moved will be deleted PERMANENTLY.';
+  if(!confirm(msg)) return; if(s.empty&&!confirm('Last check — permanently empty the Trash on this Mac?')) return;
+  $('cl-go').disabled=true; $('cl-scan').disabled=true; $('cl-result').innerHTML=''; $('cl-log').textContent='clean-up queued…';
+  apiPost('job',{type:'cleanup_clean',cats:s.cats.map(c=>c.id),paths:s.paths.map(p=>p.p),snapshots:s.snapshots,empty_trash:s.empty}).then(r=>{ if(!r.ok) throw new Error(r.error||'queue failed'); clWatch(r.id,'clean'); }).catch(e=>{ $('cl-go').disabled=false; $('cl-scan').disabled=false; toast('clean: '+e.message); }); }
+function clMaint(op){ $('cl-maint-state').textContent=op+' queued…'; apiPost('job',{type:'cleanup_maint',op:op}).then(r=>{ if(!r.ok) throw new Error(r.error||'queue failed'); clWatch(r.id,'maint'); }).catch(e=>{ $('cl-maint-state').textContent='error: '+e.message; }); }
+
+// ---------- boot ----------
+// one-line drive-health summary for the Summary tile (from the disks route, refreshed every 5 min)
+let DISK_HEALTH='';
+function pollHealth(){ api('disks').then(d=>{ cache.disks=d; const k=d.find(x=>x.health&&x.health.type&&x.health.type!=='none'); if(!k) return;
+  const h=k.health; const w=(h.wear!==undefined&&h.wear>=0)?h.wear+'% worn':''; DISK_HEALTH=(h.verdict==='replace'?'SSD: REPLACE':h.verdict==='watch'?'SSD: watch':'SSD healthy')+(w?' ('+w+')':'');
+  const t=$('t-disk-sub'); if(t&&h.verdict==='replace'){ t.classList.add('c-red'); } }).catch(()=>{}); }
+setTimeout(pollHealth,4000); setInterval(pollHealth,300000);
+api('history','n=180').then(h=>{ ['cpu','mem','gpu','net_in','net_out','disk'].forEach(k=>{ H[k]=(h[k]||[]).map(Number); }); }).catch(()=>{}).then(()=>{ tick(); setInterval(tick,2000); });
+load('sysinfo',renderSysinfo);
+api('status').then(st=>{ $('f-ver').textContent='dashboard '+st.version+(st.mirror?' · mirror':' · direct')+(st.setup?' · setup mode':'');
+  if(st.setup){ document.body.classList.add('setup');
+    // tools that need an admin password or a real user account are pointless here
+    document.querySelectorAll('#p-tools .tool').forEach(c=>{ const h=c.querySelector('h2'); if(h&&/Clean|Malware|Installer|^Files/.test(h.textContent)) c.style.display='none'; });
+    document.querySelectorAll('button').forEach(b=>{ if(b.textContent.trim()==='💾 Save to stick') b.textContent='💾 Save + send to bench'; });
+    showPage('intake'); } }).catch(()=>{});
+setInterval(()=>{ $('st-clock').textContent=new Date().toLocaleTimeString(); },1000);
+window.addEventListener('resize',()=>{ if(last){ renderSummary(last); if(page==='perf') drawPerf(); } });
+// ================= Files page (index -> browse / bubble map / find -> back up / trash / delete via the job queue) =================
+let FL_META=null, FL_PATH='/', FL_DIR=null, FL_SEL={}, FL_TIMER=null, FL_MAP=[], FL_DESTS=[], FL_BUSY=false;
+const FL_COLORS=['#3f8dff','#d24bff','#4dff5a','#ffd53b','#ff9d3b','#3ef0ff','#9a6bff','#ff4f4f','#2fb8a8','#e07ab8','#7fa8ff','#b4e03c','#ff7f3b','#5ec4ff'];
+function jsq(p){ return esc(String(p).replace(/\\/g,'\\\\').replace(/'/g,"\\'")); }   // safe inside onclick="f('…')"
+function flShort(p){ const h=FL_META&&FL_META.home; return h&&p.indexOf(h)===0?'~'+p.slice(h.length):p; }
+function flIcon(name,isDir){ if(isDir){ if(/\.photoslibrary$/i.test(name)) return '🖼'; if(/\.app$/i.test(name)) return '📦'; return '📁'; }
+  const e=(name.match(/\.([a-z0-9]+)$/i)||['',''])[1].toLowerCase();
+  if(/^(jpe?g|heic|heif|png|gif|tiff?|raw|cr2|cr3|nef|arw|dng|bmp|webp|psd)$/.test(e)) return '🖼'; if(/^(mov|mp4|m4v|mkv|avi|mts|m2ts|wmv|webm|mpg|mpeg)$/.test(e)) return '🎬';
+  if(/^(mp3|m4a|aac|wav|aiff?|flac|ogg|wma|m4b)$/.test(e)) return '🎵'; if(/^(pdf|docx?|xlsx?|pptx?|pages|numbers|key|txt|rtf|csv|md|epub)$/.test(e)) return '📄';
+  if(/^(zip|rar|7z|tar|gz|tgz|bz2|xz)$/.test(e)) return '🗜'; if(/^(dmg|pkg|mpkg|iso|xip|img|sparseimage|sparsebundle|vmdk|vdi|qcow2)$/.test(e)) return '💿'; return '📄'; }
+function filesShown(){ if(!FL_META) flMeta(true); }
+function flMeta(nav){ api('files_meta').then(m=>{ FL_META=m; if(m.root&&FL_PATH==='/') FL_PATH=m.root; flRenderMeta(); if(m.indexed){ flDests(); api('files_map').then(d=>{ FL_MAP=d||[]; flRenderChips(); }).catch(()=>{}); if(nav) flOpen(FL_PATH); } }).catch(e=>{ $('fl-state').textContent='error: '+e.message; }); }
+function flRenderMeta(){ const m=FL_META||{}; if(!m.indexed){ $('fl-state').textContent='not indexed yet — click Index this Mac (takes 1–5 min)'; $('fl-used').textContent=''; $('fl-usedfill').style.width='0'; return; }
+  $('fl-state').textContent='indexed '+new Date(m.ts*1000).toLocaleString()+' · '+(m.dirs||0).toLocaleString()+' folders · '+(m.files||0).toLocaleString()+' files ≥ 1 MB'+(m.host?' · '+m.host:'')+(m.stale?' · STALE after a removal — re-index for exact folder sizes':'');
+  $('fl-used').textContent=fmtB(m.used)+' of '+fmtB(m.total)+' used'; $('fl-usedfill').style.width=(m.total?Math.min(100,100*m.used/m.total):0).toFixed(1)+'%';
+  $('fl-sudo-hint').style.display=m.sudo?'none':'block'; }
+function flIndex(){ if(FL_BUSY) return; $('fl-index').disabled=true; $('fl-state').textContent='index queued…'; flRun('files_index',{},'index'); }
+// ---- browsing ----
+function flOpen(p){ if(!FL_META||!FL_META.indexed) return; FL_PATH=p||'/'; $('fl-list').innerHTML='<tr><td colspan="4" class="sub">loading…</td></tr>';
+  api('files_ls','p='+encodeURIComponent(FL_PATH)).then(d=>{ if(d.error){ $('fl-list').innerHTML='<tr><td colspan="4" class="sub">'+esc(d.error)+'</td></tr>'; return; } FL_DIR=d; flRenderDir(); }).catch(e=>toast('files: '+e.message)); }
+function flCrumbs(){ const vol=(FL_META&&FL_META.volume)||'Macintosh HD'; const parts=FL_PATH.split('/').filter(Boolean); let acc=''; const el=$('fl-crumbs');
+  let h=`<a onclick="flOpen('/')">${esc(vol)}</a>`; parts.forEach((s,i)=>{ acc+='/'+s; const last=i===parts.length-1; h+=`<span class="sep">›</span>`+(last?`<span class="cur">${esc(s)}</span>`:`<a onclick="flOpen('${jsq(acc)}')">${esc(s)}</a>`); });
+  if(parts.length) h+=`<a style="margin-left:auto" onclick="flOpen('${jsq(FL_PATH.replace(/\/[^/]*$/,'')||'/')}')">↑ Up</a>`; el.innerHTML=h; }
+function flEntries(){ const d=FL_DIR; if(!d) return []; const pre=d.path==='/'?'/':d.path+'/';
+  return (d.dirs||[]).map(x=>({n:x.n,p:pre+x.n,bytes:x.bytes,dir:true})).concat((d.files||[]).map(x=>({n:x.n,p:pre+x.n,bytes:x.bytes,mtime:x.mtime,dir:false}))).sort((a,b)=>b.bytes-a.bytes); }
+function flRenderDir(){ flCrumbs(); const d=FL_DIR; const ents=flEntries(); const max=ents.length?ents[0].bytes:1; const shown=ents.slice(0,300);
+  $('fl-list').innerHTML=shown.length?shown.map((e,i)=>`<tr class="${FL_SEL[e.p]?'sel':''}" id="fl-r-${i}"><td><input type="checkbox" ${FL_SEL[e.p]?'checked':''} onchange="flTick('${jsq(e.p)}',${e.bytes},${e.dir},this.checked)"></td><td class="nm" onclick="${e.dir?`flOpen('${jsq(e.p)}')`:''}"><span class="ic">${flIcon(e.n,e.dir)}</span>${esc(e.n)}${e.dir?' <span class="sub">›</span>':''}${e.mtime?` <span class="sub">${esc(new Date(e.mtime*1000).toLocaleDateString())}</span>`:''}</td><td class="n">${esc(fmtB(e.bytes))}</td><td><div class="fl-sbar"><i style="width:${(100*e.bytes/max).toFixed(1)}%"></i></div></td></tr>`).join(''):'<tr><td colspan="4" class="sub">empty — or only files under 1 MB</td></tr>';
+  $('fl-all').checked=false; $('fl-list-sub').textContent=`${(d.dirs||[]).length} folder(s) · ${(d.files||[]).length} file(s) ≥ 1 MB · this folder ${fmtB(d.bytes)}`+(ents.length>300?' · showing the largest 300':'');
+  flRenderMap(ents); }
+function flTickAll(on){ flEntries().slice(0,300).forEach(e=>{ if(on) FL_SEL[e.p]={bytes:e.bytes,dir:e.dir}; else delete FL_SEL[e.p]; }); flRenderDir(); flRenderSel(); }
+function flTick(p,bytes,dir,on){ if(on) FL_SEL[p]={bytes,dir}; else delete FL_SEL[p]; flRenderDir(); flRenderSel(); flRenderChips(); }
+// ---- bubble map: largest ~14 entries, area ∝ size, spiral packing ----
+function flRenderMap(ents){ const svg=$('fl-map'); const top=ents.slice(0,14).filter(e=>e.bytes>0); if(!top.length){ svg.innerHTML=''; svg.setAttribute('viewBox','0 0 400 400'); $('fl-map-sub').textContent='nothing ≥ 1 MB here'; return; }
+  const maxB=top[0].bytes; const R=110; const cs=top.map((e,i)=>({e,i,r:Math.max(14,R*Math.sqrt(e.bytes/maxB))})); const placed=[];
+  cs.forEach(c=>{ if(!placed.length){ c.x=0; c.y=0; placed.push(c); return; } let t=0; for(;;){ t+=0.25; const rad=6*t; const x=rad*Math.cos(t), y=rad*Math.sin(t); if(!placed.some(o=>Math.hypot(o.x-x,o.y-y)<o.r+c.r+3)){ c.x=x; c.y=y; break; } if(t>400){ c.x=x; c.y=y; break; } } placed.push(c); });
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9; placed.forEach(c=>{ minX=Math.min(minX,c.x-c.r); minY=Math.min(minY,c.y-c.r); maxX=Math.max(maxX,c.x+c.r); maxY=Math.max(maxY,c.y+c.r); });
+  const pad=10; svg.setAttribute('viewBox',`${(minX-pad).toFixed(1)} ${(minY-pad).toFixed(1)} ${(maxX-minX+2*pad).toFixed(1)} ${(maxY-minY+2*pad).toFixed(1)}`);
+  svg.innerHTML=placed.map(c=>{ const e=c.e; const label=e.n.length>Math.floor(c.r/3.2)?e.n.slice(0,Math.max(3,Math.floor(c.r/3.2)-1))+'…':e.n; const act=e.dir?`flOpen('${jsq(e.p)}')`:`flTick('${jsq(e.p)}',${e.bytes},false,!FL_SEL['${jsq(e.p)}'])`;
+    return `<g class="${FL_SEL[e.p]?'sel':''}" onclick="${act}"><title>${esc(e.n)} — ${esc(fmtB(e.bytes))}${e.dir?' (open)':' (click to select)'}</title><circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${c.r.toFixed(1)}" fill="${FL_COLORS[c.i%FL_COLORS.length]}" opacity="${e.dir?'.85':'.6'}"></circle>${c.r>=22?`<text x="${c.x.toFixed(1)}" y="${(c.y-1).toFixed(1)}">${esc(label)}</text><text class="sz" x="${c.x.toFixed(1)}" y="${(c.y+11).toFixed(1)}">${esc(fmtB(e.bytes))}</text>`:''}</g>`; }).join('');
+  $('fl-map-sub').textContent=`largest ${placed.length} of ${ents.length} in ${flShort(FL_DIR.path)} · click a folder bubble to open it, a file bubble to select it`; }
+// ---- customer-data chips ----
+function flRenderChips(){ const el=$('fl-map-chips'); if(!FL_MAP.length){ el.innerHTML='<span class="sub">'+(FL_META&&FL_META.indexed?'no user folders in the index':'index first')+'</span>'; return; }
+  el.innerHTML=FL_MAP.map(m=>`<span class="fl-chip ${FL_SEL[m.p]?'sel':''}"><a onclick="flOpen('${jsq(m.p)}')">${esc(m.label)}</a><span class="n">${esc(fmtB(m.bytes))}</span><button title="${FL_SEL[m.p]?'remove from selection':'add whole folder to selection'}" onclick="flTick('${jsq(m.p)}',${m.bytes},true,${FL_SEL[m.p]?'false':'true'})">${FL_SEL[m.p]?'−':'+'}</button></span>`).join('')+
+    `<span class="fl-chip"><a onclick="FL_MAP.forEach(m=>{FL_SEL[m.p]={bytes:m.bytes,dir:true}});flRenderChips();flRenderSel();flRenderDir()">all customer data</a><span class="n">${esc(fmtB(FL_MAP.reduce((s,m)=>s+m.bytes,0)))}</span></span>`; }
+// ---- find ----
+function flFind(){ if(!FL_META||!FL_META.indexed){ toast('index this Mac first'); return; } const q=$('fl-q').value.trim(), t=$('fl-type').value, min=+$('fl-min').value||1; $('fl-find-state').textContent='searching…';
+  api('files_find','q='+encodeURIComponent(q)+'&type='+encodeURIComponent(t)+'&min='+min).then(d=>{ const it=d.items||[]; $('fl-find-state').textContent=it.length?it.length+' result(s)'+(it.length>=300?' (first 300 by size)':'')+' · '+fmtB(it.reduce((s,i)=>s+i.bytes,0)):'nothing matched';
+    $('fl-find').innerHTML=it.length?it.map(f=>`<tr class="${FL_SEL[f.p]?'sel':''}"><td><input type="checkbox" ${FL_SEL[f.p]?'checked':''} onchange="flTick('${jsq(f.p)}',${f.bytes},false,this.checked)"></td><td class="nm" onclick="flOpen('${jsq(f.p.replace(/\/[^/]*$/,'')||'/')}')" title="open the folder"><span class="ic">${flIcon(f.p,false)}</span>${esc(flShort(f.p))}</td><td class="n">${esc(fmtB(f.bytes))}</td><td class="n">${esc(new Date(f.mtime*1000).toLocaleDateString())}</td></tr>`).join(''):'<tr><td colspan="4" class="sub">nothing matched</td></tr>'; }).catch(e=>{ $('fl-find-state').textContent='error: '+e.message; }); }
+// ---- selection + actions ----
+function flSelList(){ return Object.keys(FL_SEL).map(p=>({p,bytes:FL_SEL[p].bytes,dir:FL_SEL[p].dir})).sort((a,b)=>b.bytes-a.bytes); }
+function flRenderSel(){ const s=flSelList(); const tot=s.reduce((a,x)=>a+x.bytes,0); $('fl-sel-sum').textContent=s.length?`${s.length} item(s) selected · ${fmtB(tot)}`:'nothing selected';
+  $('fl-sel-list').innerHTML=s.slice(0,60).map(x=>`<span>${x.dir?'📁 ':''}${esc(flShort(x.p))}<b>${esc(fmtB(x.bytes))}</b><i onclick="flTick('${jsq(x.p)}',0,false,false)" title="remove">✕</i></span>`).join('')+(s.length>60?`<span class="sub">… ${s.length-60} more</span>`:'');
+  ['fl-bk','fl-tr','fl-del'].forEach(id=>$(id).disabled=!s.length||FL_BUSY); if(!s.length) $('fl-bkpanel').style.display='none'; }
+function flClear(){ FL_SEL={}; flRenderSel(); flRenderChips(); if(FL_DIR) flRenderDir(); document.querySelectorAll('#fl-find input:checked').forEach(e=>{ e.checked=false; e.closest('tr').classList.remove('sel'); }); }
+function flDests(){ api('files_dests').then(d=>{ FL_DESTS=d||[]; const sel=$('fl-dest'); const cur=sel.value; sel.innerHTML=FL_DESTS.length?FL_DESTS.map(v=>`<option value="${esc(v.p)}">${esc(v.name)} — ${esc(fmtB(v.free))} free of ${esc(fmtB(v.total))}</option>`).join(''):'<option value="">no external volume mounted</option>'; if(cur) sel.value=cur; }).catch(()=>{}); }
+function flBackupPanel(){ const p=$('fl-bkpanel'); p.style.display=p.style.display==='none'?'block':'none'; if(p.style.display==='block') flDests(); }
+function flBackup(){ const s=flSelList(); const dest=$('fl-dest').value; if(!s.length) return; if(!dest){ toast('plug in / mount a destination volume, then ↻'); return; }
+  const tot=s.reduce((a,x)=>a+x.bytes,0); const v=FL_DESTS.find(x=>x.p===dest)||{}; if(v.free&&tot>v.free&&!confirm(`Selection (${fmtB(tot)}) is larger than the free space on ${v.name} (${fmtB(v.free)}). Continue anyway?`)) return;
+  if(!confirm(`Back up ${s.length} item(s) · ${fmtB(tot)} to ${v.name||dest}?\n\nCopies keep their folder paths under BenchTool-Backup-<host>-<time>/ and every file is verified.`)) return;
+  flRun('files_backup',{paths:s.map(x=>x.p),dest,checksum:$('fl-chk').checked},'backup'); }
+function flRemove(mode){ const s=flSelList(); if(!s.length) return; const tot=s.reduce((a,x)=>a+x.bytes,0); const dirs=s.filter(x=>x.dir).length;
+  let msg=mode==='trash'?`Move ${s.length} item(s) · ${fmtB(tot)} to the Trash?\n\n`:`PERMANENTLY DELETE ${s.length} item(s) · ${fmtB(tot)}?\n\nThere is no Trash and no undo.\n\n`;
+  msg+=s.slice(0,12).map(x=>'• '+flShort(x.p)+' ('+fmtB(x.bytes)+')').join('\n')+(s.length>12?'\n• … '+(s.length-12)+' more':''); if(dirs) msg+=`\n\n${dirs} whole folder(s) included — this is the CUSTOMER'S DATA. Do you have their OK (or a verified backup)?`;
+  if(!confirm(msg)) return; if(mode==='delete'&&!confirm('Last check — delete permanently, right now, with no way back?')) return;
+  flRun(mode==='trash'?'files_trash':'files_delete',{paths:s.map(x=>x.p)},mode); }
+// ---- job runner ----
+function flRun(type,body,kind){ if(FL_BUSY) return; FL_BUSY=true; ['fl-bk','fl-tr','fl-del','fl-index','fl-bk-go'].forEach(id=>$(id).disabled=true); $('fl-run-state').textContent=kind+' queued…'; $('fl-log').textContent=kind+' queued for the collector…'; $('fl-result').innerHTML='';
+  apiPost('job',Object.assign({type},body)).then(r=>{ if(!r.ok) throw new Error(r.error||'queue failed'); flWatch(r.id,kind); }).catch(e=>{ FL_BUSY=false; $('fl-index').disabled=false; flRenderSel(); $('fl-run-state').textContent='error: '+e.message; toast(kind+': '+e.message); }); }
+function flWatch(id,kind){ clearTimeout(FL_TIMER);
+  const step=()=>api('jobstatus','id='+encodeURIComponent(id)).then(st=>{ if(st.log) $('fl-log').textContent=st.log; $('fl-run-state').textContent=kind+' '+st.state+'…'; if(st.state==='done'){ flDone(kind,st.result||{}); return; } FL_TIMER=setTimeout(step,1500); }).catch(e=>{ $('fl-run-state').textContent='status error: '+e.message; FL_TIMER=setTimeout(step,3000); });
+  step(); }
+function flDone(kind,res){ FL_BUSY=false; $('fl-index').disabled=false; $('fl-bk-go').disabled=false; const ok=!!(res&&res.ok); $('fl-run-state').textContent=kind+(ok?' finished':(res&&res.items?' finished with problems':' failed'));
+  const rep=res&&res.report?` · report: <a href="#" onclick="showPage('reports');setTimeout(()=>openReport('${esc(res.report)}','Files'),600);return false" style="color:var(--blue)">${esc(res.report)}</a>`:'';
+  if(kind==='index'){ if(ok){ FL_META=null; flMeta(true); toast('index done'); } else $('fl-result').innerHTML=`<div class="flag bad">${esc(res.error||'index failed')}</div>`; flRenderSel(); return; }
+  if(kind==='backup'){ $('fl-result').innerHTML=`<div class="flags"><span class="flag ${ok?'ok':'bad'}">${ok?'backup verified':'backup had problems'}</span><span class="flag ok">${res.items||0} item(s) · ${esc(fmtB(res.bytes))}</span><span class="flag ok">${res.verified||0} file(s) verified</span>${res.mismatched?`<span class="flag bad">${res.mismatched} MISMATCH</span>`:''}${res.errors?`<span class="flag bad">${res.errors} error(s)</span>`:''}</div><div class="sub" style="margin-top:8px">${res.dest?'Copied to <span class="n">'+esc(res.dest)+'</span>':esc(res.error||'')}${rep}</div>`; if(ok) toast('backup done — '+fmtB(res.bytes)); }
+  else { $('fl-result').innerHTML=`<div class="flags"><span class="flag ${ok?(kind==='delete'?'bad':'ok'):'bad'}">${res.items||0} item(s) · ${esc(fmtB(res.bytes))} ${kind==='delete'?'DELETED permanently':'moved to the Trash'}</span><span class="flag ok">free now +${esc(fmtB(res.freed))}</span>${res.refused?`<span class="flag warn">${res.refused} refused — protected (macOS, all users' data, the Photos library, the Trash)</span>`:''}${res.errors&&res.errors!==res.refused?`<span class="flag bad">${res.errors-(res.refused||0)} error(s) — see the log</span>`:''}</div><div class="sub" style="margin-top:8px">${kind==='trash'&&res.trash_folder?'Recoverable until the Trash is emptied: <span class="n">'+esc(res.trash_folder)+'</span>':''}${!ok&&res.error?esc(res.error):''}${rep}<br>removed items are dropped from the index; parent folder sizes stay as indexed until you re-index</div>`;
+    if(ok||res.items){ FL_SEL={}; flRenderSel(); flMeta(true); } }
+  flRenderSel(); load('reports',d=>{ cache.reports=d; },true); }
+</script>
+</body>
+</html>

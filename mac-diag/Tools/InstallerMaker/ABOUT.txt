@@ -1,0 +1,47 @@
+macOS Installer Maker  (MultiMac-style, runs on a Mac)
+=======================================================
+
+What it is
+  Makes bootable macOS installer USBs - one version, or SEVERAL versions on
+  one stick (one GPT partition per installer) so a single 64/128 GB drive
+  covers every Mac that walks in. Also downloads full installers from Apple
+  and turns an installer into a .iso for virtual machines.
+
+  It has to run ON A MAC: only macOS ships Apple's createinstallmedia, and
+  a bootable Mac installer cannot be written correctly from the Pi. Any Mac on
+  the bench will do (10.15.4+ to use the built-in downloader).
+
+Menu
+  1) Build USB      lists every "Install macOS *.app" in /Applications,
+                    ~/Applications and this folder's Installers/ (drop
+                    InstallAssistant.pkg files there too - it offers to install
+                    them). Pick one or many ("1 3"), pick the target stick.
+                    One installer = whole stick (16 GB+). Several = partitions
+                    of 16/20/25/30 GB per version (Sierra..Tahoe), remainder to
+                    the last. Sierra and older get --applicationpath.
+  2) Download       softwareupdate --list-full-installers -> pick -> Apple's
+                    CDN downloads the app into /Applications (10-40 min).
+                    On a bench Mac older than 10.15.4 it prints Apple's App
+                    Store links instead (support.apple.com/102662).
+  3) Make ISO       sparse image -> createinstallmedia -> UDTO -> .iso in this
+                    folder's ISO/ (or ~/Desktop). For VMware / Parallels / UTM.
+
+Booting the result
+  Intel: hold OPTION at power-on, pick "Install macOS X". T2 Macs need
+  "Allow booting from external media" in Startup Security Utility.
+  Apple silicon: hold the power button until startup options, pick it. The
+  installer must be the version the Mac shipped with or newer.
+  Then: Disk Utility > erase (APFS) > Install.
+
+Safety
+  Only EXTERNAL PHYSICAL disks are listed, this Diagnostics stick is
+  excluded, you must type the disk id + YES. Internal disks are never touched.
+
+Files written here (stay on the USB, not committed)
+  Installers/   optional: your InstallAssistant.pkg / Install macOS *.app
+  ISO/          .iso output
+  InstallerMaker-last-run.log
+
+Inspired by KantBStoppd/MultiMac (MIT): same eraseDisk / partitionDisk /
+createinstallmedia flow, rewritten as a plain bash tool for the stick. No
+Gemini key needed.

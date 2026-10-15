@@ -1,0 +1,139 @@
+Dashboard  (live bench dashboard in the Mac's own browser)
+==========================================================
+
+What it is
+  Double-click "Start Dashboard.command" at the root of the stick (it runs this
+  folder's Run-Dashboard.command) and the customer Mac's default browser
+  opens http://127.0.0.1:8765 - a dark, live dashboard with a sidebar:
+    Summary        LED meters (CPU / MEM / GPU / DISK), CPU + GPU + temperature
+                   graph, top processes, memory graph, tiles for disk I/O,
+                   network, battery/energy, GPU, thermals, and the TRADE-IN
+                   CHECK (Activation Lock, Find My, DEP/MDM, iCloud, SIP...)
+    Performance    big graphs: CPU, memory, GPU, network in/out, disk MB/s
+    Processes      sortable + filterable, refreshes every 5 s
+    System Info    hardware, software, ownership flags, security posture
+    Startup items  third-party launch agents/daemons + login items (missing = leftover)
+    Users          accounts, admin, hidden, last login
+    Services       launchctl list (non-Apple)
+    Disks          every physical disk + its volumes (APFS mapped to the
+                   physical store), and - with the admin password - the
+                   bundled smartctl health block: wear bar (% of endurance
+                   used), spare blocks, media errors, unsafe shutdowns, TB
+                   written, power-on hours, temperature, one REPLACE / WATCH
+                   / HEALTHY verdict per drive (refreshed every 5 min; the
+                   Summary tile shows the same verdict)
+    Tests          HARDWARE TESTS - the post-repair / intake QC a tech does by
+                   hand, run from the browser and written up as a checklist:
+                     Display    full-screen R/G/B/white/black/grey/gradient/
+                                1-px grid/checker/text panels (dead pixels,
+                                tint, bleed, lines, banding)
+                     Keyboard   every key lights green when it registers, red
+                                when it double-types (chatter); untested list
+                     Trackpad   24-zone coverage map, click, two-finger click,
+                                scroll both axes, drag, double-click, pinch,
+                                force click (Safari)
+                     Speakers   left / right / both 440 Hz, 100 Hz-12 kHz
+                                sweep, 60 Hz bass, pink noise (WebAudio)
+                     Camera/Mic live preview + a dBFS level meter (getUserMedia)
+                     Ports      the charger the Mac negotiated (watts, adapter,
+                                what the battery really draws), every USB
+                                device, every Thunderbolt receptacle - polled
+                                every 3 s so a new device flashes; a per-port
+                                log records the charger wattage / device seen
+                                on each physical port (asymmetric charging =
+                                liquid / PD-controller damage)
+                     Checklist  all of the above + manual items (Touch ID,
+                                Wi-Fi, Bluetooth, lid, fans, battery,
+                                cosmetics/LCI, First Aid) with PASS/FAIL/SKIP
+                                + notes, ticket # and tech initials; "Save to
+                                stick" writes QC-Reports/QC_<Mac>_<time>.txt
+                                + .json (listed on the Reports page as QC)
+    Clean          CLEANMYMAC-STYLE CLEAN-UP, the safe way. "Scan this Mac"
+                   queues a job for the collector (the web server itself may
+                   not touch ~/Library); the page then shows free / purgeable /
+                   cleanable space and every category with size, item count
+                   and the actual paths: user caches, browser caches, system
+                   caches*, logs*, Xcode derived data, Mail attachment cache
+                   (pre-ticked) and Trash, iPhone/iPad backups, old installers
+                   in Downloads, leftovers of uninstalled apps (never
+                   pre-ticked, tagged "ask"); local Time Machine snapshots*
+                   (= the purgeable space); large old files (> 500 MB, 6+
+                   months, tick one by one). "Move selected to the Trash" asks
+                   for confirmation (twice if Empty Trash is ticked), runs
+                   Tools/CleanUp/cleanup.sh, streams its log, and shows freed
+                   space, what moved, and the recoverable folder
+                   ~/.Trash/BenchTool-Cleanup-<time>/. Maintenance buttons:
+                   rebuild Spotlight*, flush DNS*, periodic scripts*, reset
+                   "Open With", purge*. (* = admin password)
+    Files          SPACE-LENS-STYLE DISK MAP + find / back up / remove.
+                   "Index this Mac" runs Tools/Files/files.sh once through the
+                   collector (du + find: every folder size, every file >= 1 MB,
+                   1-5 min) - the page then browses from the index instantly
+                   and never reads a protected folder itself. Breadcrumb,
+                   size-sorted list with tick boxes, bubble map (area = size,
+                   click a folder to drill down, a file to select), Customer-
+                   data chips (Desktop, Documents, Downloads, Pictures, Photos
+                   library, Movies, Music, Mail, iPhone backups, Messages,
+                   iCloud Drive - "+" adds the whole folder), Find by name /
+                   kind / minimum size. On the selection: "Back up..." to a
+                   mounted volume (rsync keeping paths under BenchTool-Backup-
+                   <host>-<time>/, every file size-verified, optional SHA-256,
+                   manifest + BACKUP VERIFIED / NOT VERIFIED report), "Move to
+                   Trash" (~/.Trash/BenchTool-Files-<time>/, home paths only),
+                   "Delete permanently" (double confirm; refuses macOS, all
+                   users' data, a whole volume, ~/Library, the Photos library
+                   bundle, the Trash). Removed items are pruned from the index
+                   and it is flagged STALE until re-indexed.
+    Tools          one-click Run for MacDiag / Malware Triage / Apple
+                   Diagnostics: the tool runs IN THE BACKGROUND through the
+                   collector (which holds the admin ticket the dashboard was
+                   started with) in quiet mode - no Terminal window, no
+                   prompts; its output streams into the live log and the
+                   report lands on the stick. A "Terminal" button still opens
+                   the classic window (asks for the password there) and
+                   Installer Maker is Terminal-only (interactive). Without the
+                   admin password the page says so and tools run with
+                   reduced coverage.
+    Reports        every report on the stick, click to read
+
+How it works (nothing installed, nothing changed on the Mac)
+  collector.sh    samples every 2 s (ps, vm_stat, memory_pressure, ioreg GPU
+                  utilisation, netstat -ib, iostat, df, pmset; with admin:
+                  powermetrics for fan RPM / die temp on Intel, thermal
+                  pressure + package power on Apple silicon)
+  api.sh          answers /api/* with JSON built from the Mac's own tools
+  server          Apple's own /usr/sbin/httpd (every macOS ships it) bound to
+                  127.0.0.1 only, config generated per run in a temp folder,
+                  CGI -> api.cgi -> api.sh. No httpd? A bash + nc server takes
+                  over: same API, one request at a time (the page retries).
+                  Nothing is reachable from the network.
+  www/index.html  the page - plain HTML/CSS/JS, no CDN, works offline
+  mirror          macOS keeps Apple's httpd (a separate process) away from
+                  removable volumes, so the collector - a child of your
+                  Terminal, which has access - copies each tool's last-run log
+                  (every 2 s) and reports (every 10 s) into the run folder;
+                  the Tools/Reports pages read that mirror.
+
+Run
+  Run-Dashboard.command            (asks for the admin password - optional)
+  Switches: -Port 9000   -NoSudo   -NoOpen   -NC (force the nc server)   -Quiet
+  Stop: the red "Stop dashboard" button, Ctrl-C, or close the Terminal window.
+
+Files written here (stay on the USB, not committed)
+  .rundir                   path of the temp run folder (deleted on exit)
+  Dashboard-last-run.log    session log
+  (stats/history/httpd logs live in the temp run folder, gone on exit)
+
+If it doesn't work
+  - Browser shows "can't connect": wait 2 s and reload - the nc server has a
+    few ms between requests; the page itself retries automatically.
+  - "httpd did not start": the Terminal shows why; the nc server is used
+    instead. Nothing else to do.
+  - No GPU % on very old Intel Macs: ioreg does not report it - stays 0.
+  - Fan / temperature empty: run again and enter the admin password
+    (powermetrics needs it). Apple silicon never reports RPM/degrees - only
+    thermal pressure - that is macOS, not the stick.
+  - Sonoma+ asks "Terminal wants to access files on a removable volume":
+    click Allow (the stick is where the page lives).
+
+Look inspired by TMOG's system monitor; everything here is BenchTool's own.

@@ -1,0 +1,91 @@
+MacDiag  (read-only Mac health check + Google Gemini)
+=====================================================
+
+What it is
+  One pass over everything a tech would check on a slow / crashing / hot /
+  "just look at it" Mac, from this USB stick, in 2-4 minutes. Nothing on the
+  Mac is changed. Findings are scored HIGH / MED / INFO, Gemini (acting as an
+  Apple-certified Mac tech) writes a verdict + next bench tests + likely parts
+  + a plain-English customer note, and a report is saved to this stick.
+
+What it checks
+  1. Identity        model, chip, RAM, serial, board-id, macOS build, uptime
+  2. Trade-in        Activation Lock, Find My token, MDM / DEP (ABM) enrolment,
+     blockers        configuration profiles, iCloud account, FileVault
+  3. Memory          memory pressure, swap use, top memory users, RAM vs OS
+  4. CPU/thermals    load, kernel_task hogging (= throttling), Spotlight
+                     indexing, Intel throttle %, fan RPM + CPU die temp
+                     (Intel, needs admin), thermal pressure (Apple silicon)
+  5. Storage         free space, SMART on every physical disk - with the
+                     bundled smartctl (Tools/_bin, needs admin) the REAL
+                     counters: % of endurance used, spare blocks vs threshold,
+                     media/data-integrity errors, unsafe shutdowns, TB written,
+                     power-on hours (NVMe); reallocated / pending /
+                     uncorrectable sectors + SATA CRC errors (= flex cable on
+                     2012-15 Macs) on ATA drives. diskutil alone only says
+                     Verified/Failing and misses ~1 in 4 dying SSDs. Plus
+                     local Time Machine snapshots, the biggest space hogs
+  6. Battery         cycles, condition, max capacity %, permanent-failure
+                     flag, temperature, charger wattage / not-charging
+  7. Stability       kernel panics CLASSIFIED by type - SEP, watchdog,
+                     WindowServer watchdog, sleep/wake, GPU, SMC/power,
+                     storage/NVMe (ANS2), kernel memory exhausted, memory
+                     access fault, USB, Thunderbolt, Wi-Fi/BT, machine check,
+                     T2 - each with the bench hint for that bucket, and any
+                     THIRD-PARTY KEXT found in a backtrace called out as the
+                     first thing to remove; app crashes (30 days); shutdown
+                     causes decoded (-128 unexpected, -74/-95/-112 thermal,
+                     -75/-78 power circuit, 3 = power button held ...)
+  8. Startup         third-party launch agents/daemons, orphans, login items,
+                     kernel + system extensions
+  9. Security        SIP, Gatekeeper, firewall, XProtect version, pending
+                     updates, admin accounts, root enabled, remote login
+ 10. Network         DNS / proxy / hosts hijacks, connectivity, Wi-Fi
+                     signal, third-party listeners
+ 11. Backups/display Time Machine age, GPU + display present
+
+How to run
+  Double-click  Run-MacDiag.command . Terminal opens and asks for the admin
+  password once (Return to skip - fan/temperature and a few system reads are
+  then skipped). Read the VERDICT + AI TRIAGE, then Y to open the report.
+
+  Switches:  -NoAI   -NoSudo   -Days 90   -Quiet   -SelfTest (SMART short self-test, ~2 min)
+
+Reading the verdict
+  ATTENTION NEEDED     any HIGH finding - a real fault or a trade-in blocker.
+  SEVERAL ISSUES       3+ MED findings.
+  MINOR ISSUES         a MED or two.
+  NO OBVIOUS PROBLEMS  nothing high/medium. Say exactly that - "no obvious
+                       problems" - this is a health check, not a full ASD run.
+  Trade-in blockers (Activation Lock / DEP / Find My / iCloud) are HIGH on
+  purpose: they stop a wipe-and-resell dead, whatever the hardware says.
+
+API key
+  gemini.key next to this script, written automatically by BenchTool ->
+  Settings -> Import API Key, or by Set-GeminiKey.command on the stick.
+  No key / no internet = the scan, verdict and report still happen; only the
+  AI section is skipped.
+
+Files written here (all stay on the USB, none committed to git)
+  MacDiag-Reports/MacDiag_<Mac>_<time>.txt    the report
+  MacDiag-Reports/MacDiag_<Mac>_<time>.json   bench-readable twin
+  MacDiag-last-run.log                        session log
+
+Privacy
+  Only the compact findings list, top processes, shutdown codes and the head
+  of the latest panic log are sent to Google. No documents, no browsing
+  history, no file contents. The report stays on this stick.
+
+If it doesn't work
+  - "cannot be opened because it is from an unidentified developer": right-
+    click > Open, or System Settings > Privacy & Security > Open Anyway. This
+    happens when the file picked up a quarantine flag (copied via a browser).
+  - Terminal asks to access files on a removable volume: click Allow.
+  - "Operation not permitted" on some reads: Terminal has no Full Disk Access
+    (System Settings > Privacy & Security > Full Disk Access > Terminal).
+  - Apple silicon fan/temperature: only thermal PRESSURE is available, not
+    RPM/degrees - that is a macOS limitation, not a fault.
+
+Built for BenchTool. Ideas from watashiwatasha/macos-diagnostic-tool (MIT);
+the script is a from-scratch bash 3.2 rewrite so it runs on any Mac without
+Python.

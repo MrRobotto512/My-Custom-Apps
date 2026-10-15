@@ -1,0 +1,43 @@
+CleanUp  (junk + purgeable-space cleaner)
+=========================================
+
+What it is
+  The CleanMyMac-style job a shop gets asked for every week - "my Mac says the
+  disk is full" - done the safe way. The engine (cleanup.sh) scans first and
+  shows sizes + paths per category; nothing moves until a tech ticks it; what
+  moves goes into ~/.Trash/BenchTool-Cleanup-<time>/<category>/ so a customer
+  can drag anything back next week; emptying the Trash is a separate, explicit
+  step; every moved path is in the report with before/after free space.
+
+  Use it from the dashboard's CLEAN page (checkboxes, sizes, item lists, a
+  progress log, before/after) or double-click Run-CleanUp.command for the
+  Terminal version (numbered categories).
+
+Categories                          pre-ticked   needs admin
+  User caches (~/Library/Caches)        yes          no    iCloud / Photos / Safari caches excluded
+  Browser caches                        yes          no    Chrome, Safari, Firefox, Edge, Brave
+  System caches (/Library/Caches)       yes          yes
+  Logs (user + rotated system logs)     yes          yes   crash + panic reports are KEPT
+  Xcode derived data + simulators       yes          no
+  Mail attachment cache                 yes          no    needs Full Disk Access to be visible
+  Trash                                 NO           no    ask the customer
+  iPhone / iPad backups                 NO           no    often 20-60 GB - ask the customer
+  Old installers in Downloads           NO           no    .dmg/.pkg/.zip/.iso older than 30 days
+  Leftovers of uninstalled apps         NO           no    conservative heuristic - verify the names
+  Local Time Machine snapshots          yes          yes   = most of the "purgeable" space
+  Large old files (> 500 MB, 6 months)  report only        tick them one by one
+
+Maintenance (Clean page buttons)
+  Rebuild Spotlight index, flush DNS, run periodic scripts, reset Launch
+  Services ("Open With" duplicates), purge disk cache. All need the admin
+  password except Launch Services.
+
+Never touched
+  Documents / Desktop / Pictures / Photos library / Mail store / the home
+  folder itself / anything under /System; caches that would force iCloud
+  re-downloads; crash and panic reports (MacDiag needs them); language files
+  (saves nothing on modern macOS, breaks apps); browser history and passwords.
+
+Files written here (stay on the USB, not committed)
+  CleanUp-Reports/CleanUp_<Mac>_<time>.txt / .json (+ a .manifest of moved paths)
+  CleanUp-last-run.log

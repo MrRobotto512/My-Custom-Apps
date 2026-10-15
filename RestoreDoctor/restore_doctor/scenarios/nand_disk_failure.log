@@ -1,0 +1,60 @@
+10:00:00.050    <Info> idevicerestore 1.0.0-278-g4b3e847 (libirecovery 1.3.1-12-g93c117c, libtatsu 1.0.5-6-ge7d6ad1)
+progress: 0 0.000000
+10:00:00.460    <Info> Found device in DFU mode
+10:00:00.510    <Info> ECID: 7298405312345678
+10:00:00.560    <Info> Identified device as n104ap, iPhone12,1
+10:00:00.660    <Info> Extracting BuildManifest from IPSW
+10:00:01.260    <Info> IPSW Product Version: 26.0.1
+10:00:01.310    <Info> IPSW Product Build: 23A355 Major: 23
+10:00:01.360    <Info> Device supports Image4: true
+10:00:01.410    <Info> Variant: Customer Erase Install (IPSW)
+10:00:01.460    <Info> This restore will erase all device data.
+10:00:01.510    <Info> Checking IPSW for required components...
+10:00:01.810    <Info> All required components found in IPSW
+10:00:01.910    <Info> Extracting filesystem from IPSW: 090-31452-117.dmg.aea
+progress: 1 0.100000
+10:00:07.960    <Info> Getting ApNonce in dfu mode... 
+10:00:08.260    <Info> Trying to fetch new SHSH blob
+10:00:08.310    <Info> Getting SepNonce in dfu mode... 
+10:00:09.710    <Info> Received SHSH blobs
+progress: 1 0.250000
+10:00:10.020    <Info> Sending iBSS (1048576 bytes)...
+10:00:11.220   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) disconnected
+10:00:13.720   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) connected in Recovery mode
+progress: 1 0.300000
+10:00:13.780    <Info> Recovery Mode Environment:
+10:00:13.830    <Info> iBoot build-version=iBoot-11881.0.39
+10:00:13.880    <Info> iBoot build-style=RELEASE
+10:00:14.080    <Info> Sending iBEC (1245184 bytes)...
+10:00:15.180   <Debug> Waiting for device to disconnect...
+10:00:15.780   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) disconnected
+10:00:15.830   <Debug> Waiting for device to reconnect in recovery mode...
+10:00:19.230   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) connected in Recovery mode
+progress: 1 0.500000
+progress: 1 0.700000
+10:00:19.650    <Info> Sending RestoreRamDisk (118489088 bytes)...
+10:00:24.450    <Info> Sending RestoreDeviceTree (131072 bytes)...
+10:00:24.750    <Info> Sending RestoreKernelCache (19431424 bytes)...
+progress: 1 0.900000
+10:00:26.000    <Info> Waiting for device to enter restore mode...
+10:00:27.000   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) disconnected
+10:00:45.000   <Debug> idevice_event_cb: device 0019ed4b21a3c94e (udid: 00008030-001A2B3C4D5E6F70) connected in Restore mode
+10:00:45.100    <Info> Connecting now...
+10:00:45.200    <Info> Connected to com.apple.mobile.restored, version 15
+10:00:45.250    <Info> Device 00008030-001A2B3C4D5E6F70 has successfully entered restore mode
+10:00:45.300    <Info> Hardware Information:
+10:00:45.350    <Info> BoardID: 4
+10:00:45.400    <Info> ChipID: 32816
+10:00:45.450    <Info> UniqueChipID: 7298405312345678
+10:00:45.500    <Info> ProductionMode: true
+10:00:45.900    <Info> About to restore device... 
+10:00:46.500    <Info> Waiting for NAND (28)
+10:01:00.500    <Info> Creating partition map (11)
+10:01:09.500    <Info> Got status message
+10:01:09.550    <Info> Status: Disk Failure
+10:01:09.550    <Info> Log is available:
+AppleANS2: ANS2 not responding, retry 3/3
+lwvm: failed to create partition map: IOReturn 0xe00002bc
+10:01:09.850   <Error> Unable to successfully restore device
+10:01:09.950   <Error> Unable to restore device
+10:01:10.050    <Info> RESTORE FAILED

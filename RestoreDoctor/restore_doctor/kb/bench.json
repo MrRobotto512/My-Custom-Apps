@@ -1,0 +1,20 @@
+{
+  "_comment": "Optional tech inputs. DC supply patterns are taken at battery voltage on a bench supply, per Rossmann Group's 'won't turn on' guide. Context flags nudge the suspects when the phone's history makes them likelier.",
+  "dc_readings": [
+    {"id": "none", "label": "Not measured", "parts": []},
+    {"id": "boots_normally", "label": "0.4-0.8 A, board boots (black screen ok)", "parts": [{"part": "early_boot", "w": -0.3}], "note": "A normal boot draw means the main power path and CPU start; suspect the step-specific part instead."},
+    {"id": "cpu_20_40ma", "label": "Steady 20-40 mA, nothing happens", "parts": [{"part": "early_boot", "w": 0.45}], "note": "Rails are up but the CPU is not communicating (cracked underfill or solder balls)."},
+    {"id": "low_10_150ma", "label": "0.01-0.15 A, never boots", "parts": [{"part": "early_boot", "w": 0.3}, {"part": "usb_port_ic", "w": 0.15}], "note": "The PMIC starts but the CPU never boots: a partial short on a secondary rail, or a charging/USB chip fault."},
+    {"id": "nand_rail_cycle", "label": "Cycles 0 > 320 mA > 0 > 1.4 A", "parts": [{"part": "nand", "w": 0.45}], "note": "A repeating PMIC restart like this points to a short on the NAND power rail."},
+    {"id": "short_2a", "label": "2 A or more immediately", "parts": [{"part": "early_boot", "w": 0.5}], "note": "Current limit at once: usually a shorted capacitor on main power. Find it before any more restores."},
+    {"id": "zero_amp", "label": "0 A, no draw at all", "parts": [{"part": "early_boot", "w": 0.4}], "note": "The PMIC is not responding: check main power for shorts, then the power button line and PMIC inputs."}
+  ],
+  "context_flags": [
+    {"id": "liquid", "label": "Liquid damage or corrosion seen", "boost": {"i2c_peripheral": 0.15, "faceid": 0.1, "baseband": 0.05, "secure_element": 0.05}},
+    {"id": "front_sensor_work", "label": "Screen, earpiece or Face ID flex replaced", "boost": {"faceid": 0.15, "i2c_peripheral": 0.1}},
+    {"id": "battery_aftermarket", "label": "Battery replaced (aftermarket)", "boost": {"battery": 0.2}},
+    {"id": "nand_work", "label": "NAND replaced or reprogrammed", "boost": {"factory_data": 0.2, "sep": 0.15, "nand": 0.1}},
+    {"id": "board_work", "label": "Other board-level rework", "boost": {"early_boot": 0.1, "baseband": 0.05, "nand": 0.05}},
+    {"id": "dropped", "label": "Dropped or bent", "boost": {"early_boot": 0.1, "baseband": 0.1, "nand": 0.05}}
+  ]
+}

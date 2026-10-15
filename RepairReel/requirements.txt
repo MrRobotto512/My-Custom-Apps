@@ -1,0 +1,10 @@
+anthropic>=0.40
+numpy>=1.24
+pillow>=10
+static-ffmpeg>=2.7
+# Transcription: CTranslate2 backend everywhere except Apple Silicon, which uses MLX (Apple GPU)
+faster-whisper>=1.0; platform_system != "Darwin" or platform_machine != "arm64"
+mlx-whisper>=0.4; platform_system == "Darwin" and platform_machine == "arm64"
+# CUDA 12 runtime libraries for GPU transcription (NVIDIA, Windows)
+nvidia-cublas-cu12; platform_system == "Windows"
+nvidia-cudnn-cu12>=9; platform_system == "Windows"

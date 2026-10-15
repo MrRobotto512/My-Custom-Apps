@@ -1,0 +1,54 @@
+# Builds the engine (idevicerestore from current source) and RestoreDoctor.exe
+# on a Windows runner, then uploads the ready-to-run folder as an artifact.
+# Run it from the Actions tab (workflow_dispatch) or by pushing to main.
+name: Build Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md"]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel git make libtool autoconf automake-wrapper
+            mingw-w64-x86_64-gcc mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-curl mingw-w64-x86_64-libzip
+            mingw-w64-x86_64-openssl mingw-w64-x86_64-zlib
+
+      - name: Build the restore engine
+        shell: msys2 {0}
+        run: SKIP_DEPS=1 ./tools/build_engine.sh
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rule tests
+        run: |
+          python -m pip install --upgrade pip pyinstaller pytest
+          python -m pytest -q tests/test_rules.py
+
+      - name: Build RestoreDoctor.exe
+        run: pyinstaller --noconfirm RestoreDoctor.spec
+
+      - name: Bundle the engine
+        shell: pwsh
+        run: |
+          Copy-Item -Recurse -Force engine dist/RestoreDoctor/engine
+          & dist/RestoreDoctor/engine/idevicerestore.exe -v
+          & dist/RestoreDoctor/engine/irecovery.exe -V
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RestoreDoctor-win64
+          path: dist/RestoreDoctor

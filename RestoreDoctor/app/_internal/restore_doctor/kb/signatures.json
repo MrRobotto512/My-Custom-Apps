@@ -1,0 +1,311 @@
+{
+  "_comment": "Log signatures. Each regex is matched (case-insensitive) against every engine log message. 'kind': setup | firmware | transient | hardware | info. 'parts' are weighted suspects (0-1). 'stop_stage' marks the stage a failure with this line belongs to. Sources: idevicerestore and libtatsu source strings; see the spec for the reasoning behind each.",
+  "signatures": [
+    {
+      "id": "no_device",
+      "regex": "Unable to discover device mode|Unable to discover device type",
+      "kind": "setup",
+      "stop_stage": "detect",
+      "parts": [{"part": "usb_link", "w": 0.5}, {"part": "pc_drivers", "w": 0.3}, {"part": "usb_port_ic", "w": 0.25}],
+      "title": "The engine never saw the phone",
+      "why": "No phone answered in DFU, Recovery or normal mode."
+    },
+    {
+      "id": "usbmuxd_down",
+      "regex": "Unable to retrieve device list|Could not connect to usbmuxd|ERROR: Unable to connect to usbmuxd",
+      "kind": "setup",
+      "parts": [{"part": "pc_drivers", "w": 0.45}],
+      "title": "This PC could not talk to Apple Mobile Device Service",
+      "why": "On Windows the engine reaches phones in normal and restore mode through Apple's service on port 27015."
+    },
+    {
+      "id": "ipsw_unreadable",
+      "regex": "Firmware file .* cannot be opened|ipsw_open .*: No such file|Firmware file might be corrupt|Unable to extract .* from IPSW|could not extract .* from IPSW|Unable to extract filesystem from IPSW",
+      "kind": "firmware",
+      "stop_stage": "detect",
+      "parts": [{"part": "ipsw_file", "w": 0.8}],
+      "title": "The IPSW could not be read",
+      "why": "The firmware file is missing, incomplete or damaged."
+    },
+    {
+      "id": "ipsw_wrong_model",
+      "regex": "Unable to find a matching build identity|Could not make sure this firmware is suitable for the current device|firmware file is not compatible",
+      "kind": "firmware",
+      "stop_stage": "detect",
+      "parts": [{"part": "ipsw_file", "w": 0.8}],
+      "title": "This IPSW is not for this phone",
+      "why": "The firmware's build manifest has no entry for this model and board."
+    },
+    {
+      "id": "not_signed",
+      "regex": "status=(69|94)\\b|isn't eligible for the requested build|This device isn.t eligible|No firmwares are currently being signed",
+      "kind": "firmware",
+      "stop_stage": "sign",
+      "parts": [{"part": "firmware_signing", "w": 0.9}],
+      "title": "Apple is not signing this iOS version for this phone",
+      "why": "Apple's signing server answered with 'not eligible' (status 94 or 69). This is not a hardware fault."
+    },
+    {
+      "id": "tss_unreachable",
+      "regex": "TSS request failed: .*status=-1|Unable to send TSS request|Could not resolve host|Couldn't connect to server|Failed to connect to gs\\.apple\\.com|Could not fetch list of signed firmwares|Download from https://api\\.ipsw\\.me.* failed",
+      "kind": "setup",
+      "stop_stage": "sign",
+      "parts": [{"part": "network_signing", "w": 0.7}],
+      "title": "Apple's signing server could not be reached",
+      "why": "The signing request never got an answer, which points to the network, a firewall or the hosts file."
+    },
+    {
+      "id": "shsh_failed",
+      "regex": "Unable to get SHSH blobs for this device|Unable to proceed without a TSS record|can't continue without TSS",
+      "kind": "info",
+      "stop_stage": "sign",
+      "parts": [{"part": "network_signing", "w": 0.2}, {"part": "firmware_signing", "w": 0.2}],
+      "title": "Signing failed",
+      "why": "The engine could not get Apple's signature for this restore."
+    },
+    {
+      "id": "normal_to_recovery",
+      "regex": "Unable to place device into recovery mode from normal mode|Device is in an invalid state",
+      "kind": "setup",
+      "stop_stage": "detect",
+      "parts": [{"part": "phone_state", "w": 0.6}, {"part": "usb_link", "w": 0.2}],
+      "title": "The phone would not switch from normal mode to Recovery",
+      "why": "From normal mode the engine needs a trusted, unlocked phone to send it to Recovery."
+    },
+    {
+      "id": "dfu_to_recovery",
+      "regex": "Unable to place device into recovery mode from DFU mode|Unable to send iBoot stage 1 components",
+      "kind": "transient",
+      "stop_stage": "bootchain",
+      "parts": [{"part": "usb_link", "w": 0.4}, {"part": "early_boot", "w": 0.3}],
+      "title": "The phone dropped off during the DFU-to-Recovery hop",
+      "why": "This is usually a one-off USB drop while the first bootloader loads; if it repeats, the early boot hardware is suspect."
+    },
+    {
+      "id": "ibec_failed",
+      "regex": "Unable to send iBEC|Unable to send APTicket|Unable to get nonce from device|Getting ApNonce failed|Getting SepNonce failed",
+      "kind": "transient",
+      "stop_stage": "bootchain",
+      "parts": [{"part": "usb_link", "w": 0.35}, {"part": "early_boot", "w": 0.3}],
+      "title": "The bootloader could not be loaded",
+      "why": "The phone stopped answering while the boot chain was being sent or read."
+    },
+    {
+      "id": "no_reconnect_recovery",
+      "regex": "Device did not reconnect in recovery mode|Device did not disconnect\\. Possibly invalid iBEC",
+      "kind": "hardware",
+      "stop_stage": "bootchain",
+      "parts": [{"part": "early_boot", "w": 0.45}, {"part": "usb_link", "w": 0.2}],
+      "title": "The phone never came back after loading the bootloader",
+      "why": "After the update bootloader was sent, the phone should re-appear in Recovery within a minute."
+    },
+    {
+      "id": "restore_mode_failed",
+      "regex": "Device failed to enter restore mode|Unable to place device into restore mode",
+      "kind": "info",
+      "stop_stage": "restoreos",
+      "parts": [],
+      "title": "The restore OS did not come up",
+      "why": "The phone was told to boot the restore ramdisk but never connected in restore mode. The USB watch decides between a phone crash and a PC driver problem."
+    },
+    {
+      "id": "reconnected_after_personalize",
+      "regex": "Device reconnected in (Recovery|DFU) mode, most likely image personalization failed",
+      "kind": "info",
+      "stop_stage": "restoreos",
+      "parts": [{"part": "nand", "w": 0.2}, {"part": "i2c_peripheral", "w": 0.15}, {"part": "firmware_signing", "w": 0.1}],
+      "title": "The phone fell back to Recovery instead of booting the restore OS",
+      "why": "Either the boot images were rejected, or the restore OS panicked and the phone rebooted to Recovery."
+    },
+    {
+      "id": "restored_read_abort",
+      "regex": "Could not read data \\((-?\\d+)\\)\\. Aborting",
+      "kind": "info",
+      "parts": [],
+      "title": "The phone stopped answering during the restore",
+      "why": "The connection to the restore OS dropped; the step it dropped on decides the suspect."
+    },
+    {
+      "id": "asr_transport",
+      "regex": "Unable to send data to ASR|Unable to send filesystem|Unable to send payload to ASR|Failed to send data|usb_bulk_transfer",
+      "kind": "transient",
+      "stop_stage": "storage",
+      "parts": [{"part": "usb_link", "w": 0.35}, {"part": "nand", "w": 0.2}],
+      "title": "The transfer of iOS to the phone broke off",
+      "why": "Data stopped flowing while iOS was being written. A one-off is usually the cable or port; the same point twice is storage."
+    },
+    {
+      "id": "asr_validate",
+      "regex": "ASR was unable to validate the filesystem",
+      "kind": "hardware",
+      "stop_stage": "storage",
+      "parts": [{"part": "nand", "w": 0.35}, {"part": "ipsw_file", "w": 0.25}],
+      "title": "The phone rejected the iOS image check",
+      "why": "The restore OS could not validate the image it was about to write."
+    },
+    {
+      "id": "status_disk_failure",
+      "regex": "Status: Disk Failure",
+      "kind": "hardware",
+      "stop_stage": "storage",
+      "parts": [{"part": "nand", "w": 0.75}],
+      "title": "The phone reported a disk failure (status 6)",
+      "why": "The restore OS itself said its storage failed."
+    },
+    {
+      "id": "status_mount_failed",
+      "regex": "Status: Failed to mount filesystems",
+      "kind": "hardware",
+      "stop_stage": "storage",
+      "parts": [{"part": "nand", "w": 0.7}],
+      "title": "The phone could not mount its filesystem (status 27)",
+      "why": "The restore OS could not mount what it just wrote."
+    },
+    {
+      "id": "status_verification",
+      "regex": "Status: Verification Error",
+      "kind": "hardware",
+      "stop_stage": "storage",
+      "parts": [{"part": "nand", "w": 0.5}, {"part": "ipsw_file", "w": 0.2}],
+      "title": "The phone reported a verification error",
+      "why": "What was written did not read back correctly."
+    },
+    {
+      "id": "status_sep",
+      "regex": "Status: Failed to load SEP Firmware",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "sep", "w": 0.75}],
+      "title": "The Secure Enclave firmware failed to load (status 50/51)",
+      "why": "The SEP would not accept its firmware, which usually means a pairing problem between CPU, NAND and secure storage."
+    },
+    {
+      "id": "status_fdr",
+      "regex": "Status: Failed to recover FDR data|Unable to receive message from FDR",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "factory_data", "w": 0.7}, {"part": "network_signing", "w": 0.15}],
+      "title": "Factory data could not be recovered (status 53)",
+      "why": "The phone could not restore its factory calibration data (FDR)."
+    },
+    {
+      "id": "status_baseband",
+      "regex": "X-Gold Baseband Update Failed|Status: .*Baseband",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "baseband", "w": 0.8}],
+      "title": "The baseband update failed (status 1015)",
+      "why": "The phone reported that its modem could not be updated."
+    },
+    {
+      "id": "bb_id_missing",
+      "regex": "Unable to find required Bb(SNUM|ChipID|GoldCertId|Nonce) in parameters|Unable to fetch Baseband TSS|device didn't accept BasebandData",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "baseband", "w": 0.7}],
+      "title": "The baseband did not identify itself",
+      "why": "The modem has to report its serial and chip ID before Apple can sign its firmware; it did not."
+    },
+    {
+      "id": "bb_tss_rejected",
+      "regex": "TSS request failed \\(status=(8|49)\\b",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "baseband", "w": 0.5}],
+      "title": "Apple rejected the baseband's signing data",
+      "why": "Status 8 or 49 from the signing server means invalid baseband request data, such as a bad baseband serial."
+    },
+    {
+      "id": "radio_error",
+      "regex": "^radio-error=(?!0\\b)",
+      "kind": "hardware",
+      "parts": [{"part": "baseband", "w": 0.45}],
+      "title": "iBoot reported a radio (baseband) error before the restore",
+      "why": "The bootloader's radio-error value was set, meaning the modem failed on a previous boot."
+    },
+    {
+      "id": "se_id_missing",
+      "regex": "Unable to find required SE,(ChipID|ID|Nonce|RootKeyIdentifier) in parameters|Couldn't get SE firmware data|Unable to fetch SE ticket|Unknown SE,ChipID",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "secure_element", "w": 0.7}],
+      "title": "The Secure Element did not answer",
+      "why": "The SE has to report its ID and nonce for Apple to sign its firmware."
+    },
+    {
+      "id": "faceid_id_missing",
+      "regex": "Unable to find required (Savage|Yonkers)[^ ]* in parameters|Couldn't get (Savage|Yonkers|Jasmine|YonkersIR1) firmware data|Unable to fetch (Savage|Yonkers) ticket|Could not determine (Savage|Yonkers) firmware component",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "faceid", "w": 0.7}],
+      "title": "The Face ID module did not answer",
+      "why": "The biometric camera module has to report its ID before its firmware can be signed and sent."
+    },
+    {
+      "id": "rose_failed",
+      "regex": "Couldn't get Rose firmware data|Unable to fetch Rose ticket",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "uwb", "w": 0.65}],
+      "title": "The UWB chip update failed",
+      "why": "The Ultra Wideband chip (Rose) could not be prepared for its firmware."
+    },
+    {
+      "id": "veridian_failed",
+      "regex": "Couldn't get Veridian firmware data|Unable to fetch Veridian ticket",
+      "kind": "hardware",
+      "stop_stage": "firmware",
+      "parts": [{"part": "battery", "w": 0.65}],
+      "title": "The battery management update failed",
+      "why": "The battery management unit (Veridian) could not be prepared for its firmware."
+    },
+    {
+      "id": "restored_crash",
+      "regex": "restored crashed, backtrace following",
+      "kind": "info",
+      "parts": [],
+      "title": "The restore daemon on the phone crashed",
+      "why": "The phone sent a crash backtrace; it is kept with the case."
+    },
+    {
+      "id": "checkpoint_failure",
+      "regex": "Checkpoint FAILURE id: (0x[0-9A-Fa-f]+) result=(-?\\d+)",
+      "kind": "info",
+      "parts": [],
+      "title": "A restore checkpoint failed",
+      "why": "The phone marked one of its internal restore checkpoints as failed."
+    },
+    {
+      "id": "disk_space_pc",
+      "regex": "No space left on device|not enough space",
+      "kind": "setup",
+      "parts": [{"part": "ipsw_file", "w": 0.3}],
+      "title": "Out of disk space",
+      "why": "The PC or the phone ran out of space while preparing the restore."
+    }
+  ],
+  "activities": [
+    {"regex": "About to send (NORData|RootTicket)", "plain": "Sending boot firmware", "stage": "firmware", "part": "sep"},
+    {"regex": "About to send filesystem|Sending filesystem now|Connected to ASR|Validating the filesystem", "plain": "Writing iOS to storage", "stage": "storage", "part": "nand"},
+    {"regex": "About to send BasebandData|Sending Baseband TSS request|Updating Baseband in progress", "plain": "Updating the baseband (modem)", "stage": "firmware", "part": "baseband"},
+    {"regex": "Sending SE TSS request", "plain": "Updating the Secure Element (NFC/Apple Pay)", "stage": "firmware", "part": "secure_element"},
+    {"regex": "Sending (Savage|Yonkers) TSS request", "plain": "Updating the Face ID module", "stage": "firmware", "part": "faceid"},
+    {"regex": "Sending Rose TSS request", "plain": "Updating the UWB chip", "stage": "firmware", "part": "uwb"},
+    {"regex": "Sending Veridian TSS request", "plain": "Updating battery management", "stage": "firmware", "part": "battery"},
+    {"regex": "Sending Ace3 TSS request|Sending AppleTypeCRetimer", "plain": "Updating the USB-C controller", "stage": "firmware", "part": "usbc_controller"},
+    {"regex": "About to send FDR Trust data", "plain": "Restoring factory data", "stage": "firmware", "part": "factory_data"},
+    {"regex": "About to send (KernelCache|DeviceTree|SystemImageRootHash)", "plain": "Sending the restore OS parts", "stage": "restoreos", "part": null}
+  ],
+  "log_keywords": [
+    {"regex": "AppleBaseband|BBUpdater|baseband|modem|radio", "part": "baseband"},
+    {"regex": "NAND|AppleANS|ASP\\b|disk0|APFS|nvme", "part": "nand"},
+    {"regex": "\\bi2c\\b|I2C", "part": "i2c_peripheral"},
+    {"regex": "\\bSEP\\b|sepos|AppleSEP", "part": "sep"},
+    {"regex": "Savage|Yonkers|Pearl|FaceID|Face ID", "part": "faceid"},
+    {"regex": "Stockholm|NFC", "part": "nfc_controller"},
+    {"regex": "\\bSE\\b,|SecureElement", "part": "secure_element"},
+    {"regex": "Rose|UWB", "part": "uwb"},
+    {"regex": "Veridian|battery|gas ?gauge|BMU|charger", "part": "battery"},
+    {"regex": "\\bFDR\\b|syscfg", "part": "factory_data"}
+  ]
+}

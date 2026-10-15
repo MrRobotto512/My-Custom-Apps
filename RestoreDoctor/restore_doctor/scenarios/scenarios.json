@@ -1,0 +1,470 @@
+{
+ "synthetic": true,
+ "scenarios": [
+  {
+   "id": "success_update",
+   "title": "iPhone 13 update completes",
+   "device": "iPhone 13",
+   "product": "iPhone14,5",
+   "board": "d17ap",
+   "exit_code": 0,
+   "notes": "A clean Update restore from Recovery mode.",
+   "attempt": 1,
+   "log": "success_update.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.23,
+     "Recovery"
+    ],
+    [
+     23.0,
+     "Gone"
+    ],
+    [
+     41.0,
+     "Restore"
+    ],
+    [
+     166.56,
+     "Gone"
+    ],
+    [
+     191.56,
+     "Normal"
+    ]
+   ],
+   "duration": 191.56
+  },
+  {
+   "id": "nand_disk_failure",
+   "title": "iPhone 11 storage fails (status 6)",
+   "device": "iPhone 11",
+   "product": "iPhone12,1",
+   "board": "n104ap",
+   "exit_code": 1,
+   "notes": "The restore OS reports a disk failure while creating the partition map.",
+   "attempt": 1,
+   "log": "nand_disk_failure.log",
+   "usb": [
+    [
+     0.0,
+     "DFU"
+    ],
+    [
+     11.22,
+     "Gone"
+    ],
+    [
+     13.72,
+     "Recovery"
+    ],
+    [
+     15.78,
+     "Gone"
+    ],
+    [
+     19.23,
+     "Recovery"
+    ],
+    [
+     27.0,
+     "Gone"
+    ],
+    [
+     45.0,
+     "Restore"
+    ],
+    [
+     72.05,
+     "Gone"
+    ],
+    [
+     81.05,
+     "Recovery"
+    ]
+   ],
+   "duration": 81.05
+  },
+  {
+   "id": "baseband_1015",
+   "title": "iPhone 7 Plus baseband update fails (status 1015)",
+   "device": "iPhone 7 Plus",
+   "product": "iPhone9,2",
+   "board": "d11ap",
+   "exit_code": 1,
+   "notes": "Fails while updating the baseband; iBoot already reported a radio error.",
+   "attempt": 1,
+   "log": "baseband_1015.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.18,
+     "Recovery"
+    ],
+    [
+     22.68,
+     "Gone"
+    ],
+    [
+     40.68,
+     "Restore"
+    ],
+    [
+     210.93,
+     "Gone"
+    ],
+    [
+     220.93,
+     "Recovery"
+    ]
+   ],
+   "duration": 220.93
+  },
+  {
+   "id": "baseband_no_snum",
+   "title": "iPhone 11 baseband does not identify itself",
+   "device": "iPhone 11",
+   "product": "iPhone12,1",
+   "board": "n104ap",
+   "exit_code": 1,
+   "notes": "The modem never reports its serial, so its firmware cannot be signed.",
+   "attempt": 1,
+   "log": "baseband_no_snum.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.23,
+     "Recovery"
+    ],
+    [
+     23.0,
+     "Gone"
+    ],
+    [
+     41.0,
+     "Restore"
+    ],
+    [
+     153.06,
+     "Gone"
+    ],
+    [
+     163.06,
+     "Recovery"
+    ]
+   ],
+   "duration": 163.06
+  },
+  {
+   "id": "faceid_savage",
+   "title": "iPhone 12 Face ID module does not answer",
+   "device": "iPhone 12",
+   "product": "iPhone13,2",
+   "board": "d53gap",
+   "exit_code": 1,
+   "notes": "The Savage (Face ID) updater cannot get the module's ID.",
+   "attempt": 1,
+   "log": "faceid_savage.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.23,
+     "Recovery"
+    ],
+    [
+     23.0,
+     "Gone"
+    ],
+    [
+     41.0,
+     "Restore"
+    ],
+    [
+     133.16,
+     "Gone"
+    ],
+    [
+     143.16,
+     "Recovery"
+    ]
+   ],
+   "duration": 143.16
+  },
+  {
+   "id": "restore_os_vanished",
+   "title": "iPhone XS never boots the restore OS",
+   "device": "iPhone XS",
+   "product": "iPhone11,2",
+   "board": "d321ap",
+   "exit_code": 1,
+   "notes": "After the restore ramdisk is sent the phone drops off USB and never returns.",
+   "attempt": 1,
+   "log": "restore_os_vanished.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.23,
+     "Recovery"
+    ],
+    [
+     23.0,
+     "Gone"
+    ]
+   ],
+   "duration": 323.2
+  },
+  {
+   "id": "restore_os_pc_side",
+   "title": "Restore mode reached but the PC can't talk to it",
+   "device": "iPhone 14",
+   "product": "iPhone14,7",
+   "board": "d27ap",
+   "exit_code": 1,
+   "notes": "The USB watch sees the phone in restore mode, but the engine never connects.",
+   "attempt": 1,
+   "log": "restore_os_pc_side.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.23,
+     "Recovery"
+    ],
+    [
+     23.0,
+     "Gone"
+    ],
+    [
+     38.0,
+     "Restore"
+    ]
+   ],
+   "duration": 323.2
+  },
+  {
+   "id": "write_drop",
+   "title": "iPhone 14 drops off while writing iOS",
+   "device": "iPhone 14",
+   "product": "iPhone14,7",
+   "board": "d27ap",
+   "exit_code": 1,
+   "notes": "A single drop at 40% while iOS is being written.",
+   "attempt": 1,
+   "log": "write_drop.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.23,
+     "Recovery"
+    ],
+    [
+     23.0,
+     "Gone"
+    ],
+    [
+     41.0,
+     "Restore"
+    ],
+    [
+     73.35,
+     "Gone"
+    ],
+    [
+     86.1,
+     "Recovery"
+    ]
+   ],
+   "duration": 86.1
+  },
+  {
+   "id": "write_drop_repeat",
+   "title": "iPhone 14 drops at 40% again (second run)",
+   "device": "iPhone 14",
+   "product": "iPhone14,7",
+   "board": "d27ap",
+   "exit_code": 1,
+   "notes": "Second attempt on a different cable; the phone hands over the panic from the first crash and drops at the same point.",
+   "attempt": 2,
+   "log": "write_drop_repeat.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.23,
+     "Recovery"
+    ],
+    [
+     23.0,
+     "Gone"
+    ],
+    [
+     41.0,
+     "Restore"
+    ],
+    [
+     73.15,
+     "Gone"
+    ],
+    [
+     85.9,
+     "Recovery"
+    ]
+   ],
+   "duration": 85.9
+  },
+  {
+   "id": "not_signed",
+   "title": "iOS build no longer signed",
+   "device": "iPhone 13",
+   "product": "iPhone14,5",
+   "board": "d17ap",
+   "exit_code": 1,
+   "notes": "Apple's signing server refuses the chosen build (status 94).",
+   "attempt": 1,
+   "log": "not_signed.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ]
+   ],
+   "duration": 9.47
+  },
+  {
+   "id": "no_device",
+   "title": "Phone never detected",
+   "device": "Unknown",
+   "product": "",
+   "board": "",
+   "exit_code": 1,
+   "notes": "No phone answered in any mode within the engine's wait.",
+   "attempt": 1,
+   "log": "no_device.log",
+   "usb": [],
+   "duration": 10.06
+  },
+  {
+   "id": "dfu_hop_drop",
+   "title": "Drops during the DFU-to-Recovery hop",
+   "device": "iPhone 8",
+   "product": "iPhone10,4",
+   "board": "d201ap",
+   "exit_code": 1,
+   "notes": "The phone falls off USB while the first bootloader loads.",
+   "attempt": 1,
+   "log": "dfu_hop_drop.log",
+   "usb": [
+    [
+     0.0,
+     "DFU"
+    ],
+    [
+     11.22,
+     "Gone"
+    ],
+    [
+     73.22,
+     "DFU"
+    ]
+   ],
+   "duration": 73.22
+  },
+  {
+   "id": "battery_veridian",
+   "title": "iPhone 15 fails updating battery management",
+   "device": "iPhone 15",
+   "product": "iPhone15,4",
+   "board": "d37ap",
+   "exit_code": 1,
+   "notes": "Drops off during the Veridian (battery management) update.",
+   "attempt": 1,
+   "log": "battery_veridian.log",
+   "usb": [
+    [
+     0.0,
+     "Recovery"
+    ],
+    [
+     11.78,
+     "Gone"
+    ],
+    [
+     15.23,
+     "Recovery"
+    ],
+    [
+     23.0,
+     "Gone"
+    ],
+    [
+     41.0,
+     "Restore"
+    ],
+    [
+     139.75,
+     "Gone"
+    ],
+    [
+     155.35,
+     "Recovery"
+    ]
+   ],
+   "duration": 155.35
+  }
+ ]
+}

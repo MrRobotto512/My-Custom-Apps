@@ -1,0 +1,1237 @@
+{
+ "source": "libirecovery device table",
+ "devices": [
+  {
+   "product": "iPhone1,1",
+   "board": "m68ap",
+   "bdid": 0,
+   "cpid": 35072,
+   "name": "iPhone 2G"
+  },
+  {
+   "product": "iPhone1,2",
+   "board": "n82ap",
+   "bdid": 4,
+   "cpid": 35072,
+   "name": "iPhone 3G"
+  },
+  {
+   "product": "iPhone2,1",
+   "board": "n88ap",
+   "bdid": 0,
+   "cpid": 35104,
+   "name": "iPhone 3Gs"
+  },
+  {
+   "product": "iPhone3,1",
+   "board": "n90ap",
+   "bdid": 0,
+   "cpid": 35120,
+   "name": "iPhone 4 (GSM)"
+  },
+  {
+   "product": "iPhone3,2",
+   "board": "n90bap",
+   "bdid": 4,
+   "cpid": 35120,
+   "name": "iPhone 4 (GSM) R2 2012"
+  },
+  {
+   "product": "iPhone3,3",
+   "board": "n92ap",
+   "bdid": 6,
+   "cpid": 35120,
+   "name": "iPhone 4 (CDMA)"
+  },
+  {
+   "product": "iPhone4,1",
+   "board": "n94ap",
+   "bdid": 8,
+   "cpid": 35136,
+   "name": "iPhone 4s"
+  },
+  {
+   "product": "iPhone5,1",
+   "board": "n41ap",
+   "bdid": 0,
+   "cpid": 35152,
+   "name": "iPhone 5 (GSM)"
+  },
+  {
+   "product": "iPhone5,2",
+   "board": "n42ap",
+   "bdid": 2,
+   "cpid": 35152,
+   "name": "iPhone 5 (Global)"
+  },
+  {
+   "product": "iPhone5,3",
+   "board": "n48ap",
+   "bdid": 10,
+   "cpid": 35152,
+   "name": "iPhone 5c (GSM)"
+  },
+  {
+   "product": "iPhone5,4",
+   "board": "n49ap",
+   "bdid": 14,
+   "cpid": 35152,
+   "name": "iPhone 5c (Global)"
+  },
+  {
+   "product": "iPhone6,1",
+   "board": "n51ap",
+   "bdid": 0,
+   "cpid": 35168,
+   "name": "iPhone 5s (GSM)"
+  },
+  {
+   "product": "iPhone6,2",
+   "board": "n53ap",
+   "bdid": 2,
+   "cpid": 35168,
+   "name": "iPhone 5s (Global)"
+  },
+  {
+   "product": "iPhone7,1",
+   "board": "n56ap",
+   "bdid": 4,
+   "cpid": 28672,
+   "name": "iPhone 6 Plus"
+  },
+  {
+   "product": "iPhone7,2",
+   "board": "n61ap",
+   "bdid": 6,
+   "cpid": 28672,
+   "name": "iPhone 6"
+  },
+  {
+   "product": "iPhone8,1",
+   "board": "n71ap",
+   "bdid": 4,
+   "cpid": 32768,
+   "name": "iPhone 6s"
+  },
+  {
+   "product": "iPhone8,1",
+   "board": "n71map",
+   "bdid": 4,
+   "cpid": 32771,
+   "name": "iPhone 6s"
+  },
+  {
+   "product": "iPhone8,2",
+   "board": "n66ap",
+   "bdid": 6,
+   "cpid": 32768,
+   "name": "iPhone 6s Plus"
+  },
+  {
+   "product": "iPhone8,2",
+   "board": "n66map",
+   "bdid": 6,
+   "cpid": 32771,
+   "name": "iPhone 6s Plus"
+  },
+  {
+   "product": "iPhone8,4",
+   "board": "n69ap",
+   "bdid": 2,
+   "cpid": 32771,
+   "name": "iPhone SE (1st gen)"
+  },
+  {
+   "product": "iPhone8,4",
+   "board": "n69uap",
+   "bdid": 2,
+   "cpid": 32768,
+   "name": "iPhone SE (1st gen)"
+  },
+  {
+   "product": "iPhone9,1",
+   "board": "d10ap",
+   "bdid": 8,
+   "cpid": 32784,
+   "name": "iPhone 7 (Global)"
+  },
+  {
+   "product": "iPhone9,2",
+   "board": "d11ap",
+   "bdid": 10,
+   "cpid": 32784,
+   "name": "iPhone 7 Plus (Global)"
+  },
+  {
+   "product": "iPhone9,3",
+   "board": "d101ap",
+   "bdid": 12,
+   "cpid": 32784,
+   "name": "iPhone 7 (GSM)"
+  },
+  {
+   "product": "iPhone9,4",
+   "board": "d111ap",
+   "bdid": 14,
+   "cpid": 32784,
+   "name": "iPhone 7 Plus (GSM)"
+  },
+  {
+   "product": "iPhone10,1",
+   "board": "d20ap",
+   "bdid": 2,
+   "cpid": 32789,
+   "name": "iPhone 8 (Global)"
+  },
+  {
+   "product": "iPhone10,2",
+   "board": "d21ap",
+   "bdid": 4,
+   "cpid": 32789,
+   "name": "iPhone 8 Plus (Global)"
+  },
+  {
+   "product": "iPhone10,3",
+   "board": "d22ap",
+   "bdid": 6,
+   "cpid": 32789,
+   "name": "iPhone X (Global)"
+  },
+  {
+   "product": "iPhone10,4",
+   "board": "d201ap",
+   "bdid": 10,
+   "cpid": 32789,
+   "name": "iPhone 8 (GSM)"
+  },
+  {
+   "product": "iPhone10,5",
+   "board": "d211ap",
+   "bdid": 12,
+   "cpid": 32789,
+   "name": "iPhone 8 Plus (GSM)"
+  },
+  {
+   "product": "iPhone10,6",
+   "board": "d221ap",
+   "bdid": 14,
+   "cpid": 32789,
+   "name": "iPhone X (GSM)"
+  },
+  {
+   "product": "iPhone11,2",
+   "board": "d321ap",
+   "bdid": 14,
+   "cpid": 32800,
+   "name": "iPhone XS"
+  },
+  {
+   "product": "iPhone11,4",
+   "board": "d331ap",
+   "bdid": 10,
+   "cpid": 32800,
+   "name": "iPhone XS Max (China)"
+  },
+  {
+   "product": "iPhone11,6",
+   "board": "d331pap",
+   "bdid": 26,
+   "cpid": 32800,
+   "name": "iPhone XS Max"
+  },
+  {
+   "product": "iPhone11,8",
+   "board": "n841ap",
+   "bdid": 12,
+   "cpid": 32800,
+   "name": "iPhone XR"
+  },
+  {
+   "product": "iPhone12,1",
+   "board": "n104ap",
+   "bdid": 4,
+   "cpid": 32816,
+   "name": "iPhone 11"
+  },
+  {
+   "product": "iPhone12,3",
+   "board": "d421ap",
+   "bdid": 6,
+   "cpid": 32816,
+   "name": "iPhone 11 Pro"
+  },
+  {
+   "product": "iPhone12,5",
+   "board": "d431ap",
+   "bdid": 2,
+   "cpid": 32816,
+   "name": "iPhone 11 Pro Max"
+  },
+  {
+   "product": "iPhone12,8",
+   "board": "d79ap",
+   "bdid": 16,
+   "cpid": 32816,
+   "name": "iPhone SE (2nd gen)"
+  },
+  {
+   "product": "iPhone13,1",
+   "board": "d52gap",
+   "bdid": 10,
+   "cpid": 33025,
+   "name": "iPhone 12 mini"
+  },
+  {
+   "product": "iPhone13,2",
+   "board": "d53gap",
+   "bdid": 12,
+   "cpid": 33025,
+   "name": "iPhone 12"
+  },
+  {
+   "product": "iPhone13,3",
+   "board": "d53pap",
+   "bdid": 14,
+   "cpid": 33025,
+   "name": "iPhone 12 Pro"
+  },
+  {
+   "product": "iPhone13,4",
+   "board": "d54pap",
+   "bdid": 8,
+   "cpid": 33025,
+   "name": "iPhone 12 Pro Max"
+  },
+  {
+   "product": "iPhone14,2",
+   "board": "d63ap",
+   "bdid": 12,
+   "cpid": 33040,
+   "name": "iPhone 13 Pro"
+  },
+  {
+   "product": "iPhone14,3",
+   "board": "d64ap",
+   "bdid": 14,
+   "cpid": 33040,
+   "name": "iPhone 13 Pro Max"
+  },
+  {
+   "product": "iPhone14,4",
+   "board": "d16ap",
+   "bdid": 8,
+   "cpid": 33040,
+   "name": "iPhone 13 mini"
+  },
+  {
+   "product": "iPhone14,5",
+   "board": "d17ap",
+   "bdid": 10,
+   "cpid": 33040,
+   "name": "iPhone 13"
+  },
+  {
+   "product": "iPhone14,6",
+   "board": "d49ap",
+   "bdid": 16,
+   "cpid": 33040,
+   "name": "iPhone SE (3rd gen)"
+  },
+  {
+   "product": "iPhone14,7",
+   "board": "d27ap",
+   "bdid": 24,
+   "cpid": 33040,
+   "name": "iPhone 14"
+  },
+  {
+   "product": "iPhone14,8",
+   "board": "d28ap",
+   "bdid": 26,
+   "cpid": 33040,
+   "name": "iPhone 14 Plus"
+  },
+  {
+   "product": "iPhone15,2",
+   "board": "d73ap",
+   "bdid": 12,
+   "cpid": 33056,
+   "name": "iPhone 14 Pro"
+  },
+  {
+   "product": "iPhone15,3",
+   "board": "d74ap",
+   "bdid": 14,
+   "cpid": 33056,
+   "name": "iPhone 14 Pro Max"
+  },
+  {
+   "product": "iPhone15,4",
+   "board": "d37ap",
+   "bdid": 8,
+   "cpid": 33056,
+   "name": "iPhone 15"
+  },
+  {
+   "product": "iPhone15,5",
+   "board": "d38ap",
+   "bdid": 10,
+   "cpid": 33056,
+   "name": "iPhone 15 Plus"
+  },
+  {
+   "product": "iPhone16,1",
+   "board": "d83ap",
+   "bdid": 4,
+   "cpid": 33072,
+   "name": "iPhone 15 Pro"
+  },
+  {
+   "product": "iPhone16,2",
+   "board": "d84ap",
+   "bdid": 6,
+   "cpid": 33072,
+   "name": "iPhone 15 Pro Max"
+  },
+  {
+   "product": "iPhone17,1",
+   "board": "d93ap",
+   "bdid": 12,
+   "cpid": 33088,
+   "name": "iPhone 16 Pro"
+  },
+  {
+   "product": "iPhone17,2",
+   "board": "d94ap",
+   "bdid": 14,
+   "cpid": 33088,
+   "name": "iPhone 16 Pro Max"
+  },
+  {
+   "product": "iPhone17,3",
+   "board": "d47ap",
+   "bdid": 8,
+   "cpid": 33088,
+   "name": "iPhone 16"
+  },
+  {
+   "product": "iPhone17,4",
+   "board": "d48ap",
+   "bdid": 10,
+   "cpid": 33088,
+   "name": "iPhone 16 Plus"
+  },
+  {
+   "product": "iPhone17,5",
+   "board": "v59ap",
+   "bdid": 4,
+   "cpid": 33088,
+   "name": "iPhone 16e"
+  },
+  {
+   "product": "iPhone18,1",
+   "board": "v53ap",
+   "bdid": 12,
+   "cpid": 33104,
+   "name": "iPhone 17 Pro"
+  },
+  {
+   "product": "iPhone18,2",
+   "board": "v54ap",
+   "bdid": 14,
+   "cpid": 33104,
+   "name": "iPhone 17 Pro Max"
+  },
+  {
+   "product": "iPhone18,3",
+   "board": "v57ap",
+   "bdid": 8,
+   "cpid": 33104,
+   "name": "iPhone 17"
+  },
+  {
+   "product": "iPhone18,4",
+   "board": "d23ap",
+   "bdid": 10,
+   "cpid": 33104,
+   "name": "iPhone Air"
+  },
+  {
+   "product": "iPhone18,5",
+   "board": "v159ap",
+   "bdid": 22,
+   "cpid": 33104,
+   "name": "iPhone 17e"
+  },
+  {
+   "product": "iPhone19,2",
+   "board": "v63ap",
+   "bdid": 10,
+   "cpid": 33120,
+   "name": "iPhone 18 Pro"
+  },
+  {
+   "product": "iPhone19,3",
+   "board": "v64ap",
+   "bdid": 12,
+   "cpid": 33120,
+   "name": "iPhone 18 Pro Max (US)"
+  },
+  {
+   "product": "iPhone19,7",
+   "board": "v64sap",
+   "bdid": 18,
+   "cpid": 33120,
+   "name": "iPhone 18 Pro Max (Global)"
+  },
+  {
+   "product": "iPad1,1",
+   "board": "k48ap",
+   "bdid": 2,
+   "cpid": 35120,
+   "name": "iPad"
+  },
+  {
+   "product": "iPad2,1",
+   "board": "k93ap",
+   "bdid": 4,
+   "cpid": 35136,
+   "name": "iPad 2 (WiFi)"
+  },
+  {
+   "product": "iPad2,2",
+   "board": "k94ap",
+   "bdid": 6,
+   "cpid": 35136,
+   "name": "iPad 2 (GSM)"
+  },
+  {
+   "product": "iPad2,3",
+   "board": "k95ap",
+   "bdid": 2,
+   "cpid": 35136,
+   "name": "iPad 2 (CDMA)"
+  },
+  {
+   "product": "iPad2,4",
+   "board": "k93aap",
+   "bdid": 6,
+   "cpid": 35138,
+   "name": "iPad 2 (WiFi) R2 2012"
+  },
+  {
+   "product": "iPad2,5",
+   "board": "p105ap",
+   "bdid": 10,
+   "cpid": 35138,
+   "name": "iPad mini (WiFi)"
+  },
+  {
+   "product": "iPad2,6",
+   "board": "p106ap",
+   "bdid": 12,
+   "cpid": 35138,
+   "name": "iPad mini (GSM)"
+  },
+  {
+   "product": "iPad2,7",
+   "board": "p107ap",
+   "bdid": 14,
+   "cpid": 35138,
+   "name": "iPad mini (Global)"
+  },
+  {
+   "product": "iPad3,1",
+   "board": "j1ap",
+   "bdid": 0,
+   "cpid": 35141,
+   "name": "iPad (3rd gen, WiFi)"
+  },
+  {
+   "product": "iPad3,2",
+   "board": "j2ap",
+   "bdid": 2,
+   "cpid": 35141,
+   "name": "iPad (3rd gen, CDMA)"
+  },
+  {
+   "product": "iPad3,3",
+   "board": "j2aap",
+   "bdid": 4,
+   "cpid": 35141,
+   "name": "iPad (3rd gen, GSM)"
+  },
+  {
+   "product": "iPad3,4",
+   "board": "p101ap",
+   "bdid": 0,
+   "cpid": 35157,
+   "name": "iPad (4th gen, WiFi)"
+  },
+  {
+   "product": "iPad3,5",
+   "board": "p102ap",
+   "bdid": 2,
+   "cpid": 35157,
+   "name": "iPad (4th gen, GSM)"
+  },
+  {
+   "product": "iPad3,6",
+   "board": "p103ap",
+   "bdid": 4,
+   "cpid": 35157,
+   "name": "iPad (4th gen, Global)"
+  },
+  {
+   "product": "iPad4,1",
+   "board": "j71ap",
+   "bdid": 16,
+   "cpid": 35168,
+   "name": "iPad Air (WiFi)"
+  },
+  {
+   "product": "iPad4,2",
+   "board": "j72ap",
+   "bdid": 18,
+   "cpid": 35168,
+   "name": "iPad Air (Cellular)"
+  },
+  {
+   "product": "iPad4,3",
+   "board": "j73ap",
+   "bdid": 20,
+   "cpid": 35168,
+   "name": "iPad Air (China)"
+  },
+  {
+   "product": "iPad4,4",
+   "board": "j85ap",
+   "bdid": 10,
+   "cpid": 35168,
+   "name": "iPad mini 2 (WiFi)"
+  },
+  {
+   "product": "iPad4,5",
+   "board": "j86ap",
+   "bdid": 12,
+   "cpid": 35168,
+   "name": "iPad mini 2 (Cellular)"
+  },
+  {
+   "product": "iPad4,6",
+   "board": "j87ap",
+   "bdid": 14,
+   "cpid": 35168,
+   "name": "iPad mini 2 (China)"
+  },
+  {
+   "product": "iPad4,7",
+   "board": "j85map",
+   "bdid": 50,
+   "cpid": 35168,
+   "name": "iPad mini 3 (WiFi)"
+  },
+  {
+   "product": "iPad4,8",
+   "board": "j86map",
+   "bdid": 52,
+   "cpid": 35168,
+   "name": "iPad mini 3 (Cellular)"
+  },
+  {
+   "product": "iPad4,9",
+   "board": "j87map",
+   "bdid": 54,
+   "cpid": 35168,
+   "name": "iPad mini 3 (China)"
+  },
+  {
+   "product": "iPad5,1",
+   "board": "j96ap",
+   "bdid": 8,
+   "cpid": 28672,
+   "name": "iPad mini 4 (WiFi)"
+  },
+  {
+   "product": "iPad5,2",
+   "board": "j97ap",
+   "bdid": 10,
+   "cpid": 28672,
+   "name": "iPad mini 4 (Cellular)"
+  },
+  {
+   "product": "iPad5,3",
+   "board": "j81ap",
+   "bdid": 6,
+   "cpid": 28673,
+   "name": "iPad Air 2 (WiFi)"
+  },
+  {
+   "product": "iPad5,4",
+   "board": "j82ap",
+   "bdid": 2,
+   "cpid": 28673,
+   "name": "iPad Air 2 (Cellular)"
+  },
+  {
+   "product": "iPad6,3",
+   "board": "j127ap",
+   "bdid": 8,
+   "cpid": 32769,
+   "name": "iPad Pro 9.7-inch (WiFi)"
+  },
+  {
+   "product": "iPad6,4",
+   "board": "j128ap",
+   "bdid": 10,
+   "cpid": 32769,
+   "name": "iPad Pro 9.7-inch (Cellular)"
+  },
+  {
+   "product": "iPad6,7",
+   "board": "j98aap",
+   "bdid": 16,
+   "cpid": 32769,
+   "name": "iPad Pro 12.9-inch (1st gen, WiFi)"
+  },
+  {
+   "product": "iPad6,8",
+   "board": "j99aap",
+   "bdid": 18,
+   "cpid": 32769,
+   "name": "iPad Pro 12.9-inch (1st gen, Cellular)"
+  },
+  {
+   "product": "iPad6,11",
+   "board": "j71sap",
+   "bdid": 16,
+   "cpid": 32768,
+   "name": "iPad (5th gen, WiFi)"
+  },
+  {
+   "product": "iPad6,11",
+   "board": "j71tap",
+   "bdid": 16,
+   "cpid": 32771,
+   "name": "iPad (5th gen, WiFi)"
+  },
+  {
+   "product": "iPad6,12",
+   "board": "j72sap",
+   "bdid": 18,
+   "cpid": 32768,
+   "name": "iPad (5th gen, Cellular)"
+  },
+  {
+   "product": "iPad6,12",
+   "board": "j72tap",
+   "bdid": 18,
+   "cpid": 32771,
+   "name": "iPad (5th gen, Cellular)"
+  },
+  {
+   "product": "iPad7,1",
+   "board": "j120ap",
+   "bdid": 12,
+   "cpid": 32785,
+   "name": "iPad Pro 12.9-inch (2nd gen, WiFi)"
+  },
+  {
+   "product": "iPad7,2",
+   "board": "j121ap",
+   "bdid": 14,
+   "cpid": 32785,
+   "name": "iPad Pro 12.9-inch (2nd gen, Cellular)"
+  },
+  {
+   "product": "iPad7,3",
+   "board": "j207ap",
+   "bdid": 4,
+   "cpid": 32785,
+   "name": "iPad Pro 10.5-inch (WiFi)"
+  },
+  {
+   "product": "iPad7,4",
+   "board": "j208ap",
+   "bdid": 6,
+   "cpid": 32785,
+   "name": "iPad Pro 10.5-inch (Cellular)"
+  },
+  {
+   "product": "iPad7,5",
+   "board": "j71bap",
+   "bdid": 24,
+   "cpid": 32784,
+   "name": "iPad (6th gen, WiFi)"
+  },
+  {
+   "product": "iPad7,6",
+   "board": "j72bap",
+   "bdid": 26,
+   "cpid": 32784,
+   "name": "iPad (6th gen, Cellular)"
+  },
+  {
+   "product": "iPad7,11",
+   "board": "j171ap",
+   "bdid": 28,
+   "cpid": 32784,
+   "name": "iPad (7th gen, WiFi)"
+  },
+  {
+   "product": "iPad7,12",
+   "board": "j172ap",
+   "bdid": 30,
+   "cpid": 32784,
+   "name": "iPad (7th gen, Cellular)"
+  },
+  {
+   "product": "iPad8,1",
+   "board": "j317ap",
+   "bdid": 12,
+   "cpid": 32807,
+   "name": "iPad Pro 11-inch (1st gen, WiFi)"
+  },
+  {
+   "product": "iPad8,2",
+   "board": "j317xap",
+   "bdid": 28,
+   "cpid": 32807,
+   "name": "iPad Pro 11-inch (1st gen, WiFi, 1TB)"
+  },
+  {
+   "product": "iPad8,3",
+   "board": "j318ap",
+   "bdid": 14,
+   "cpid": 32807,
+   "name": "iPad Pro 11-inch (1st gen, Cellular)"
+  },
+  {
+   "product": "iPad8,4",
+   "board": "j318xap",
+   "bdid": 30,
+   "cpid": 32807,
+   "name": "iPad Pro 11-inch (1st gen, Cellular, 1TB)"
+  },
+  {
+   "product": "iPad8,5",
+   "board": "j320ap",
+   "bdid": 8,
+   "cpid": 32807,
+   "name": "iPad Pro 12.9-inch (3rd gen, WiFi)"
+  },
+  {
+   "product": "iPad8,6",
+   "board": "j320xap",
+   "bdid": 24,
+   "cpid": 32807,
+   "name": "iPad Pro 12.9-inch (3rd gen, WiFi, 1TB)"
+  },
+  {
+   "product": "iPad8,7",
+   "board": "j321ap",
+   "bdid": 10,
+   "cpid": 32807,
+   "name": "iPad Pro 12.9-inch (3rd gen, Cellular)"
+  },
+  {
+   "product": "iPad8,8",
+   "board": "j321xap",
+   "bdid": 26,
+   "cpid": 32807,
+   "name": "iPad Pro 12.9-inch (3rd gen, Cellular, 1TB)"
+  },
+  {
+   "product": "iPad8,9",
+   "board": "j417ap",
+   "bdid": 60,
+   "cpid": 32807,
+   "name": "iPad Pro 11-inch (2nd gen, WiFi)"
+  },
+  {
+   "product": "iPad8,10",
+   "board": "j418ap",
+   "bdid": 62,
+   "cpid": 32807,
+   "name": "iPad Pro 11-inch (2nd gen, Cellular)"
+  },
+  {
+   "product": "iPad8,11",
+   "board": "j420ap",
+   "bdid": 56,
+   "cpid": 32807,
+   "name": "iPad Pro 12.9-inch (4th gen, WiFi)"
+  },
+  {
+   "product": "iPad8,12",
+   "board": "j421ap",
+   "bdid": 58,
+   "cpid": 32807,
+   "name": "iPad Pro 12.9-inch (4th gen, Cellular)"
+  },
+  {
+   "product": "iPad11,1",
+   "board": "j210ap",
+   "bdid": 20,
+   "cpid": 32800,
+   "name": "iPad mini (5th gen, WiFi)"
+  },
+  {
+   "product": "iPad11,2",
+   "board": "j211ap",
+   "bdid": 22,
+   "cpid": 32800,
+   "name": "iPad mini (5th gen, Cellular)"
+  },
+  {
+   "product": "iPad11,3",
+   "board": "j217ap",
+   "bdid": 28,
+   "cpid": 32800,
+   "name": "iPad Air (3rd gen, WiFi)"
+  },
+  {
+   "product": "iPad11,4",
+   "board": "j218ap",
+   "bdid": 30,
+   "cpid": 32800,
+   "name": "iPad Air (3rd gen, Cellular)"
+  },
+  {
+   "product": "iPad11,6",
+   "board": "j171aap",
+   "bdid": 36,
+   "cpid": 32800,
+   "name": "iPad (8th gen, WiFi)"
+  },
+  {
+   "product": "iPad11,7",
+   "board": "j172aap",
+   "bdid": 38,
+   "cpid": 32800,
+   "name": "iPad (8th gen, Cellular)"
+  },
+  {
+   "product": "iPad12,1",
+   "board": "j181ap",
+   "bdid": 24,
+   "cpid": 32816,
+   "name": "iPad (9th gen, WiFi)"
+  },
+  {
+   "product": "iPad12,2",
+   "board": "j182ap",
+   "bdid": 26,
+   "cpid": 32816,
+   "name": "iPad (9th gen, Cellular)"
+  },
+  {
+   "product": "iPad13,1",
+   "board": "j307ap",
+   "bdid": 4,
+   "cpid": 33025,
+   "name": "iPad Air (4th gen, WiFi)"
+  },
+  {
+   "product": "iPad13,2",
+   "board": "j308ap",
+   "bdid": 6,
+   "cpid": 33025,
+   "name": "iPad Air (4th gen, Cellular)"
+  },
+  {
+   "product": "iPad13,4",
+   "board": "j517ap",
+   "bdid": 8,
+   "cpid": 33027,
+   "name": "iPad Pro 11-inch (3rd gen, WiFi)"
+  },
+  {
+   "product": "iPad13,5",
+   "board": "j517xap",
+   "bdid": 10,
+   "cpid": 33027,
+   "name": "iPad Pro 11-inch (3rd gen, WiFi, 2TB)"
+  },
+  {
+   "product": "iPad13,6",
+   "board": "j518ap",
+   "bdid": 12,
+   "cpid": 33027,
+   "name": "iPad Pro 11-inch (3rd gen, Cellular)"
+  },
+  {
+   "product": "iPad13,7",
+   "board": "j518xap",
+   "bdid": 14,
+   "cpid": 33027,
+   "name": "iPad Pro 11-inch (3rd gen, Cellular, 2TB)"
+  },
+  {
+   "product": "iPad13,8",
+   "board": "j522ap",
+   "bdid": 24,
+   "cpid": 33027,
+   "name": "iPad Pro 12.9-inch (5th gen, WiFi)"
+  },
+  {
+   "product": "iPad13,9",
+   "board": "j522xap",
+   "bdid": 26,
+   "cpid": 33027,
+   "name": "iPad Pro 12.9-inch (5th gen, WiFi, 2TB)"
+  },
+  {
+   "product": "iPad13,10",
+   "board": "j523ap",
+   "bdid": 28,
+   "cpid": 33027,
+   "name": "iPad Pro 12.9-inch (5th gen, Cellular)"
+  },
+  {
+   "product": "iPad13,11",
+   "board": "j523xap",
+   "bdid": 30,
+   "cpid": 33027,
+   "name": "iPad Pro 12.9-inch (5th gen, Cellular, 2TB)"
+  },
+  {
+   "product": "iPad13,16",
+   "board": "j407ap",
+   "bdid": 16,
+   "cpid": 33027,
+   "name": "iPad Air (5th gen, WiFi)"
+  },
+  {
+   "product": "iPad13,17",
+   "board": "j408ap",
+   "bdid": 18,
+   "cpid": 33027,
+   "name": "iPad Air (5th gen, Cellular)"
+  },
+  {
+   "product": "iPad13,18",
+   "board": "j271ap",
+   "bdid": 20,
+   "cpid": 33025,
+   "name": "iPad (10th gen, WiFi)"
+  },
+  {
+   "product": "iPad13,19",
+   "board": "j272ap",
+   "bdid": 22,
+   "cpid": 33025,
+   "name": "iPad (10th gen, Cellular)"
+  },
+  {
+   "product": "iPad14,1",
+   "board": "j310ap",
+   "bdid": 4,
+   "cpid": 33040,
+   "name": "iPad mini (6th gen, WiFi)"
+  },
+  {
+   "product": "iPad14,2",
+   "board": "j311ap",
+   "bdid": 6,
+   "cpid": 33040,
+   "name": "iPad mini (6th gen, Cellular)"
+  },
+  {
+   "product": "iPad14,3",
+   "board": "j617ap",
+   "bdid": 8,
+   "cpid": 33042,
+   "name": "iPad Pro 11-inch (4th gen, WiFi)"
+  },
+  {
+   "product": "iPad14,4",
+   "board": "j618ap",
+   "bdid": 10,
+   "cpid": 33042,
+   "name": "iPad Pro 11-inch (4th gen, Cellular)"
+  },
+  {
+   "product": "iPad14,5",
+   "board": "j620ap",
+   "bdid": 12,
+   "cpid": 33042,
+   "name": "iPad Pro 12.9-inch (6th gen, WiFi)"
+  },
+  {
+   "product": "iPad14,6",
+   "board": "j621ap",
+   "bdid": 14,
+   "cpid": 33042,
+   "name": "iPad Pro 12.9-inch (6th gen, Cellular)"
+  },
+  {
+   "product": "iPad14,8",
+   "board": "j507ap",
+   "bdid": 16,
+   "cpid": 33042,
+   "name": "iPad Air 11-inch (M2, WiFi)"
+  },
+  {
+   "product": "iPad14,9",
+   "board": "j508ap",
+   "bdid": 18,
+   "cpid": 33042,
+   "name": "iPad Air 11-inch (M2, Cellular)"
+  },
+  {
+   "product": "iPad14,10",
+   "board": "j537ap",
+   "bdid": 20,
+   "cpid": 33042,
+   "name": "iPad Air 13-inch (M2, WiFi)"
+  },
+  {
+   "product": "iPad14,11",
+   "board": "j538ap",
+   "bdid": 22,
+   "cpid": 33042,
+   "name": "iPad Air 13-inch (M2, Cellular)"
+  },
+  {
+   "product": "iPad15,3",
+   "board": "j607ap",
+   "bdid": 8,
+   "cpid": 33058,
+   "name": "iPad Air 11-inch (M3, WiFi)"
+  },
+  {
+   "product": "iPad15,4",
+   "board": "j608ap",
+   "bdid": 10,
+   "cpid": 33058,
+   "name": "iPad Air 11-inch (M3, Cellular)"
+  },
+  {
+   "product": "iPad15,5",
+   "board": "j637ap",
+   "bdid": 12,
+   "cpid": 33058,
+   "name": "iPad Air 13-inch (M3, WiFi)"
+  },
+  {
+   "product": "iPad15,6",
+   "board": "j638ap",
+   "bdid": 14,
+   "cpid": 33058,
+   "name": "iPad Air 13-inch (M3, Cellular)"
+  },
+  {
+   "product": "iPad15,7",
+   "board": "j481ap",
+   "bdid": 16,
+   "cpid": 33056,
+   "name": "iPad (A16, WiFi)"
+  },
+  {
+   "product": "iPad15,8",
+   "board": "j482ap",
+   "bdid": 18,
+   "cpid": 33056,
+   "name": "iPad (A16, Cellular)"
+  },
+  {
+   "product": "iPad16,1",
+   "board": "j410ap",
+   "bdid": 8,
+   "cpid": 33072,
+   "name": "iPad mini (A17 Pro, WiFi)"
+  },
+  {
+   "product": "iPad16,2",
+   "board": "j411ap",
+   "bdid": 10,
+   "cpid": 33072,
+   "name": "iPad mini (A17 Pro, Cellular)"
+  },
+  {
+   "product": "iPad16,3",
+   "board": "j717ap",
+   "bdid": 8,
+   "cpid": 33074,
+   "name": "iPad Pro 11-inch (M4, WiFi)"
+  },
+  {
+   "product": "iPad16,4",
+   "board": "j718ap",
+   "bdid": 10,
+   "cpid": 33074,
+   "name": "iPad Pro 11-inch (M4, Cellular)"
+  },
+  {
+   "product": "iPad16,5",
+   "board": "j720ap",
+   "bdid": 12,
+   "cpid": 33074,
+   "name": "iPad Pro 13-inch (M4, WiFi)"
+  },
+  {
+   "product": "iPad16,6",
+   "board": "j721ap",
+   "bdid": 14,
+   "cpid": 33074,
+   "name": "iPad Pro 13-inch (M4, Cellular)"
+  },
+  {
+   "product": "iPad16,8",
+   "board": "j707ap",
+   "bdid": 16,
+   "cpid": 33074,
+   "name": "iPad Air 11-inch (M4, WiFi)"
+  },
+  {
+   "product": "iPad16,9",
+   "board": "j708ap",
+   "bdid": 18,
+   "cpid": 33074,
+   "name": "iPad Air 11-inch (M4, Cellular)"
+  },
+  {
+   "product": "iPad16,10",
+   "board": "j737ap",
+   "bdid": 20,
+   "cpid": 33074,
+   "name": "iPad Air 13-inch (M4, WiFi)"
+  },
+  {
+   "product": "iPad16,11",
+   "board": "j738ap",
+   "bdid": 22,
+   "cpid": 33074,
+   "name": "iPad Air 13-inch (M4, Cellular)"
+  },
+  {
+   "product": "iPad17,1",
+   "board": "j817ap",
+   "bdid": 8,
+   "cpid": 33090,
+   "name": "iPad Pro 11-inch (M5, WiFi)"
+  },
+  {
+   "product": "iPad17,2",
+   "board": "j818ap",
+   "bdid": 10,
+   "cpid": 33090,
+   "name": "iPad Pro 11-inch (M5, Cellular)"
+  },
+  {
+   "product": "iPad17,3",
+   "board": "j820ap",
+   "bdid": 12,
+   "cpid": 33090,
+   "name": "iPad Pro 13-inch (M5, WiFi)"
+  },
+  {
+   "product": "iPad17,4",
+   "board": "j821ap",
+   "bdid": 14,
+   "cpid": 33090,
+   "name": "iPad Pro 13-inch (M5, Cellular)"
+  }
+ ]
+}

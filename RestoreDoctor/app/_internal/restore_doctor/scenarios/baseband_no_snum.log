@@ -1,0 +1,92 @@
+10:00:00.050    <Info> idevicerestore 1.0.0-278-g4b3e847 (libirecovery 1.3.1-12-g93c117c, libtatsu 1.0.5-6-ge7d6ad1)
+progress: 0 0.000000
+10:00:00.460    <Info> Found device in Recovery mode
+10:00:00.510    <Info> ECID: 7298405312345678
+10:00:00.560    <Info> Identified device as n104ap, iPhone12,1
+10:00:00.660    <Info> Extracting BuildManifest from IPSW
+10:00:01.260    <Info> IPSW Product Version: 26.0.1
+10:00:01.310    <Info> IPSW Product Build: 23A355 Major: 23
+10:00:01.360    <Info> Device supports Image4: true
+10:00:01.410    <Info> Variant: Customer Upgrade Install (IPSW)
+10:00:01.460    <Info> This restore will update the device without erasing user data.
+10:00:01.510    <Info> Checking IPSW for required components...
+10:00:01.810    <Info> All required components found in IPSW
+10:00:01.910    <Info> Extracting filesystem from IPSW: 090-31452-117.dmg.aea
+progress: 1 0.100000
+10:00:07.960    <Info> Getting ApNonce in recovery mode... 
+10:00:08.260    <Info> Trying to fetch new SHSH blob
+10:00:08.310    <Info> Getting SepNonce in recovery mode... 
+10:00:09.710    <Info> Received SHSH blobs
+progress: 1 0.250000
+progress: 1 0.300000
+10:00:09.780    <Info> Recovery Mode Environment:
+10:00:09.830    <Info> iBoot build-version=iBoot-11881.0.39
+10:00:09.880    <Info> iBoot build-style=RELEASE
+10:00:10.080    <Info> Sending iBEC (1245184 bytes)...
+10:00:11.180   <Debug> Waiting for device to disconnect...
+10:00:11.780   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) disconnected
+10:00:11.830   <Debug> Waiting for device to reconnect in recovery mode...
+10:00:15.230   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) connected in Recovery mode
+progress: 1 0.500000
+progress: 1 0.700000
+10:00:15.650    <Info> Sending RestoreRamDisk (118489088 bytes)...
+10:00:20.450    <Info> Sending RestoreDeviceTree (131072 bytes)...
+10:00:20.750    <Info> Sending RestoreKernelCache (19431424 bytes)...
+progress: 1 0.900000
+10:00:22.000    <Info> Waiting for device to enter restore mode...
+10:00:23.000   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) disconnected
+10:00:41.000   <Debug> idevice_event_cb: device 0019ed4b21a3c94e (udid: 00008030-001A2B3C4D5E6F70) connected in Restore mode
+10:00:41.100    <Info> Connecting now...
+10:00:41.200    <Info> Connected to com.apple.mobile.restored, version 15
+10:00:41.250    <Info> Device 00008030-001A2B3C4D5E6F70 has successfully entered restore mode
+10:00:41.300    <Info> Hardware Information:
+10:00:41.350    <Info> BoardID: 4
+10:00:41.400    <Info> ChipID: 32816
+10:00:41.450    <Info> UniqueChipID: 7298405312345678
+10:00:41.500    <Info> ProductionMode: true
+10:00:41.900    <Info> About to restore device... 
+10:00:42.500    <Info> Waiting for NAND (28)
+10:00:44.600    <Info> Creating partition map (11)
+10:00:44.800    <Info> About to send RootTicket...
+10:00:44.850    <Info> Sending RootTicket now...
+10:00:44.900    <Info> Done sending RootTicket
+10:00:45.900    <Info> Creating filesystem (12)
+10:00:46.300    <Info> About to send filesystem...
+10:00:46.350    <Info> Connected to ASR
+10:00:46.400    <Info> Validating the filesystem
+10:00:48.400    <Info> Filesystem validated
+10:00:48.450    <Info> Sending filesystem now...
+10:00:48.650    <Info> Restoring image (13)
+progress: 2 0.100000
+progress: 2 0.200000
+progress: 2 0.300000
+progress: 2 0.400000
+progress: 2 0.500000
+progress: 2 0.600000
+progress: 2 0.700000
+progress: 2 0.800000
+progress: 2 0.900000
+progress: 2 1.000000
+10:01:48.950    <Info> Done sending filesystem
+10:01:49.150    <Info> Verifying restore (14)
+progress: 3 0.250000
+progress: 3 0.500000
+progress: 3 0.750000
+progress: 3 1.000000
+10:02:01.650    <Info> Checking filesystems (15)
+10:02:02.150    <Info> Mounting filesystems (16)
+10:02:02.550    <Info> Installing kernelcache (27)
+10:02:02.750    <Info> Installing DeviceTree (61)
+10:02:03.150    <Info> About to send NORData...
+10:02:03.950    <Info> Sending NORData now...
+10:02:04.350    <Info> Done sending NORData
+10:02:04.550    <Info> Flashing firmware (18)
+10:02:05.550    <Info> Preparing for baseband update (48)
+10:02:30.550    <Info> About to send BasebandData...
+ERROR: Unable to find required BbSNUM in parameters
+10:02:30.560   <Error> Unable to create Baseband TSS request
+10:02:30.560   <Error> Unable to fetch Baseband TSS
+10:02:30.560   <Error> Unable to send BasebandData
+10:02:30.860   <Error> Unable to successfully restore device
+10:02:30.960   <Error> Unable to restore device
+10:02:31.060    <Info> RESTORE FAILED

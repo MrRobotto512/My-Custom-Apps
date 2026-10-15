@@ -1,0 +1,138 @@
+{
+  "_comment": "Apple's restore error numbers as shown by Apple Devices, iTunes, Finder and tools built on Apple's MobileDevice. Used by Code lookup when the restore was not run in Restore Doctor. 'codes' may hold ranges as [low, high].",
+  "entries": [
+    {
+      "codes": [9, 4005, 4013, 4014],
+      "meaning": "The phone disconnected during the restore, or the computer couldn't tell it to restore.",
+      "kind": "hardware",
+      "parts": [{"part": "usb_link", "w": 0.35}, {"part": "nand", "w": 0.35}, {"part": "early_boot", "w": 0.25}, {"part": "i2c_peripheral", "w": 0.25}, {"part": "baseband", "w": 0.15}],
+      "notes": [
+        "Apple groups these four codes together and gives one set of steps: retry, try Update first, another cable, another computer.",
+        "Board-level culprits reported for 4013: NAND, CPU power, and on iPhone 7/7 Plus the baseband (Apple Wiki).",
+        "On Face ID models, an I2C short from earpiece flex corrosion is a common cause (Rossmann Group).",
+        "Run the restore in Restore Doctor to see the step it dies on; that narrows this list a lot."
+      ],
+      "sources": ["https://support.apple.com/en-us/102561", "https://theapplewiki.com/wiki/Restore_Errors", "https://rossmanngroup.com/services/iphone-data-recovery/error-4013"]
+    },
+    {
+      "codes": [4047, 40, 1113],
+      "meaning": "Storage (NAND) is likely dead or failing.",
+      "kind": "hardware",
+      "parts": [{"part": "nand", "w": 0.7}],
+      "notes": ["Confirm with a restore in Restore Doctor: look for Waiting for NAND or a disk failure status."],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors"]
+    },
+    {
+      "codes": [14],
+      "meaning": "USB problem, a corrupt IPSW, or a symptom of NAND failure.",
+      "kind": "hardware",
+      "parts": [{"part": "usb_link", "w": 0.35}, {"part": "ipsw_file", "w": 0.3}, {"part": "nand", "w": 0.3}],
+      "notes": ["Re-download the IPSW and swap cable and port before suspecting the NAND."],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors", "https://support.apple.com/en-us/108305"]
+    },
+    {
+      "codes": [1110],
+      "meaning": "Often insufficient storage space during the update.",
+      "kind": "hardware",
+      "parts": [{"part": "nand", "w": 0.3}],
+      "notes": ["If the phone's storage was nearly full, try Update again or Erase if the data is backed up."],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors"]
+    },
+    {
+      "codes": [48, 23],
+      "meaning": "Baseband chip or its flash failing during the restore.",
+      "kind": "hardware",
+      "parts": [{"part": "baseband", "w": 0.7}],
+      "notes": ["Error 23 also follows liquid damage."],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors"]
+    },
+    {
+      "codes": [29, 2015],
+      "meaning": "Battery problem: often a low-quality aftermarket battery (29), or a battery that is disconnected or not charging (2015).",
+      "kind": "hardware",
+      "parts": [{"part": "battery", "w": 0.7}],
+      "notes": ["Charge on a 10 W or higher wall adapter, reseat the connector, or fit a known-good battery."],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors"]
+    },
+    {
+      "codes": [53, 56],
+      "meaning": "Touch ID sensor or its cable (53); dead or glitched Touch ID sensor (56).",
+      "kind": "hardware",
+      "parts": [{"part": "touchid", "w": 0.65}],
+      "notes": ["Touch ID is paired to the board; a replaced sensor will not pair."],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors", "https://support.apple.com/en-us/108304"]
+    },
+    {
+      "codes": [35],
+      "meaning": "USB communication failure or NAND failure.",
+      "kind": "hardware",
+      "parts": [{"part": "usb_link", "w": 0.4}, {"part": "nand", "w": 0.4}],
+      "notes": [],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors"]
+    },
+    {
+      "codes": [28],
+      "meaning": "Hardware error, usually a bad dock connector.",
+      "kind": "hardware",
+      "parts": [{"part": "usb_port_ic", "w": 0.6}],
+      "notes": [],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors"]
+    },
+    {
+      "codes": [-2],
+      "meaning": "Hardware: NAND failure, or on iPhone 7/7 Plus a baseband or audio IC failure.",
+      "kind": "hardware",
+      "parts": [{"part": "nand", "w": 0.4}, {"part": "baseband", "w": 0.35}],
+      "notes": [],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors"]
+    },
+    {
+      "codes": [13, [1600, 1604], 1611, [1643, 1650], [2000, 2009]],
+      "meaning": "USB connection problem between the computer and the phone.",
+      "kind": "setup",
+      "parts": [{"part": "usb_link", "w": 0.7}, {"part": "pc_drivers", "w": 0.3}],
+      "notes": ["Apple: use the cable that came with the phone, another port, then another computer."],
+      "sources": ["https://support.apple.com/en-us/108308"]
+    },
+    {
+      "codes": [17, 1638, [3000, 3020], 3194, 3195, 3200, 1109, 1639],
+      "meaning": "The computer can't reach Apple's update or signing servers, or the build isn't signed for this phone (3194).",
+      "kind": "setup",
+      "parts": [{"part": "network_signing", "w": 0.6}, {"part": "firmware_signing", "w": 0.4}],
+      "notes": ["Check gs.apple.com is reachable and not redirected in the hosts file; pick a signed build."],
+      "sources": ["https://support.apple.com/en-us/108308", "https://support.apple.com/en-gb/TS4451"]
+    },
+    {
+      "codes": [10],
+      "meaning": "The phone's software is too new for the computer's Apple software.",
+      "kind": "setup",
+      "parts": [{"part": "pc_drivers", "w": 0.6}],
+      "notes": ["Update the Apple Devices app or iTunes."],
+      "sources": ["https://support.apple.com/en-us/108308"]
+    },
+    {
+      "codes": [68, 75],
+      "meaning": "Update mode can't be used here: downgrading iOS 17 or later in Update mode (68), or no data volume on the phone (75).",
+      "kind": "firmware",
+      "parts": [{"part": "firmware_signing", "w": 0.3}],
+      "notes": ["Use Erase (Restore) mode instead; back up first if the data matters."],
+      "sources": ["https://theapplewiki.com/wiki/Restore_Errors"]
+    },
+    {
+      "codes": [1015],
+      "meaning": "Unauthorized software modification or an attempted downgrade (Apple). The same number from the phone's own restore status means a baseband update failure.",
+      "kind": "firmware",
+      "parts": [{"part": "firmware_signing", "w": 0.3}, {"part": "baseband", "w": 0.3}],
+      "notes": [],
+      "sources": ["https://support.apple.com/en-us/108308", "https://github.com/libimobiledevice/idevicerestore/blob/master/src/restore.c"]
+    },
+    {
+      "codes": [1, 3, 11, 12, 16, 20, 21, 26, 27, 34, 36, 37, 1002, 1004, 1011, 1012, 1014, 1667, 1669],
+      "meaning": "Apple lists these as possible hardware issues.",
+      "kind": "hardware",
+      "parts": [{"part": "usb_link", "w": 0.3}, {"part": "early_boot", "w": 0.2}],
+      "notes": ["Apple's steps: check security software, a reliable cable, computer and network, then restore again."],
+      "sources": ["https://support.apple.com/en-us/108308"]
+    }
+  ]
+}

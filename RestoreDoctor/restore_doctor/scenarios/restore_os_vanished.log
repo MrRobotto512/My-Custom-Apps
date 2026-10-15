@@ -1,0 +1,40 @@
+10:00:00.050    <Info> idevicerestore 1.0.0-278-g4b3e847 (libirecovery 1.3.1-12-g93c117c, libtatsu 1.0.5-6-ge7d6ad1)
+progress: 0 0.000000
+10:00:00.460    <Info> Found device in Recovery mode
+10:00:00.510    <Info> ECID: 7298405312345678
+10:00:00.560    <Info> Identified device as d321ap, iPhone11,2
+10:00:00.660    <Info> Extracting BuildManifest from IPSW
+10:00:01.260    <Info> IPSW Product Version: 26.0.1
+10:00:01.310    <Info> IPSW Product Build: 23A355 Major: 23
+10:00:01.360    <Info> Device supports Image4: true
+10:00:01.410    <Info> Variant: Customer Upgrade Install (IPSW)
+10:00:01.460    <Info> This restore will update the device without erasing user data.
+10:00:01.510    <Info> Checking IPSW for required components...
+10:00:01.810    <Info> All required components found in IPSW
+10:00:01.910    <Info> Extracting filesystem from IPSW: 090-31452-117.dmg.aea
+progress: 1 0.100000
+10:00:07.960    <Info> Getting ApNonce in recovery mode... 
+10:00:08.260    <Info> Trying to fetch new SHSH blob
+10:00:08.310    <Info> Getting SepNonce in recovery mode... 
+10:00:09.710    <Info> Received SHSH blobs
+progress: 1 0.250000
+progress: 1 0.300000
+10:00:09.780    <Info> Recovery Mode Environment:
+10:00:09.830    <Info> iBoot build-version=iBoot-11881.0.39
+10:00:09.880    <Info> iBoot build-style=RELEASE
+10:00:10.080    <Info> Sending iBEC (1245184 bytes)...
+10:00:11.180   <Debug> Waiting for device to disconnect...
+10:00:11.780   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) disconnected
+10:00:11.830   <Debug> Waiting for device to reconnect in recovery mode...
+10:00:15.230   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) connected in Recovery mode
+progress: 1 0.500000
+progress: 1 0.700000
+10:00:15.650    <Info> Sending RestoreRamDisk (118489088 bytes)...
+10:00:20.450    <Info> Sending RestoreDeviceTree (131072 bytes)...
+10:00:20.750    <Info> Sending RestoreKernelCache (19431424 bytes)...
+progress: 1 0.900000
+10:00:22.000    <Info> Waiting for device to enter restore mode...
+10:00:23.000   <Debug> irecv_event_cb: device 0019ed4b21a3c94e (udid: N/A) disconnected
+10:05:23.050   <Error> Device failed to enter restore mode.
+10:05:23.100   <Error> Make sure that usbmuxd is running.
+10:05:23.200    <Info> RESTORE FAILED

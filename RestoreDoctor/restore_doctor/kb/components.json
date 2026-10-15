@@ -1,0 +1,176 @@
+{
+  "_comment": "Parts the rules engine can blame. 'kind' says whether it is the PC/setup, the firmware, or the phone. 'checks' are the next bench steps shown to the tech, in order. {usb_chip} is filled in per model. A check starting with 'stacked:' is only shown for two-layer (sandwich) boards; 'faceid:' only for Face ID models.",
+  "usb_link": {
+    "kind": "setup",
+    "label": "USB connection (cable, PC port, hub)",
+    "checks": [
+      "Use a known-good Apple cable straight into a rear USB port on the PC (no hub, keyboard or front-panel port).",
+      "Run it again. If it stops somewhere different, the connection is the likely cause."
+    ]
+  },
+  "pc_drivers": {
+    "kind": "setup",
+    "label": "This PC's Apple driver or Mobile Device Service",
+    "checks": [
+      "Restart 'Apple Mobile Device Service' in Windows Services, or repair the Apple Devices app / iTunes.",
+      "Unplug and replug the phone, then run the ready check again."
+    ]
+  },
+  "network_signing": {
+    "kind": "setup",
+    "label": "Network path to Apple's signing server",
+    "checks": [
+      "Confirm the ready check can reach gs.apple.com.",
+      "Remove any gs.apple.com lines from C:\\Windows\\System32\\drivers\\etc\\hosts.",
+      "Pause third-party firewall or antivirus software and try again."
+    ]
+  },
+  "firmware_signing": {
+    "kind": "firmware",
+    "label": "Firmware no longer signed by Apple for this phone",
+    "checks": [
+      "Choose a build Apple still signs. The firmware list only offers those; 'Latest signed' is always safe."
+    ]
+  },
+  "ipsw_file": {
+    "kind": "firmware",
+    "label": "The IPSW file (corrupt or wrong model)",
+    "checks": [
+      "Re-download the IPSW; the app checks its checksum.",
+      "Confirm the IPSW lists this exact model identifier."
+    ]
+  },
+  "phone_state": {
+    "kind": "setup",
+    "label": "Phone state (locked, not trusted, or wrong mode)",
+    "checks": [
+      "Put the phone into Recovery or DFU mode by hand (DFU helper) and start again.",
+      "If it boots normally, unlock it and tap Trust first."
+    ]
+  },
+  "usb_port_ic": {
+    "kind": "hardware",
+    "label": "Charge port and USB data path",
+    "checks": [
+      "Try a known-good charge port / dock flex.",
+      "Compare the USB data lines in diode mode against a known-good board.",
+      "If it charges but never shows up on USB, suspect the USB data chip ({usb_chip})."
+    ]
+  },
+  "early_boot": {
+    "kind": "hardware",
+    "label": "CPU, RAM or main power rails",
+    "checks": [
+      "Power the board from a DC supply and note the boot current pattern (add it under Bench reading).",
+      "Check the main power rails for shorts in diode mode.",
+      "Try DFU twice on a direct port; failing at the same hop both times points to the board."
+    ]
+  },
+  "nand": {
+    "kind": "hardware",
+    "label": "NAND storage (chip, its power rails, CPU-to-NAND link)",
+    "checks": [
+      "Diode-check the NAND power rails against a known-good board.",
+      "Run once more on a different cable and port. Failing at the same step or percent confirms storage.",
+      "If the customer needs their data, stop restoring: every attempt writes to the NAND."
+    ]
+  },
+  "i2c_peripheral": {
+    "kind": "hardware",
+    "label": "A peripheral holding the I2C bus (often a front sensor, earpiece or Face ID flex)",
+    "checks": [
+      "Disconnect the front sensor / earpiece / Face ID flex and other removable flexes, then run again.",
+      "If it now gets further, reconnect parts one at a time to find the one that stops it.",
+      "Inspect connectors and modules for corrosion, especially after liquid exposure."
+    ]
+  },
+  "baseband": {
+    "kind": "hardware",
+    "label": "Baseband (modem section)",
+    "checks": [
+      "Measure the baseband PMU output rails.",
+      "stacked: Inspect the interposer joint between the two board layers for separation or corrosion.",
+      "A baseband fault normally repeats at the same step; one more run confirms it."
+    ]
+  },
+  "secure_element": {
+    "kind": "hardware",
+    "label": "Secure Element / NFC for Apple Pay",
+    "checks": [
+      "Inspect the Secure Element and NFC area for liquid damage or prior rework.",
+      "Run once more; repeating at Updating SE firmware confirms the SE path."
+    ]
+  },
+  "nfc_controller": {
+    "kind": "hardware",
+    "label": "NFC controller (Stockholm)",
+    "checks": [
+      "Inspect the NFC controller area and its antenna connection.",
+      "Run once more; repeating at the Stockholm step confirms it."
+    ]
+  },
+  "faceid": {
+    "kind": "hardware",
+    "label": "Face ID / biometric camera module and its flex (Savage, Yonkers)",
+    "checks": [
+      "Run again with a known-good front sensor / Face ID flex if you have one.",
+      "Inspect the flood illuminator and dot projector area for corrosion.",
+      "Ask whether the module or flex was replaced; aftermarket parts can fail this step."
+    ]
+  },
+  "touchid": {
+    "kind": "hardware",
+    "label": "Touch ID sensor and its cable",
+    "checks": [
+      "Inspect the Touch ID flex and connector.",
+      "Touch ID is paired to the board; a swapped sensor will not pair."
+    ]
+  },
+  "uwb": {
+    "kind": "hardware",
+    "label": "Ultra Wideband chip (Rose)",
+    "checks": [
+      "Inspect the UWB area for liquid damage or rework.",
+      "Run once more; repeating at Updating Rose confirms it."
+    ]
+  },
+  "battery": {
+    "kind": "hardware",
+    "label": "Battery, gas gauge or battery management",
+    "checks": [
+      "Fit a known-good battery charged above 50% and reseat the connector.",
+      "Aftermarket batteries commonly fail these steps."
+    ]
+  },
+  "sep": {
+    "kind": "hardware",
+    "label": "Secure Enclave / secure storage pairing",
+    "checks": [
+      "Ask whether the CPU, NAND or secure storage chip was replaced or reworked.",
+      "Mismatched paired parts fail SEP steps on every attempt."
+    ]
+  },
+  "factory_data": {
+    "kind": "hardware",
+    "label": "Factory data (syscfg / FDR)",
+    "checks": [
+      "If the NAND was replaced, confirm the serial number, Wi-Fi MAC and Bluetooth MAC were programmed.",
+      "Run again on a stable internet connection; factory data is fetched from Apple."
+    ]
+  },
+  "usbc_controller": {
+    "kind": "hardware",
+    "label": "USB-C port controller",
+    "checks": [
+      "Try a known-good USB-C port flex and a different USB-C cable.",
+      "Inspect the port controller area for liquid damage."
+    ]
+  },
+  "other": {
+    "kind": "hardware",
+    "label": "Another firmware-updated part",
+    "checks": [
+      "Note the step name in the log and compare with earlier cases in History."
+    ]
+  }
+}

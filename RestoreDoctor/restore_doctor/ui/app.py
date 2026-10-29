@@ -7,16 +7,18 @@ import queue
 import subprocess
 import sys
 import threading
+import time
 import tkinter as tk
+import traceback
 import webbrowser
 from pathlib import Path
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from .. import APP_NAME, __version__, paths
 from ..cases import CaseStore
 from ..diagnose import Verdict, diagnose
 from ..engine import DeviceInfo, run_ready_checks
-from ..firmware import Build, download, local_builds, merge, read_ipsw, signed_builds
+from ..firmware import Build, StaleList, download, local_builds, merge, read_ipsw, signed_builds
 from ..kb import get_kb
 from ..logparse import STAGE_PLAIN, STAGES, RestoreLogParser
 from ..models import dfu_steps, recovery_steps
@@ -39,6 +41,15 @@ def save_settings(d: dict) -> None:
     (paths.data_dir() / SETTINGS).write_text(json.dumps(d, indent=1), encoding="utf-8")
 
 
+def log_exception(where: str) -> None:
+    """Append the current exception to errors.log (the windowed exe has no console)."""
+    try:
+        with open(paths.data_dir() / "errors.log", "a", encoding="utf-8") as f:
+            f.write(f"--- {time.strftime('%Y-%m-%d %H:%M:%S')} {where}\n{traceback.format_exc()}\n")
+    except OSError:
+        pass
+
+
 def open_path(p: Path) -> None:
     try:
         if sys.platform.startswith("win"):
@@ -56,28 +67,59 @@ class ScrollFrame(ttk.Frame):
 
     def __init__(self, master, bg=T.BG):
         super().__init__(master)
-        self.canvas = tk.Canvas(self, bg=bg, highlightthickness=0, bd=0)
+        self.canvas = tk.Canvas(self, bg=bg, highlightthickness=0, bd=0, width=0)
         self.bar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         self.body = tk.Frame(self.canvas, bg=bg)
         self._win = self.canvas.create_window((0, 0), window=self.body, anchor="nw")
         self.canvas.configure(yscrollcommand=self.bar.set)
-        self.canvas.pack(side="left", fill="both", expand=True)
+        # bar first, so a narrow parent squeezes the canvas rather than hiding the bar
         self.bar.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
         self.body.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
-        self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfigure(self._win, width=e.width))
-        self.canvas.bind("<Enter>", lambda e: self._wheel(True))
-        self.canvas.bind("<Leave>", lambda e: self._wheel(False))
+        self._wraps: list[tuple[tk.Label, int]] = []   # labels whose wraplength follows the width
+        self.canvas.bind("<Configure>", self._on_resize)
+        self.bind("<Enter>", lambda e: self._wheel(True))
+        self.bind("<Leave>", lambda e: self._wheel(self._pointer_inside()))
+
+    def _pointer_inside(self) -> bool:
+        """Leave also fires when the pointer moves onto a child widget; only stop when it is really outside."""
+        w = self.winfo_containing(*self.winfo_pointerxy())
+        while w is not None:
+            if w is self:
+                return True
+            w = w.master
+        return False
 
     def _wheel(self, on: bool):
         if on:
-            self.canvas.bind_all("<MouseWheel>", lambda e: self.canvas.yview_scroll(int(-e.delta / 120), "units"))
+            self.canvas.bind_all("<MouseWheel>", self._on_wheel)
             self.canvas.bind_all("<Button-4>", lambda e: self.canvas.yview_scroll(-2, "units"))
             self.canvas.bind_all("<Button-5>", lambda e: self.canvas.yview_scroll(2, "units"))
         else:
             for seq in ("<MouseWheel>", "<Button-4>", "<Button-5>"):
                 self.canvas.unbind_all(seq)
 
+    def _on_resize(self, e):
+        self.canvas.itemconfigure(self._win, width=e.width)
+        for lab, margin in self._wraps:
+            if lab.winfo_exists():
+                lab.configure(wraplength=max(200, e.width - margin))
+
+    def wrap(self, label: tk.Label, margin: int) -> tk.Label:
+        """Keep ``label`` wrapped to the visible width minus ``margin`` pixels."""
+        self._wraps.append((label, margin))
+        label.configure(wraplength=max(200, self.canvas.winfo_width() - margin))
+        return label
+
+    def _on_wheel(self, e):
+        # Text widgets (notes) scroll themselves; don't move the page underneath them.
+        if isinstance(e.widget, tk.Text):
+            return
+        if self.body.winfo_height() > self.canvas.winfo_height():
+            self.canvas.yview_scroll(int(-e.delta / 120) or (-1 if e.delta > 0 else 1), "units")
+
     def clear(self):
+        self._wraps = []
         for w in self.body.winfo_children():
             w.destroy()
         self.canvas.yview_moveto(0)
@@ -104,7 +146,7 @@ class App(tk.Tk):
         if sim:
             from ..sim import SimUsbWatch, scenarios
             self.scenarios = scenarios()
-            self.sim_id = tk.StringVar(value=scenario or self.scenarios[1]["id"])
+            self.sim_id = tk.StringVar(value=scenario or self.scenarios[min(1, len(self.scenarios) - 1)]["id"])
             self.usb = SimUsbWatch(on_change=self._usb_changed)
         else:
             self.scenarios = []
@@ -118,6 +160,7 @@ class App(tk.Tk):
         self._downloading = threading.Event()
         self._cancel_download = False
         self._viewing_case: int | None = None
+        self._signal_counts: dict[str, int] = {}
 
         self._build_menu()
         self._build_layout()
@@ -146,13 +189,18 @@ class App(tk.Tk):
     def _drain(self):
         try:
             for _ in range(400):
-                kind, payload = self.q.get_nowait()
+                try:
+                    kind, payload = self.q.get_nowait()
+                except queue.Empty:
+                    break
                 handler = getattr(self, f"_on_{kind}", None)
                 if handler:
-                    handler(payload)
-        except queue.Empty:
-            pass
-        self.after(80, self._drain)
+                    try:
+                        handler(payload)
+                    except Exception:  # noqa: BLE001 - one bad event must not stop the UI
+                        log_exception(f"handler _on_{kind}")
+        finally:
+            self.after(80, self._drain)
 
     def _startup(self):
         self.usb.start()
@@ -240,7 +288,24 @@ class App(tk.Tk):
         tk.Label(parent, text=title.upper(), bg=T.PANEL, fg=T.FAINT, font=self.fonts.small).pack(
             anchor="w", padx=16, pady=(14, 4))
 
-    def _build_left(self, p):
+    def _build_left(self, panel):
+        # The action buttons are packed first so they keep their space on short screens;
+        # everything else scrolls above them.
+        bottom = tk.Frame(panel, bg=T.PANEL)
+        bottom.pack(side="bottom", fill="x", padx=14, pady=14)
+        self.start_btn = ttk.Button(bottom, text="Start restore", style="Accent.TButton", command=self.start)
+        self.start_btn.pack(fill="x")
+        row2 = tk.Frame(bottom, bg=T.PANEL)
+        row2.pack(fill="x", pady=(8, 0))
+        self.cancel_btn = ttk.Button(row2, text="Stop", style="Danger.TButton", command=self.cancel,
+                                     state="disabled")
+        self.cancel_btn.pack(side="left")
+        ttk.Button(row2, text="New phone", command=self.new_phone).pack(side="right")
+        tk.Frame(panel, bg=T.LINE, height=1).pack(side="bottom", fill="x")
+        self.left_scroll = ScrollFrame(panel, bg=T.PANEL)
+        self.left_scroll.pack(side="top", fill="both", expand=True)
+        p = self.left_scroll.body
+
         self._section(p, "Phone")
         card = tk.Frame(p, bg=T.CARD, highlightthickness=1, highlightbackground=T.LINE)
         card.pack(fill="x", padx=14)
@@ -253,7 +318,8 @@ class App(tk.Tk):
                                  anchor="w")
         self.dev_name.pack(fill="x", padx=12, pady=(6, 0))
         self.dev_meta = tk.Label(card, text="DFU or Recovery mode works best for a restore.", bg=T.CARD,
-                                 fg=T.QUIET, font=self.fonts.small, anchor="w", justify="left", wraplength=self.px(300))
+                                 fg=T.QUIET, font=self.fonts.small, anchor="w", justify="left",
+                                 wraplength=self.px(290))
         self.dev_meta.pack(fill="x", padx=12, pady=(2, 10))
         ttk.Button(card, text="How to enter DFU / Recovery", command=self.show_dfu_helper).pack(
             anchor="w", padx=12, pady=(0, 12))
@@ -274,9 +340,13 @@ class App(tk.Tk):
                                  padding=(4, 5))
         self.dl_btn.grid(row=0, column=2, sticky="ew")
         self.fw_note = tk.Label(p, text="Only builds Apple still signs can be restored.", bg=T.PANEL, fg=T.QUIET,
-                                font=self.fonts.small, anchor="w", justify="left", wraplength=self.px(320))
+                                font=self.fonts.small, anchor="w", justify="left", wraplength=self.px(300))
         self.fw_note.pack(fill="x", padx=16, pady=(6, 0))
-        self.dl_bar = ttk.Progressbar(p, mode="determinate", maximum=1.0)
+        self.dl_row = tk.Frame(p, bg=T.PANEL)
+        self.dl_bar = ttk.Progressbar(self.dl_row, mode="determinate", maximum=1.0)
+        self.dl_bar.pack(side="left", fill="x", expand=True)
+        ttk.Button(self.dl_row, text="Cancel", command=self.cancel_download, padding=(6, 2)).pack(
+            side="right", padx=(6, 0))
 
         self._section(p, "Restore mode")
         self.erase_var = tk.BooleanVar(value=False)
@@ -307,17 +377,12 @@ class App(tk.Tk):
                           values=[r["label"] for r in self.kb.dc_readings])
         dc.pack(side="left", padx=(6, 0), fill="x", expand=True)
         dc.bind("<<ComboboxSelected>>", lambda e: self._context_changed())
-
-        bottom = tk.Frame(p, bg=T.PANEL)
-        bottom.pack(side="bottom", fill="x", padx=14, pady=14)
-        self.start_btn = ttk.Button(bottom, text="Start restore", style="Accent.TButton", command=self.start)
-        self.start_btn.pack(fill="x")
-        row2 = tk.Frame(bottom, bg=T.PANEL)
-        row2.pack(fill="x", pady=(8, 0))
-        self.cancel_btn = ttk.Button(row2, text="Stop", style="Danger.TButton", command=self.cancel,
-                                     state="disabled")
-        self.cancel_btn.pack(side="left")
-        ttk.Button(row2, text="New phone", command=self.new_phone).pack(side="right")
+        tk.Label(p, text="Notes", bg=T.PANEL, fg=T.QUIET, font=self.fonts.small).pack(anchor="w", padx=16,
+                                                                                    pady=(8, 2))
+        self.notes_text = tk.Text(p, height=3, bg=T.CARD, fg=T.INK, insertbackground=T.INK, relief="flat",
+                                  wrap="word", highlightthickness=1, highlightbackground=T.LINE, padx=6, pady=4)
+        self.notes_text.pack(fill="x", padx=14, pady=(0, 12))
+        self.notes_text.bind("<FocusOut>", lambda e: self._notes_changed())
 
     # ------------------------------------------------------------ restore
     def _build_restore_tab(self, p):
@@ -367,7 +432,7 @@ class App(tk.Tk):
         self.signals.tag_configure("quiet", foreground=T.QUIET)
         tk.Label(right, text="USB MODE TIMELINE", bg=T.BG, fg=T.FAINT, font=self.fonts.small).pack(anchor="w")
         self.usb_strip = tk.Label(right, text="-", bg=T.CARD, fg=T.INK, anchor="w", justify="left",
-                                  wraplength=600, padx=10, pady=8)
+                                  wraplength=self.px(600), padx=10, pady=8)
         self.usb_strip.pack(fill="x", pady=(4, 10))
         lh = tk.Frame(right, bg=T.BG)
         lh.pack(fill="x")
@@ -375,6 +440,8 @@ class App(tk.Tk):
         self.show_log = tk.BooleanVar(value=True)
         ttk.Checkbutton(lh, text="Show", variable=self.show_log, command=self._toggle_log,
                         style="TCheckbutton").pack(side="right")
+        ttk.Button(lh, text="Save...", command=self.save_log, padding=(8, 2)).pack(side="right", padx=(0, 8))
+        ttk.Button(lh, text="Copy", command=self.copy_log, padding=(8, 2)).pack(side="right", padx=(0, 6))
         self.log_frame = tk.Frame(right, bg=T.BG)
         self.log_frame.pack(fill="both", expand=True, pady=(4, 0))
         self.log = tk.Text(self.log_frame, bg=T.MONO_BG, fg="#c9d1dc", relief="flat", wrap="none",
@@ -385,12 +452,43 @@ class App(tk.Tk):
         sb.pack(side="right", fill="y")
         self.log.tag_configure("err", foreground="#ff8f8f")
         self.log.tag_configure("dbg", foreground="#6f7a8c")
+        # Read-only for typing, but Ctrl+C / Ctrl+A and the arrow keys still work.
+        self.log.bind("<Key>", lambda e: None if (e.state & 0x4 and e.keysym.lower() in ("c", "a", "slash"))
+                      or e.keysym in ("Up", "Down", "Left", "Right", "Prior", "Next", "Home", "End") else "break")
 
     def _toggle_log(self):
         if self.show_log.get():
             self.log_frame.pack(fill="both", expand=True, pady=(4, 0))
         else:
             self.log_frame.pack_forget()
+
+    def _full_log_text(self) -> str:
+        """The whole engine log of the latest attempt (the pane only keeps the last few thousand lines)."""
+        if self.session.attempts and self.session.attempts[-1].job is not None:
+            try:
+                return Path(self.session.attempts[-1].job.raw_log).read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                pass
+        return self.log.get("1.0", "end-1c")
+
+    def copy_log(self):
+        text = self.log.get("sel.first", "sel.last") if self.log.tag_ranges("sel") else self._full_log_text()
+        if not text.strip():
+            return
+        self.clipboard_clear()
+        self.clipboard_append(text)
+        self.now_sub.configure(text="Engine log copied to the clipboard.")
+
+    def save_log(self):
+        text = self._full_log_text()
+        if not text.strip():
+            messagebox.showinfo(APP_NAME, "There is no engine log yet.")
+            return
+        f = filedialog.asksaveasfilename(title="Save the engine log", defaultextension=".log",
+                                         initialfile=f"restore-case{self.session.case_id or ''}.log",
+                                         filetypes=[("Log", "*.log"), ("Text", "*.txt")])
+        if f:
+            Path(f).write_text(text, encoding="utf-8")
 
     # ------------------------------------------------------------ verdict
     def _build_verdict_tab(self, p):
@@ -408,6 +506,7 @@ class App(tk.Tk):
         e.pack(side="left", padx=6)
         e.bind("<Return>", lambda ev: self.refresh_history())
         ttk.Button(bar, text="Search", command=self.refresh_history).pack(side="left")
+        ttk.Button(bar, text="Delete", command=self.history_delete).pack(side="right", padx=(6, 0))
         ttk.Button(bar, text="Open report", command=self.history_open_report).pack(side="right")
         ttk.Button(bar, text="Open folder", command=self.history_open_folder).pack(side="right", padx=6)
         ttk.Button(bar, text="Record fix", command=self.history_record_fix).pack(side="right")
@@ -419,9 +518,10 @@ class App(tk.Tk):
         for c, w, label in (("date", 130, "Date"), ("model", 120, "Phone"), ("stop", 170, "Stopped at"),
                             ("verdict", 330, "Verdict"), ("fix", 150, "Confirmed fix"), ("n", 50, "Runs")):
             self.hist.heading(c, text=label)
-            self.hist.column(c, width=w, minwidth=40, anchor="w", stretch=(c == "verdict"))
+            self.hist.column(c, width=self.px(w), minwidth=self.px(40), anchor="w", stretch=(c == "verdict"))
         self.hist.pack(fill="both", expand=True, padx=8, pady=(0, 8))
         self.hist.bind("<Double-1>", lambda e: self.history_show())
+        self.hist.bind("<Delete>", lambda e: self.history_delete())
 
     # ------------------------------------------------------------- lookup
     def _build_lookup_tab(self, p):
@@ -430,7 +530,7 @@ class App(tk.Tk):
         tk.Label(wrap, text="Apple error code", bg=T.BG, fg=T.INK, font=self.fonts.h2).pack(anchor="w")
         tk.Label(wrap, text="For restores run in Apple Devices, iTunes, Finder or another tool. A restore run "
                             "here says much more: it shows the step it died on.", bg=T.BG, fg=T.QUIET,
-                 wraplength=760, justify="left").pack(anchor="w", pady=(2, 8))
+                 wraplength=self.px(760), justify="left").pack(anchor="w", pady=(2, 8))
         row = tk.Frame(wrap, bg=T.BG)
         row.pack(anchor="w")
         self.code_var = tk.StringVar()
@@ -457,7 +557,7 @@ class App(tk.Tk):
                 CheckResult("hosts", "Hosts file", True, "Simulation"),
                 CheckResult("disk", "Free disk space", True, "Simulation")]}))
             return
-        self._bg(run_ready_checks, "checks")
+        self._bg(run_ready_checks, "checks", self.ipsw_folder())
 
     def _on_checks(self, payload):
         for w in self.chips.winfo_children():
@@ -519,7 +619,11 @@ class App(tk.Tk):
 
     def _on_usb(self, payload):
         mode = payload["mode"]
-        self.usb_label.configure(text=f"USB: {mode}", fg=T.MODE_COLOR.get(mode, T.QUIET))
+        count = getattr(self.usb, "phone_count", 0)
+        if count > 1:
+            self.usb_label.configure(text=f"USB: {count} phones connected - unplug the others", fg=T.BAD)
+        else:
+            self.usb_label.configure(text=f"USB: {mode}", fg=T.MODE_COLOR.get(mode, T.QUIET))
         self._update_dfu_status(mode)
         if self.session.running:
             self._refresh_usb_strip()
@@ -552,17 +656,17 @@ class App(tk.Tk):
         tk.Label(w, text=f"DFU mode on {name}", bg=T.PANEL, fg=T.INK, font=self.fonts.h2).pack(
             anchor="w", padx=18, pady=(16, 6))
         for i, step in enumerate(dfu_steps(model), 1):
-            tk.Label(w, text=f"{i}. {step}", bg=T.PANEL, fg=T.INK, wraplength=460, justify="left").pack(
-                anchor="w", padx=22, pady=1)
+            tk.Label(w, text=f"{i}. {step}", bg=T.PANEL, fg=T.INK, wraplength=self.px(460),
+                     justify="left").pack(anchor="w", padx=22, pady=1)
         tk.Label(w, text="Recovery mode instead", bg=T.PANEL, fg=T.QUIET, font=self.fonts.h3).pack(
             anchor="w", padx=18, pady=(14, 4))
         for i, step in enumerate(recovery_steps(model), 1):
-            tk.Label(w, text=f"{i}. {step}", bg=T.PANEL, fg=T.QUIET, wraplength=460, justify="left").pack(
-                anchor="w", padx=22, pady=1)
+            tk.Label(w, text=f"{i}. {step}", bg=T.PANEL, fg=T.QUIET, wraplength=self.px(460),
+                     justify="left").pack(anchor="w", padx=22, pady=1)
         tk.Label(w, text="If no model is detected yet, the steps for iPhone 8 and later are shown.",
                  bg=T.PANEL, fg=T.FAINT, font=self.fonts.small).pack(anchor="w", padx=18, pady=(10, 0))
         self._dfu_status = tk.Label(w, text="", bg=T.CARD, fg=T.INK, font=self.fonts.h3, padx=12, pady=10,
-                                    anchor="w", justify="left", wraplength=460)
+                                    anchor="w", justify="left", wraplength=self.px(460))
         self._dfu_status.pack(fill="x", padx=18, pady=(12, 16))
         self._update_dfu_status(self.usb.current or self.session.device.mode)
 
@@ -587,6 +691,7 @@ class App(tk.Tk):
             self.settings["ipsw_folder"] = d
             save_settings(self.settings)
             self.load_builds()
+            self.run_checks()  # the disk check covers the IPSW folder's drive
 
     def load_builds(self):
         product = self.session.device.product or ("iPhone14,5" if self.sim else None)
@@ -604,6 +709,8 @@ class App(tk.Tk):
                              local), None
             try:
                 return merge(signed_builds(product), local), None
+            except StaleList as stale:
+                return merge(stale.builds, local), str(stale)
             except Exception as exc:  # noqa: BLE001
                 return local, f"Could not reach api.ipsw.me ({exc}); showing local files only."
         self._bg(work, "builds")
@@ -643,7 +750,8 @@ class App(tk.Tk):
         if not b:
             self.dl_btn.configure(state="disabled")
             return
-        self.dl_btn.configure(state="normal" if (b.url and not b.path) else "disabled")
+        can_dl = b.url and not b.path and not self._downloading.is_set()
+        self.dl_btn.configure(state="normal" if can_dl else "disabled")
         if b.path:
             self.fw_note.configure(text=f"Using {b.path.name}" + ("" if b.signed else
                                    "  (not in Apple's signed list: the restore will fail at signing)"))
@@ -678,8 +786,9 @@ class App(tk.Tk):
             return
         self._downloading.set()
         self._cancel_download = False
-        self.dl_bar.pack(fill="x", padx=16, pady=(6, 0))
+        self.dl_row.pack(fill="x", padx=16, pady=(6, 0), after=self.fw_note)
         self.dl_bar["value"] = 0
+        self.dl_btn.configure(state="disabled")
         folder = self.ipsw_folder()
 
         def work():
@@ -692,11 +801,20 @@ class App(tk.Tk):
         self.dl_bar["value"] = p["f"]
         self.fw_note.configure(text=f"Downloading... {p['msg']}")
 
+    def cancel_download(self):
+        if self._downloading.is_set():
+            self._cancel_download = True
+            self.fw_note.configure(text="Cancelling the download...")
+
     def _on_dl_done(self, payload):
         self._downloading.clear()
-        self.dl_bar.pack_forget()
+        self.dl_row.pack_forget()
         if "error" in payload:
-            self.fw_note.configure(text=f"Download failed: {payload['error']}")
+            self._fw_selected()
+            if self._cancel_download:
+                self.fw_note.configure(text="Download cancelled. Press Download to resume where it stopped.")
+            else:
+                self.fw_note.configure(text=f"Download failed: {payload['error']}")
             return
         b, path, then_start = payload["result"]
         b.path = path
@@ -718,10 +836,22 @@ class App(tk.Tk):
         if s.attempts and not s.running and s.verdict is not None:
             self._render_verdict(s.rediagnose())
 
+    def _notes_changed(self):
+        s = self.session
+        s.notes = self.notes_text.get("1.0", "end").strip()
+        s.ticket = self.ticket_var.get().strip()
+        if s.case_id is not None:
+            s.store.set_context(s.case_id, s.ticket, s.notes, s.context, s.dc_reading)
+
     def start(self):
         s = self.session
         if s.running:
             return
+        if getattr(self.usb, "phone_count", 0) > 1 and not self.sim:
+            if not messagebox.askyesno(APP_NAME, f"{self.usb.phone_count} Apple phones are on USB. The restore "
+                                                 "and the USB watch may pick different phones.\n\nUnplug the "
+                                                 "others first. Start anyway?", icon="warning"):
+                return
         if not s.device.connected and not self.sim:
             if not messagebox.askyesno(APP_NAME, "No phone is detected. Start anyway? (The engine waits a few "
                                                  "seconds for one to appear.)"):
@@ -741,6 +871,10 @@ class App(tk.Tk):
                 APP_NAME, "ERASE restore: every photo, message and app on this phone will be deleted for good."
                           "\n\nContinue only if the customer has agreed or has a backup.", icon="warning"):
             return
+        if erase:
+            typed = simpledialog.askstring(APP_NAME, "Type ERASE to confirm wiping this phone:", parent=self)
+            if (typed or "").strip().upper() != "ERASE":
+                return
         if not erase and s.device.ios and b.version and self._newer(s.device.ios, b.version):
             if not messagebox.askyesno(APP_NAME, f"The phone runs iOS {s.device.ios}, newer than {b.version}. "
                                                  "An Update cannot downgrade and may fail or lose data.\n\n"
@@ -753,6 +887,7 @@ class App(tk.Tk):
                                                  "probably fail for that reason, not the phone's.\n\nStart anyway?"):
                 return
         s.ticket = self.ticket_var.get().strip()
+        s.notes = self.notes_text.get("1.0", "end").strip()
         self._context_changed()
         try:
             s.start_attempt(b.path, erase)
@@ -762,7 +897,8 @@ class App(tk.Tk):
     @staticmethod
     def _newer(a: str, b: str) -> bool:
         def key(v):
-            return [int(x) if x.isdigit() else 0 for x in v.split(".")]
+            parts = [int(x) if x.isdigit() else 0 for x in v.split(".")]
+            return parts + [0] * (4 - len(parts))  # "17" and "17.0" are the same version
         return key(a) > key(b)
 
     def cancel(self):
@@ -780,6 +916,7 @@ class App(tk.Tk):
             v.set(False)
         self.dc_var.set(self.kb.dc_readings[0]["label"])
         self.ticket_var.set("")
+        self.notes_text.delete("1.0", "end")
         self.erase_var.set(False)
         self._reset_tracker()
         self.now_label.configure(text="Ready")
@@ -795,6 +932,7 @@ class App(tk.Tk):
             detail.configure(text="", fg=T.FAINT)
         self.step_bar["value"] = 0
         self.signals.delete("1.0", "end")
+        self._signal_counts = {}
         self.log.delete("1.0", "end")
         self.usb_strip.configure(text="-")
 
@@ -855,7 +993,16 @@ class App(tk.Tk):
                 self._refresh_usb_strip()
             elif k == "signature":
                 tag = {"hardware": "hw", "setup": "setup", "firmware": "setup"}.get(d["sig_kind"], "quiet")
-                self.signals.insert("end", f"• {d['title']}\n", tag)
+                # one line per signal; repeats bump a counter instead of filling the box
+                n = self._signal_counts.get(d["title"], 0) + 1
+                self._signal_counts[d["title"]] = n
+                if n == 1:
+                    self.signals.insert("end", f"• {d['title']}\n", tag)
+                else:
+                    line = self.signals.search(f"• {d['title']}", "1.0", stopindex="end")
+                    if line:
+                        self.signals.delete(line, f"{line} lineend")
+                        self.signals.insert(line, f"• {d['title']}  ×{n}", tag)
                 self.signals.see("end")
             elif k == "device":
                 if d.get("product") and not self.session.device.product:
@@ -880,10 +1027,22 @@ class App(tk.Tk):
     def _on_settling(self, p):
         self.now_sub.configure(text=f"Watching where the phone goes next (up to {int(p['seconds'])} s)...")
 
+    def _on_attempt_aborted(self, p):
+        self._set_controls(False)
+        self.now_label.configure(text="The engine did not start")
+        self.now_sub.configure(text=p.get("error") or "")
+
     def _on_attempt_finished(self, p):
         s = p["summary"]
-        v: Verdict = p["verdict"]
+        v: Verdict | None = p["verdict"]
         self._set_controls(False)
+        if p.get("error") or v is None:
+            self._mark_stage(s.stop_stage or s.stage, failed=s.outcome != "success")
+            self.now_label.configure(text="Restore ended")
+            self.now_sub.configure(text=f"Could not build the verdict: {p.get('error') or 'unknown error'}. "
+                                        "The raw log is kept in the case folder.")
+            self.refresh_history()
+            return
         if s.outcome == "success":
             self._mark_stage("finish", all_done=True)
             self.now_label.configure(text="Restore finished")
@@ -949,12 +1108,17 @@ class App(tk.Tk):
             self._vsection(b, "Next checks")
             box = tk.Frame(b, bg=T.CARD)
             box.pack(fill="x", padx=14)
+            # Ticks are saved with the case, so re-rendering (a context change, reopening it) keeps them.
+            check_case = case_row["id"] if case_row is not None else (self.session.case_id if live else None)
+            done = self._checks_done(check_case)
             for i, c in enumerate(v.next_checks, 1):
-                var = tk.BooleanVar(value=False)
+                var = tk.BooleanVar(value=c in done)
                 r = tk.Frame(box, bg=T.CARD)
                 r.pack(fill="x", padx=10, pady=3)
                 tk.Checkbutton(r, variable=var, bg=T.CARD, activebackground=T.CARD, selectcolor=T.PANEL,
-                               highlightthickness=0, bd=0).pack(side="left", anchor="n")
+                               highlightthickness=0, bd=0, state="normal" if check_case else "disabled",
+                               command=lambda c=c, var=var: self._tick_check(check_case, c, var.get())
+                               ).pack(side="left", anchor="n")
                 tk.Label(r, text=f"{i}. {c}", bg=T.CARD, fg=T.INK, wraplength=800, justify="left",
                          anchor="w").pack(side="left", fill="x")
 
@@ -1025,6 +1189,35 @@ class App(tk.Tk):
         where.append("Restore OS came up: " + ("yes" if stop.get("restore_os_up") else "no"))
         tk.Label(b, text="\n".join(where), bg=T.BG, fg=T.QUIET, justify="left", anchor="w").pack(
             fill="x", padx=18, pady=(0, 18))
+        self._fit_wraps(sf)
+
+    def _fit_wraps(self, sf: ScrollFrame) -> None:
+        """The labels above are laid out for a 900 px page; make their wrap width follow the real
+        width instead, so text fills a wide window and still fits at high DPI."""
+        def walk(w):
+            for child in w.winfo_children():
+                if isinstance(child, tk.Label):
+                    wl = int(float(str(child.cget("wraplength")) or 0))
+                    if wl:
+                        sf.wrap(child, self.px(900 - wl))
+                walk(child)
+        walk(sf.body)
+
+    def _checks_done(self, case_id: int | None) -> set:
+        if case_id is None:
+            return set()
+        row = self.store.get(case_id)
+        try:
+            return set(json.loads(row["checks_done"] or "[]")) if row else set()
+        except ValueError:
+            return set()
+
+    def _tick_check(self, case_id: int | None, check: str, on: bool) -> None:
+        if case_id is None:
+            return
+        done = self._checks_done(case_id)
+        (done.add if on else done.discard)(check)
+        self.store.set_checks_done(case_id, sorted(done))
 
     def _vsection(self, parent, title):
         tk.Label(parent, text=title.upper(), bg=T.BG, fg=T.FAINT, font=self.fonts.small).pack(
@@ -1114,9 +1307,11 @@ class App(tk.Tk):
         from ..diagnose import observe_usb
         from ..models import find_by_product
         ctx = set(json.loads(row["context"] or "[]"))
+        # the same ready-check result the live verdict used, so the two agree
+        preflight = json.loads(row["preflight"] or "{}") if "preflight" in row.keys() else {}
         v = diagnose(attempts, find_by_product(row["product"]) if row["product"] else None,
                      usb=[observe_usb(u, a) if u is not None else None for a, u in zip(attempts, usb)],
-                     context=ctx, dc_reading=row["dc_reading"])
+                     context=ctx, dc_reading=row["dc_reading"], preflight=preflight)
         sim = [dict(r) for r in self.store.similar(row["product"], v.stop.get("stage"), v.stop.get("step"),
                                                     exclude=cid)]
         self._viewing_case = cid
@@ -1137,6 +1332,26 @@ class App(tk.Tk):
             open_path(path)
         else:
             messagebox.showinfo(APP_NAME, "No report for this case.")
+
+    def history_delete(self):
+        cid = self._hist_selected()
+        if cid is None:
+            return
+        if cid == self.session.case_id and self.session.running:
+            messagebox.showinfo(APP_NAME, "This case has a restore running. Stop it first.")
+            return
+        row = self.store.get(cid)
+        name = row["model_name"] or row["product"] or "unknown phone"
+        if not messagebox.askyesno(APP_NAME, f"Delete case {cid} ({name}, {row['created']})?\n\nIts logs and "
+                                             "report are deleted too. This can't be undone.", icon="warning"):
+            return
+        self.store.delete(cid)
+        if cid == self.session.case_id:
+            self.new_phone()
+        elif self._viewing_case == cid:
+            self._viewing_case = None
+            self._render_verdict(None)
+        self.refresh_history()
 
     def history_record_fix(self):
         cid = self._hist_selected()

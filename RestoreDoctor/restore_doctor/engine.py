@@ -152,17 +152,21 @@ def check_hosts() -> CheckResult:
     return CheckResult("hosts", label, True, "No gs.apple.com redirect")
 
 
-def check_disk() -> CheckResult:
+def check_disk(ipsw_folder: Path | None = None) -> CheckResult:
+    """The engine unpacks into the app data folder; IPSWs land in the IPSW folder,
+    which may be on another drive. Report the tighter of the two."""
     label = "Free disk space"
-    free = shutil.disk_usage(paths.data_dir()).free / 1e9
+    places = [paths.data_dir()] + ([ipsw_folder] if ipsw_folder and ipsw_folder.exists() else [])
+    free, where = min((shutil.disk_usage(p).free / 1e9, p) for p in places)
     if free < 20:
-        return CheckResult("disk", label, False, f"{free:.0f} GB free",
+        return CheckResult("disk", label, False, f"{free:.0f} GB free on {where.anchor or where}",
                            "Restores need about 20 GB free for the IPSW and its extracted files.")
     return CheckResult("disk", label, True, f"{free:.0f} GB free")
 
 
-def run_ready_checks() -> list[CheckResult]:
-    return [check_engine(), check_amds(), check_driver(), check_signing(), check_hosts(), check_disk()]
+def run_ready_checks(ipsw_folder: Path | None = None) -> list[CheckResult]:
+    return [check_engine(), check_amds(), check_driver(), check_signing(), check_hosts(),
+            check_disk(ipsw_folder)]
 
 
 # --------------------------------------------------------------- device probe

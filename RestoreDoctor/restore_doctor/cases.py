@@ -7,8 +7,11 @@ rules improve.
 """
 from __future__ import annotations
 
+import functools
 import json
+import shutil
 import sqlite3
+import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,6 +48,15 @@ def _now() -> str:
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
+def _locked(fn):
+    """The UI thread and the attempt-finishing worker share one connection."""
+    @functools.wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        with self._lock:
+            return fn(self, *args, **kwargs)
+    return wrapper
+
+
 @dataclass
 class CaseRow:
     id: int
@@ -70,10 +82,17 @@ class CaseStore:
         self.db_path = db_path or (paths.data_dir() / "cases.db")
         self.db = sqlite3.connect(str(self.db_path), check_same_thread=False)
         self.db.row_factory = sqlite3.Row
+        self._lock = threading.RLock()
         self.db.executescript(SCHEMA)
+        # Columns added after 0.1: older databases get them here.
+        have = {r["name"] for r in self.db.execute("PRAGMA table_info(cases)")}
+        for col in ("preflight", "checks_done"):
+            if col not in have:
+                self.db.execute(f"ALTER TABLE cases ADD COLUMN {col} TEXT")
         self.db.commit()
 
     # -------------------------------------------------------------- writes
+    @_locked
     def new_case(self, product: str | None, model_name: str | None, ecid: int | None,
                  serial: str | None = None, ticket: str = "", notes: str = "",
                  context: set | None = None, dc_reading: str | None = None) -> tuple[int, Path]:
@@ -88,11 +107,13 @@ class CaseStore:
         self.db.commit()
         return cur.lastrowid, folder
 
+    @_locked
     def attempt_dir(self, case_id: int, n: int) -> Path:
         folder = Path(self.get(case_id)["folder"]) / f"attempt-{n}"
         folder.mkdir(parents=True, exist_ok=True)
         return folder
 
+    @_locked
     def add_attempt(self, case_id: int, n: int, a: AttemptSummary, restore_mode: str, ipsw: str,
                     exit_code: int | None, log_path: Path, usb: list | None) -> None:
         self.db.execute(
@@ -104,6 +125,7 @@ class CaseStore:
              str(log_path), json.dumps(usb) if usb is not None else None))
         self.db.commit()
 
+    @_locked
     def set_verdict(self, case_id: int, verdict, last: AttemptSummary | None) -> None:
         top = verdict.suspects[0].part if verdict.suspects else None
         self.db.execute(
@@ -114,6 +136,7 @@ class CaseStore:
              last.outcome if last else None, json.dumps(verdict.as_dict()), case_id))
         self.db.commit()
 
+    @_locked
     def update_device(self, case_id: int, product: str | None, model_name: str | None,
                       ecid: int | None, serial: str | None) -> None:
         row = self.get(case_id)
@@ -122,28 +145,51 @@ class CaseStore:
                          hex(ecid) if ecid else row["ecid"], serial or row["serial"], case_id))
         self.db.commit()
 
+    @_locked
     def set_context(self, case_id: int, ticket: str, notes: str, context: set, dc_reading: str | None):
         self.db.execute("UPDATE cases SET ticket=?, notes=?, context=?, dc_reading=? WHERE id=?",
                         (ticket, notes, json.dumps(sorted(context)), dc_reading, case_id))
         self.db.commit()
 
+    @_locked
+    def set_preflight(self, case_id: int, preflight: dict) -> None:
+        """The ready check the case ran under, so re-diagnosing it later weighs it the same way."""
+        self.db.execute("UPDATE cases SET preflight=? WHERE id=?", (json.dumps(preflight), case_id))
+        self.db.commit()
+
+    @_locked
+    def set_checks_done(self, case_id: int, done: list[str]) -> None:
+        self.db.execute("UPDATE cases SET checks_done=? WHERE id=?", (json.dumps(done), case_id))
+        self.db.commit()
+
+    @_locked
     def record_fix(self, case_id: int, part: str, notes: str) -> None:
         self.db.execute("UPDATE cases SET fix_part=?, fix_notes=?, updated=? WHERE id=?",
                         (part, notes, _now(), case_id))
         self.db.commit()
 
-    def delete(self, case_id: int) -> None:
+    @_locked
+    def delete(self, case_id: int, remove_folder: bool = True) -> None:
+        row = self.get(case_id)
         self.db.execute("DELETE FROM attempts WHERE case_id=?", (case_id,))
         self.db.execute("DELETE FROM cases WHERE id=?", (case_id,))
         self.db.commit()
+        if remove_folder and row is not None and row["folder"]:
+            folder = Path(row["folder"])
+            # only ever remove a folder inside our own cases directory
+            if folder.is_dir() and paths.cases_dir().resolve() in folder.resolve().parents:
+                shutil.rmtree(folder, ignore_errors=True)
 
     # --------------------------------------------------------------- reads
+    @_locked
     def get(self, case_id: int) -> sqlite3.Row:
         return self.db.execute("SELECT * FROM cases WHERE id=?", (case_id,)).fetchone()
 
+    @_locked
     def attempts(self, case_id: int) -> list[sqlite3.Row]:
         return self.db.execute("SELECT * FROM attempts WHERE case_id=? ORDER BY n", (case_id,)).fetchall()
 
+    @_locked
     def list(self, search: str = "", limit: int = 300) -> list[CaseRow]:
         q = ("SELECT c.*, (SELECT COUNT(*) FROM attempts a WHERE a.case_id=c.id) AS n_att FROM cases c")
         args: list = []
@@ -162,6 +208,7 @@ class CaseStore:
                                r["n_att"]))
         return out
 
+    @_locked
     def similar(self, product: str | None, stop_stage: str | None, stop_step: str | None,
                 exclude: int | None = None, limit: int = 5) -> list[sqlite3.Row]:
         """Earlier cases of the same model that stopped at the same point and have a recorded fix."""
@@ -173,6 +220,7 @@ class CaseStore:
             (product, stop_stage, stop_step, exclude or -1, limit)).fetchall()
         return rows
 
+    @_locked
     def fix_stats(self, product: str | None, stop_stage: str | None, stop_step: str | None) -> dict:
         """How often each confirmed fix resolved this model + stop point."""
         if not product or not stop_stage:

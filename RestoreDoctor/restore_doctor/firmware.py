@@ -5,6 +5,7 @@ import hashlib
 import json
 import plistlib
 import time
+import urllib.error
 import urllib.request
 import zipfile
 from dataclasses import dataclass
@@ -41,15 +42,40 @@ def signed_builds(product: str, max_age: float = 3600) -> list[Build]:
     cache = paths.data_dir() / f"signed-{product}.json"
     data = None
     if cache.exists() and time.time() - cache.stat().st_mtime < max_age:
-        try:
-            data = json.loads(cache.read_text(encoding="utf-8"))
-        except ValueError:
-            data = None
+        data = _read_cache(cache)
     if data is None:
         req = urllib.request.Request(API.format(product=product), headers={"User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=15) as r:
-            data = json.loads(r.read().decode("utf-8"))
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                data = json.loads(r.read().decode("utf-8"))
+        except (OSError, ValueError) as exc:
+            # Offline: an older list beats none, but say how old it is.
+            data = _read_cache(cache) if cache.exists() else None
+            if data is None:
+                raise
+            age_h = (time.time() - cache.stat().st_mtime) / 3600
+            raise StaleList(_builds_from(product, data), f"Could not reach api.ipsw.me ({exc}); showing the "
+                            f"signed list from {age_h:.0f} h ago. Apple may have stopped signing since.") from exc
         cache.write_text(json.dumps(data), encoding="utf-8")
+    return _builds_from(product, data)
+
+
+class StaleList(Exception):
+    """signed_builds() fell back to an out-of-date cached list; ``builds`` holds it."""
+
+    def __init__(self, builds: list[Build], note: str):
+        super().__init__(note)
+        self.builds = builds
+
+
+def _read_cache(cache: Path) -> dict | None:
+    try:
+        return json.loads(cache.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def _builds_from(product: str, data: dict) -> list[Build]:
     out = []
     for fw in data.get("firmwares", []):
         if fw.get("signed"):
@@ -58,8 +84,23 @@ def signed_builds(product: str, max_age: float = 3600) -> list[Build]:
     return out
 
 
+_ipsw_cache: dict[tuple[str, int, int], dict | None] = {}
+
+
 def read_ipsw(path: Path) -> dict | None:
-    """Product types and version from an IPSW's BuildManifest.plist."""
+    """Product types and version from an IPSW's BuildManifest.plist.
+    Cached by path, size and mtime: the folder is rescanned on every USB change."""
+    try:
+        st = path.stat()
+    except OSError:
+        return None
+    key = (str(path), st.st_size, st.st_mtime_ns)
+    if key not in _ipsw_cache:
+        _ipsw_cache[key] = _read_ipsw(path)
+    return _ipsw_cache[key]
+
+
+def _read_ipsw(path: Path) -> dict | None:
     try:
         with zipfile.ZipFile(path) as z:
             with z.open("BuildManifest.plist") as f:
@@ -125,8 +166,33 @@ def download(build: Build, folder: Path, progress: Callable[[float, str], None],
     if final.exists() and (not build.size or final.stat().st_size == build.size):
         return final
     have = part.stat().st_size if part.exists() else 0
+    if build.size and have > build.size:
+        part.unlink()  # longer than the real file: can't be resumed
+        have = 0
+    # A .part that is already complete (the app closed while checking it) only needs checking;
+    # asking the server for the bytes after the end would get HTTP 416.
+    if not (build.size and have == build.size):
+        _fetch(build, part, have, progress, cancelled)
+    if build.sha1:
+        progress(1.0, "Checking the download...")
+        digest = sha1_of(part)
+        if digest.lower() != build.sha1.lower():
+            part.unlink(missing_ok=True)
+            raise ValueError("The download is damaged (checksum mismatch). Try again.")
+    part.replace(final)
+    return final
+
+
+def _fetch(build: Build, part: Path, have: int, progress: Callable[[float, str], None],
+           cancelled: Callable[[], bool]) -> None:
     req = urllib.request.Request(build.url, headers={"User-Agent": UA, **({"Range": f"bytes={have}-"} if have else {})})
-    with urllib.request.urlopen(req, timeout=30) as r:
+    try:
+        r = urllib.request.urlopen(req, timeout=30)
+    except urllib.error.HTTPError as e:
+        if e.code == 416 and have:
+            return  # nothing left to fetch; the checksum decides whether the file is good
+        raise
+    with r:
         if have and r.status != 206:
             have = 0  # server ignored the range; start over
         total = (build.size or (have + int(r.headers.get("Content-Length", 0)))) or 1
@@ -145,11 +211,3 @@ def download(build: Build, folder: Path, progress: Callable[[float, str], None],
                 if now - last > 0.25:
                     progress(done / total, f"{done / 1e9:.2f} of {total / 1e9:.2f} GB")
                     last = now
-    if build.sha1:
-        progress(1.0, "Checking the download...")
-        digest = sha1_of(part)
-        if digest.lower() != build.sha1.lower():
-            part.unlink(missing_ok=True)
-            raise ValueError("The download is damaged (checksum mismatch). Try again.")
-    part.replace(final)
-    return final

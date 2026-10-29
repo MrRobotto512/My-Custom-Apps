@@ -94,7 +94,9 @@ def apply(root: tk.Tk, fonts: Fonts) -> None:
     s.map("TNotebook.Tab", background=[("selected", BG)], foreground=[("selected", INK)])
     s.configure("Horizontal.TProgressbar", background=ACCENT, troughcolor=CARD, bordercolor=CARD,
                 lightcolor=ACCENT, darkcolor=ACCENT, thickness=10)
-    s.configure("Treeview", background=CARD, fieldbackground=CARD, foreground=INK, rowheight=26,
+    # Row height from the font, not fixed pixels, so rows don't clip at 150%+ display scaling.
+    s.configure("Treeview", background=CARD, fieldbackground=CARD, foreground=INK,
+                rowheight=fonts.base.metrics("linespace") + 10,
                 bordercolor=LINE)
     s.configure("Treeview.Heading", background=PANEL, foreground=QUIET, relief="flat", font=fonts.bold)
     s.map("Treeview", background=[("selected", "#2b4a7d")])

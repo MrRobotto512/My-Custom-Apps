@@ -52,17 +52,22 @@ while ($true) {
 _PID_RE = re.compile(r"VID_05AC&PID_([0-9A-Fa-f]{4})(?!&MI_)", re.I)
 
 
-def modes_from_ids(ids: list[str]) -> list[str]:
-    modes = []
+def phone_modes(ids: list[str]) -> list[str]:
+    """One mode per phone on the bus (duplicates kept, so two phones in DFU count twice)."""
+    out = []
     for dev in ids:
         if "&MI_" in dev.upper():
             continue  # interfaces of a composite device; the parent carries the mode
         m = _PID_RE.search(dev)
         if m:
             mode = pid_mode(int(m.group(1), 16))
-            if mode and mode not in modes:
-                modes.append(mode)
-    return modes
+            if mode:
+                out.append(mode)
+    return out
+
+
+def modes_from_ids(ids: list[str]) -> list[str]:
+    return list(dict.fromkeys(phone_modes(ids)))
 
 
 class UsbWatch:
@@ -79,6 +84,7 @@ class UsbWatch:
         self._proc: subprocess.Popen | None = None
         self._thread: threading.Thread | None = None
         self._last: str | None = None
+        self.phone_count = 0     # phones on the bus right now; more than one confuses the engine
 
     # -- public
     def start(self) -> None:
@@ -110,10 +116,13 @@ class UsbWatch:
     # -- internals
     def _report(self, modes: list[str]) -> None:
         mode = modes[0] if modes else "Gone"
-        if mode != self._last:
-            self._last = mode
+        count_changed = len(modes) != self.phone_count
+        self.phone_count = len(modes)
+        if mode != self._last or count_changed:
             t = time.monotonic()
-            self.timeline.append((t, mode))
+            if mode != self._last:
+                self.timeline.append((t, mode))
+            self._last = mode
             if self.on_change:
                 try:
                     self.on_change(t, mode)
@@ -139,7 +148,7 @@ class UsbWatch:
                 break
             if line.startswith("DEV "):
                 ids = [x for x in line[4:].strip().split(";") if x]
-                self._report(modes_from_ids(ids))
+                self._report(phone_modes(ids))
         self.available = False
 
     def _run_sysfs(self) -> None:
@@ -157,7 +166,7 @@ class UsbWatch:
                     mode = pid_mode(int((dev / "idProduct").read_text().strip(), 16))
                 except (OSError, ValueError):
                     continue
-                if mode and mode not in modes:
+                if mode:
                     modes.append(mode)
             self._report(modes)
             self._stop.wait(0.7)

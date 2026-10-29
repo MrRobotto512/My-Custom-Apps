@@ -97,6 +97,8 @@ class _Board:
         if not part:
             return
         self.score[part] += w
+        if w < 0:
+            return  # evidence against a part is not a reason to suspect it
         if reason and reason not in self.reasons[part]:
             self.reasons[part].append(reason)
         if evidence and evidence not in self.evidence[part] and len(self.evidence[part]) < 4:

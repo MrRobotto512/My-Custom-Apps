@@ -1,13 +1,22 @@
 # Builds the engine (idevicerestore from current source) and RestoreDoctor.exe
 # on a Windows runner, then uploads the ready-to-run folder as an artifact.
-# Run it from the Actions tab (workflow_dispatch) or by pushing to main.
-name: Build Windows
+# Run it from the Actions tab (workflow_dispatch) or by pushing RestoreDoctor changes to main.
+# GitHub only reads workflows from .github/ at the repository root, so this lives
+# here and runs everything from the RestoreDoctor folder.
+name: RestoreDoctor - Build Windows
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths-ignore: ["**.md"]
+    paths:
+      - "RestoreDoctor/**"
+      - "!RestoreDoctor/**.md"
+      - ".github/workflows/restoredoctor-windows.yml"
+
+defaults:
+  run:
+    working-directory: RestoreDoctor
 
 jobs:
   build:
@@ -51,4 +60,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: RestoreDoctor-win64
-          path: dist/RestoreDoctor
+          path: RestoreDoctor/dist/RestoreDoctor

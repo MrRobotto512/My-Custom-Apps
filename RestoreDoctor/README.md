@@ -20,9 +20,13 @@ no phone attached. Not yet run against a real failing phone.
    - `tools/cross_build_engine.sh` on Linux (mingw-w64 cross compiler; Windows
      dependencies come prebuilt from MSYS2). This is how `app/engine` was built.
    - `tools/build_engine.sh` in the **MSYS2 MINGW64** shell on Windows.
-   - The **Build Windows** GitHub Action (engine and exe together).
-3. Run `app\RestoreDoctor.exe` (or `python RestoreDoctor.pyw` from source,
+   - The **RestoreDoctor - Build Windows** GitHub Action
+     (`.github/workflows/restoredoctor-windows.yml` at the repository root) builds
+     the engine and exe together; download the `RestoreDoctor-win64` artifact.
+3. Run `RestoreDoctor.exe` (or `python RestoreDoctor.pyw` from source,
    Python 3.11+). The top bar shows the ready check; click any red chip for the fix.
+   The `app\` folder in this repo has the exe only, not the engine: copy an
+   `engine\` folder next to it (from step 2) or the Engine chip stays red.
    Close 3uTools, iTunes or Apple Devices windows that are talking to the phone
    before a restore: two tools driving one phone can break the restore.
 
@@ -38,8 +42,10 @@ pick a failure from the **Simulation** menu and press **Start restore**.
    helper shows the button sequence for the model and confirms when the phone
    lands in DFU.
 3. **Firmware** - only builds Apple still signs for this model (api.ipsw.me),
-   plus IPSWs in your folder. Downloads resume and are checksum-verified.
-4. **Restore** - Update (keeps data) by default; Erase asks twice. The engine
+   plus IPSWs in your folder. Downloads resume, can be cancelled, and are
+   checksum-verified. Offline, the last signed list is shown with its age.
+4. **Restore** - Update (keeps data) by default; Erase asks twice (the second
+   time you type ERASE). With more than one phone on USB the app warns first. The engine
    runs as `idevicerestore -y -d -P --logfile=-`; every line is parsed live into
    seven stages, the named restore step, progress, and signals.
 5. **USB watch** - Windows' device list is polled separately, so "the phone
@@ -50,8 +56,10 @@ pick a failure from the **Simulation** menu and press **Start restore**.
    hands over decide the suspects. A second run that stops at the same point
    raises confidence; a moving stop points at the connection.
 7. **Case** - every attempt's raw log, the verdict and an HTML report are kept
-   per case. Record the fix that worked; later verdicts for the same model and
-   stop point show it.
+   per case, with the ticket, notes and which next checks you ticked off.
+   Record the fix that worked; later verdicts for the same model and stop point
+   show it. The engine log can be copied or saved from the Restore tab; cases
+   can be deleted from History.
 
 ## Where things live
 
@@ -71,7 +79,8 @@ pick a failure from the **Simulation** menu and press **Start restore**.
 | `tools/make_scenarios.py` | Regenerates the simulation scenarios |
 | `tests/` | Rule regression tests and a headless UI walk-through |
 
-User data goes to `%LOCALAPPDATA%\RestoreDoctor` (cases, IPSW cache, settings).
+User data goes to `%LOCALAPPDATA%\RestoreDoctor` (cases, IPSW cache, settings,
+and `errors.log` if the window hits an unexpected error).
 Override with `RD_DATA_DIR`; point at a different engine with `RD_ENGINE_DIR`.
 
 ## Improving the rules

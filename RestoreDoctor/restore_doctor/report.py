@@ -7,6 +7,7 @@ from pathlib import Path
 
 from . import APP_NAME, __version__
 from .diagnose import Verdict
+from .kb import get_kb
 
 CSS = """
 :root{--ink:#16181d;--quiet:#5b6170;--line:#d9dce3;--accent:#2563eb;--good:#15803d;--warn:#b45309;--bad:#b91c1c;--bg:#fff}
@@ -36,6 +37,7 @@ def _e(s) -> str:
 def build_report(case: dict, verdict: Verdict, attempts: list[dict], log_tail: list[str],
                  similar: list[dict] | None = None) -> str:
     v = verdict
+    part_label = get_kb().part_label
     rows = []
     for s in v.suspects:
         reasons = "".join(f"<li>{_e(r)}</li>" for r in s.reasons[:4])
@@ -58,7 +60,7 @@ def build_report(case: dict, verdict: Verdict, attempts: list[dict], log_tail: l
     sim = ""
     if similar:
         sim = "<h2>Earlier cases that stopped here</h2><ul>" + "".join(
-            f"<li>{_e(r['created'])}: fixed by <b>{_e(r['fix_part'])}</b> {_e(r.get('fix_notes') or '')}</li>"
+            f"<li>{_e(r['created'])}: fixed by <b>{_e(part_label(r['fix_part']))}</b> {_e(r.get('fix_notes') or '')}</li>"
             for r in similar) + "</ul>"
     ctx = ", ".join(case.get("context") or []) or "none recorded"
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">

@@ -87,6 +87,7 @@ class Session:
             d = self.device
             self.case_id, self.case_folder = self.store.new_case(
                 d.product, d.name, d.ecid, d.serial, self.ticket, self.notes, self.context, self.dc_reading)
+            self.store.set_preflight(self.case_id, self.preflight)
         else:
             self.store.set_context(self.case_id, self.ticket, self.notes, self.context, self.dc_reading)
         return self.case_id
@@ -126,8 +127,15 @@ class Session:
             cache.mkdir(exist_ok=True)
             job = RestoreJob(Path(ipsw), erase, self.device.ecid, folder, on_line, on_exit, cache_dir=cache)
         att.job = job
+        # Announce first so the UI resets its tracker before the engine's first lines arrive.
         self.notify("attempt_started", {"attempt": n, "erase": erase, "ipsw": str(ipsw)})
-        job.start()
+        try:
+            job.start()
+        except Exception as exc:
+            # Never leave a half-started attempt behind: it would keep the session "running".
+            self.attempts.remove(att)
+            self.notify("attempt_aborted", {"attempt": n, "error": str(exc)})
+            raise
         return att
 
     def cancel(self) -> None:
@@ -166,6 +174,14 @@ class Session:
         return rel
 
     def _finish_attempt(self, att: Attempt) -> None:
+        try:
+            self._finish_attempt_inner(att)
+        except Exception as exc:  # noqa: BLE001 - the UI must always leave the running state
+            att.ended_mono = att.ended_mono or time.monotonic()
+            self.notify("attempt_finished", {"attempt": att.n, "summary": att.parser.summary(),
+                                             "verdict": self.verdict, "error": str(exc)})
+
+    def _finish_attempt_inner(self, att: Attempt) -> None:
         with self._lock:
             summary = att.parser.finish(att.exit_code, att.cancelled)
         self._settle_usb(att)

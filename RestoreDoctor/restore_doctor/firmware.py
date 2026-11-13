@@ -211,3 +211,83 @@ def _fetch(build: Build, part: Path, have: int, progress: Callable[[float, str],
                 if now - last > 0.25:
                     progress(done / total, f"{done / 1e9:.2f} of {total / 1e9:.2f} GB")
                     last = now
+
+
+# ------------------------------------------------------------ housekeeping
+# IPSWs are 6-9 GB each and a busy bench collects them fast. Three policies:
+#   keep_newest          (default) one file per model family: the newest iOS
+#   delete_after_restore the file is removed once a restore with it succeeds
+#   keep_all             nothing is ever removed automatically
+# Abandoned partial downloads are swept under every policy.
+POLICIES = ("keep_newest", "delete_after_restore", "keep_all")
+DEFAULT_POLICY = "keep_newest"
+STALE_PART_S = 7 * 86400
+
+
+def _vkey(version: str) -> list[int]:
+    import re
+    parts = [int(x) for x in re.findall(r"\d+", version or "")][:4]
+    return parts + [0] * (4 - len(parts))
+
+
+def inventory(folder: Path) -> list[dict]:
+    """Every firmware file in the folder (and unfinished downloads), newest first."""
+    out = []
+    if not folder.exists():
+        return out
+    for p in sorted(folder.iterdir()):
+        if not p.is_file() or p.suffix.lower() not in (".ipsw", ".part"):
+            continue
+        try:
+            st = p.stat()
+        except OSError:
+            continue
+        info = read_ipsw(p) if p.suffix.lower() == ".ipsw" else None
+        out.append({"name": p.name, "size": st.st_size, "mtime": st.st_mtime,
+                    "part": p.suffix.lower() == ".part",
+                    "version": (info or {}).get("version", ""), "build": (info or {}).get("build", ""),
+                    "products": (info or {}).get("products", [])})
+    out.sort(key=lambda f: f["mtime"], reverse=True)
+    return out
+
+
+def delete_file(folder: Path, name: str) -> bool:
+    """Delete one firmware file BY NAME inside the folder - never a path."""
+    if not name or Path(name).name != name or Path(name).suffix.lower() not in (".ipsw", ".part"):
+        return False
+    p = folder / name
+    try:
+        if p.is_file():
+            p.unlink()
+            return True
+    except OSError:
+        pass
+    return False
+
+
+def cleanup(folder: Path, policy: str, keep: tuple = (), used: str | None = None) -> list[str]:
+    """Apply a housekeeping policy; returns the names removed.
+
+    keep: file names that must survive (the one a restore is using).
+    used: the file a restore just succeeded with (delete_after_restore removes it)."""
+    removed = []
+    files = inventory(folder)
+    now = time.time()
+    for f in files:                                   # abandoned downloads, any policy
+        if f["part"] and now - f["mtime"] > STALE_PART_S and f["name"] not in keep:
+            if delete_file(folder, f["name"]):
+                removed.append(f["name"])
+    if policy == "delete_after_restore":
+        if used and used not in keep and delete_file(folder, used):
+            removed.append(used)
+    elif policy == "keep_newest":
+        groups: dict[tuple, list[dict]] = {}
+        for f in files:
+            if not f["part"] and f["products"]:       # unreadable files are left for a human
+                groups.setdefault(tuple(sorted(f["products"])), []).append(f)
+        for fam in groups.values():
+            fam.sort(key=lambda f: (_vkey(f["version"]), f["mtime"]), reverse=True)
+            for f in fam[1:]:
+                if f["name"] not in keep and delete_file(folder, f["name"]):
+                    removed.append(f["name"])
+    return removed

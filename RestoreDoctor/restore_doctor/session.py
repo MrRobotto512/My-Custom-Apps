@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
-from . import paths
+from . import bench, paths
 from .cases import CaseStore
 from .diagnose import Verdict, describe_stop, diagnose, observe_usb, stop_phrase
 from .engine import DeviceInfo, RestoreJob, probe_device
@@ -114,6 +114,9 @@ class Session:
             if events:
                 self.notify("events", {"attempt": n, "events": events})
             self.notify("line", {"attempt": n, "line": line.rstrip("\n"), "stream": stream})
+            # the Hero Dashboard's live strip (throttled; never blocks a restore)
+            if bench.live_due():
+                bench.live("restoring", self.device, att.parser.summary(), n, self.case_id)
 
         def on_exit(code: int, cancelled: bool) -> None:
             att.exit_code, att.cancelled = code, cancelled
@@ -203,6 +206,8 @@ class Session:
                                att.exit_code, att.job.raw_log, att.usb_rel)
         self.verdict = self.rediagnose()
         self.notify("attempt_finished", {"attempt": att.n, "summary": summary, "verdict": self.verdict})
+        bench.live("done" if summary.outcome == "success" else "failed", self.device, summary,
+                   att.n, self.case_id, force=True)
 
     # ------------------------------------------------------------ verdict
     def rediagnose(self) -> Verdict:
@@ -216,6 +221,7 @@ class Session:
             self.store.set_context(self.case_id, self.ticket, self.notes, self.context, self.dc_reading)
             self.store.set_verdict(self.case_id, v, summaries[-1] if summaries else None)
             self.write_report()
+            bench.post_case_async(self.store, self.case_id)   # the Hero Dashboard's copy
         return v
 
     def similar_cases(self) -> list:

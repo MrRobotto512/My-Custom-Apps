@@ -61,6 +61,46 @@ pick a failure from the **Simulation** menu and press **Start restore**.
    show it. The engine log can be copied or saved from the Restore tab; cases
    can be deleted from History.
 
+## The shop dashboard: restore stations
+
+If the shop runs a BenchTool Hero Dashboard, Restore Doctor can be driven
+from it. Start it as a **restore station**:
+
+    RestoreDoctor.exe --station [--bench=http://benchtool.local:8377]
+
+(the dashboard's "Set up a restore station" box does this for you with one
+PowerShell line, shortcut included). A station checks in with the bench
+every two seconds - its ready checks, the phone on the cable, the firmware
+Apple signs for it - and takes the tech's order from the dashboard's
+**Restore Doctor** page: Update, Erase (the word ERASE must be typed there;
+the station checks it again), Cancel. The restore is the same Session the
+desktop app runs, so the case, verdict and report are identical. `--headless`
+runs it with no window (and no Tk), for a Linux box such as the bench Pi.
+
+Whether started here or from the dashboard, every finished attempt, the
+verdict with its suspect parts, the recorded fix and the HTML report are
+posted to `http://<bench>/restoredoctor`, with a live strip while a restore
+runs.
+
+A station also keeps its firmware folder in hand, since IPSWs are 6-9 GB
+each: the dashboard lists the files with a Delete button, can open the
+folder on the station's own screen, and sets the keep-clean policy - keep
+only the newest iOS per model (default), delete after a successful restore,
+or keep everything. Abandoned partial downloads are always swept; a file in
+use is never removed. (In the desktop app: File > Open IPSW folder.)
+
+Stations run on Windows and on macOS. A Mac needs nothing from Apple - the
+phone service is part of macOS - and runs the station headless as a
+LaunchAgent. The GitHub Action builds all three packages (Windows, Apple
+Silicon, Intel Mac) and publishes them on the rolling `restoredoctor-latest`
+release, which is where the dashboard's one-step setup downloads from.
+
+No bench on the network? Nothing changes - every post fails silently in the
+background. The bench is found at `http://benchtool.local:8377` by default;
+point it elsewhere with `--bench=`, the `RD_BENCH` environment variable or
+`dashboard.json` in the data folder (`{"url": "http://192.168.86.67:8377"}`),
+or turn reporting off with `RD_BENCH=off` (or `{"url": "off"}`).
+
 ## Where things live
 
 | Path | What |
@@ -71,6 +111,8 @@ pick a failure from the **Simulation** menu and press **Start restore**.
 | `restore_doctor/engine.py` | Ready checks, device probe, the engine process |
 | `restore_doctor/usbwatch.py` | USB mode watch (PowerShell on Windows) |
 | `restore_doctor/session.py` | Ties a phone, its attempts and the verdict together |
+| `restore_doctor/bench.py` | Reports cases + live progress to the shop's Hero Dashboard |
+| `restore_doctor/station.py` | Station mode: takes Update / Erase orders from the Hero Dashboard |
 | `restore_doctor/ui/` | Tk interface |
 | `restore_doctor/scenarios/` | Synthetic failure logs for simulation and tests |
 | `tools/build_engine.sh` | Builds the engine from source (MSYS2 or Linux) |

@@ -223,6 +223,7 @@ class App(tk.Tk):
         f = tk.Menu(m, tearoff=False)
         f.add_command(label="Import a restore log...", command=self.import_log)
         f.add_command(label="Choose IPSW folder...", command=self.choose_ipsw_folder)
+        f.add_command(label="Open IPSW folder", command=self.open_ipsw_folder)
         f.add_command(label="Open data folder", command=lambda: open_path(paths.data_dir()))
         f.add_separator()
         f.add_command(label="Exit", command=self._on_close)
@@ -684,6 +685,20 @@ class App(tk.Tk):
     # ============================================================= firmware
     def ipsw_folder(self) -> Path:
         return Path(self.settings.get("ipsw_folder") or paths.ipsw_dir())
+
+    def open_ipsw_folder(self):
+        """Show the firmware folder in Explorer/Finder - IPSWs are 6-9 GB each,
+        and deleting old ones by hand is the simplest housekeeping there is."""
+        folder = self.ipsw_folder()
+        try:
+            folder.mkdir(parents=True, exist_ok=True)
+            if paths.IS_WINDOWS:
+                os.startfile(str(folder))  # noqa: S606
+            else:
+                import subprocess
+                subprocess.Popen(["open" if sys.platform == "darwin" else "xdg-open", str(folder)])
+        except Exception as exc:  # noqa: BLE001
+            messagebox.showinfo(APP_NAME, f"The IPSW folder is:\n{folder}\n\n({exc})")
 
     def choose_ipsw_folder(self):
         d = filedialog.askdirectory(title="Folder with IPSW files", initialdir=str(self.ipsw_folder()))
@@ -1435,6 +1450,11 @@ def _windows_dpi_aware() -> None:
 
 def main(argv: list[str] | None = None) -> None:
     argv = argv if argv is not None else sys.argv[1:]
+    if "--station" in argv:
+        # Driven from the shop's Hero Dashboard instead of this window: the
+        # same engine and Session, no main UI (see restore_doctor/station.py).
+        from ..station import main as station_main
+        return station_main(argv)
     _windows_dpi_aware()
     sim = paths.simulation_enabled() or "--sim" in argv
     scenario = None

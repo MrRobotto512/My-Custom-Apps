@@ -7,6 +7,9 @@
 #            ideviceinfo.exe, idevice_id.exe and every DLL they need.
 #   Linux:   works the same (used for testing the app's parser against
 #            real engine output).
+#   macOS:   brew install autoconf automake libtool pkg-config libzip openssl@3 dylibbundler
+#            then ./build_engine.sh - result: ../engine/ with the tools and a
+#            self-contained lib/ folder (what the GitHub Action ships for Macs).
 #
 # Why from source: the packaged MSYS2 idevicerestore is still 1.0.0, which
 # predates current iPhones. libirecovery's device table must be current for
@@ -25,7 +28,7 @@ WORK="${WORK:-$ROOT/build/engine-src}"
 OUT="${OUT:-$ROOT/engine}"
 PREFIX="${PREFIX:-$WORK/prefix}"
 REF="${REF:-master}"
-JOBS="${JOBS:-$(nproc 2>/dev/null || echo 4)}"
+JOBS="${JOBS:-$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)}"
 
 # Build order matters: each one needs the ones before it.
 REPOS=(libplist libimobiledevice-glue libusbmuxd libtatsu libimobiledevice libirecovery idevicerestore)
@@ -115,6 +118,20 @@ if [ "$WINDOWS" = 1 ]; then
   if [ -f /mingw64/etc/ssl/certs/ca-bundle.crt ]; then
     cp /mingw64/etc/ssl/certs/ca-bundle.crt "$OUT/curl-ca-bundle.crt"
   fi
+elif [ "$(uname -s)" = "Darwin" ]; then
+  # macOS: bundle every non-system dylib the tools load (ours from $PREFIX,
+  # openssl/libzip from Homebrew) into engine/lib and point the tools at
+  # @executable_path/lib, so the folder runs on a Mac with nothing installed.
+  # dylibbundler follows the whole chain; system libs (/usr/lib, /System) stay.
+  command -v dylibbundler >/dev/null || { echo "dylibbundler is missing: brew install dylibbundler" >&2; exit 1; }
+  mkdir -p "$OUT/lib"
+  args=()
+  for t in "${TOOLS[@]}"; do args+=(-x "$OUT/$t"); done
+  dylibbundler -of -cd -b "${args[@]}" -d "$OUT/lib" -p @executable_path/lib -s "$PREFIX/lib" >/dev/null
+  # install_name_tool invalidates signatures; Apple Silicon refuses to run
+  # unsigned code, so ad-hoc sign everything again.
+  for f in "$OUT"/lib/*.dylib; do codesign --force --sign - "$f" >/dev/null 2>&1 || true; done
+  for t in "${TOOLS[@]}"; do codesign --force --sign - "$OUT/$t" >/dev/null 2>&1 || true; done
 else
   # Linux test build: keep the shared libs next to the tools.
   mkdir -p "$OUT/lib"

@@ -1,9 +1,20 @@
-# Builds the engine (idevicerestore from current source) and RestoreDoctor.exe
-# on a Windows runner, then uploads the ready-to-run folder as an artifact.
-# Run it from the Actions tab (workflow_dispatch) or by pushing RestoreDoctor changes to main.
-# GitHub only reads workflows from .github/ at the repository root, so this lives
-# here and runs everything from the RestoreDoctor folder.
-name: RestoreDoctor - Build Windows
+# Builds Restore Doctor - the restore engine (idevicerestore from current
+# source) plus the app - for Windows and for macOS (Apple Silicon + Intel),
+# and publishes the three ready-to-run packages on one rolling public release:
+#
+#   https://github.com/<owner>/<repo>/releases/download/restoredoctor-latest/
+#       RestoreDoctor-win64.zip
+#       RestoreDoctor-macos-arm64.tar.gz
+#       RestoreDoctor-macos-x64.tar.gz
+#
+# Those fixed URLs are what a BenchTool Hero Dashboard's "Set up a restore
+# station" hands to a shop's PC or Mac, so no shop ever builds or uploads
+# anything: push here, and every bench's next station setup gets this build.
+#
+# Run it from the Actions tab (workflow_dispatch) or by pushing RestoreDoctor
+# changes to main. GitHub only reads workflows from .github/ at the repository
+# root, so this lives here and runs everything from the RestoreDoctor folder.
+name: RestoreDoctor - Build + Release
 
 on:
   workflow_dispatch:
@@ -14,12 +25,19 @@ on:
       - "!RestoreDoctor/**.md"
       - ".github/workflows/restoredoctor-windows.yml"
 
+permissions:
+  contents: write          # to publish the release assets
+
 defaults:
   run:
     working-directory: RestoreDoctor
 
+env:
+  RELEASE_TAG: restoredoctor-latest
+  TESTS: tests/test_rules.py tests/test_bench_link.py tests/test_firmware_housekeeping.py tests/test_station.py
+
 jobs:
-  build:
+  windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,22 +60,90 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Rule tests
+      - name: Tests
+        shell: bash
         run: |
           python -m pip install --upgrade pip pyinstaller pytest
-          python -m pytest -q tests/test_rules.py
+          python -m pytest -q $TESTS
 
       - name: Build RestoreDoctor.exe
         run: pyinstaller --noconfirm RestoreDoctor.spec
 
-      - name: Bundle the engine
+      - name: Bundle the engine and zip
         shell: pwsh
         run: |
           Copy-Item -Recurse -Force engine dist/RestoreDoctor/engine
           & dist/RestoreDoctor/engine/idevicerestore.exe -v
           & dist/RestoreDoctor/engine/irecovery.exe -V
+          Compress-Archive -Force -Path dist/RestoreDoctor -DestinationPath dist/RestoreDoctor-win64.zip
 
       - uses: actions/upload-artifact@v4
         with:
           name: RestoreDoctor-win64
           path: RestoreDoctor/dist/RestoreDoctor
+
+      - name: Publish to the rolling release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Restore Doctor (latest build)
+          body: Rolling build of Restore Doctor for BenchTool restore stations. Replaced on every push.
+          make_latest: false
+          files: RestoreDoctor/dist/RestoreDoctor-win64.zip
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14      # Apple Silicon
+            arch: arm64
+          - os: macos-13      # Intel
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build tools
+        run: brew install autoconf automake libtool pkg-config libzip openssl@3 dylibbundler
+
+      - name: Build the restore engine
+        run: |
+          export PKG_CONFIG_PATH="$(brew --prefix openssl@3)/lib/pkgconfig:$(brew --prefix libzip)/lib/pkgconfig"
+          ./tools/build_engine.sh
+          ./engine/idevicerestore -v
+          ./engine/irecovery -V
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tests
+        run: |
+          python -m pip install --upgrade pip pyinstaller pytest
+          python -m pytest -q $TESTS
+
+      - name: Build the app
+        run: pyinstaller --noconfirm RestoreDoctor.spec
+
+      - name: Bundle the engine, prove it starts, and pack
+        run: |
+          cp -R engine dist/RestoreDoctor/engine
+          dist/RestoreDoctor/engine/idevicerestore -v
+          # the packaged app must come up as a station with no bench and no Tk window
+          RD_DATA_DIR="$RUNNER_TEMP/rd" RD_BENCH=off dist/RestoreDoctor/RestoreDoctor --station --headless --sim &
+          sleep 8; kill -0 $! && kill $!     # still running after 8 s = it started
+          tar -czf dist/RestoreDoctor-macos-${{ matrix.arch }}.tar.gz -C dist RestoreDoctor
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RestoreDoctor-macos-${{ matrix.arch }}
+          path: RestoreDoctor/dist/RestoreDoctor-macos-${{ matrix.arch }}.tar.gz
+
+      - name: Publish to the rolling release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Restore Doctor (latest build)
+          make_latest: false
+          files: RestoreDoctor/dist/RestoreDoctor-macos-${{ matrix.arch }}.tar.gz

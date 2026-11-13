@@ -167,6 +167,8 @@ class CaseStore:
         self.db.execute("UPDATE cases SET fix_part=?, fix_notes=?, updated=? WHERE id=?",
                         (part, notes, _now(), case_id))
         self.db.commit()
+        from . import bench                        # late import: no cycle, no cost when off
+        bench.post_case_async(self, case_id)       # the fix is the part the bench learns from
 
     @_locked
     def delete(self, case_id: int, remove_folder: bool = True) -> None:

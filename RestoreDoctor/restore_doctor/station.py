@@ -29,6 +29,7 @@ import json
 import os
 import platform
 import re
+import collections
 import shutil
 import socket
 import subprocess
@@ -93,6 +94,8 @@ class Station:
         self._ack: str | None = None
         self._cancel_dl = False
         self.policy = self._load_policy()
+        self._log = collections.deque(maxlen=120)   # engine log tail for the dashboard
+        self.lookup: dict = {}                      # last Apple error code looked up
         self._inv: list = []
         self._inv_t = 0.0
         self.fw_note = ""                    # what housekeeping last did, for the dashboard
@@ -177,6 +180,12 @@ class Station:
 
     # ------------------------------------------------------------ session
     def _notify(self, kind: str, payload: dict) -> None:
+        if kind == "line":
+            self._log.append(str(payload.get("line", ""))[:400])
+            return
+        if kind == "attempt_started":
+            self._log.clear()
+            return
         if kind == "attempt_finished":
             s, v = payload.get("summary"), payload.get("verdict")
             ok = getattr(s, "outcome", "") == "success"
@@ -232,10 +241,24 @@ class Station:
         with self._lock:
             job = dict(self.job)
             state = self.state
-        if state == "restoring" and self.session.attempts:
-            s = self.session.attempts[-1].parser.summary()
-            job.update({"stage": s.stage, "step": s.step_plain or s.step,
-                        "pct": s.progress, "progress_step": s.progress_step})
+        if self.session.attempts:
+            att = self.session.attempts[-1]
+            s = att.parser.summary()
+            if state == "restoring":
+                job.update({"pct": s.progress, "progress_step": s.progress_step})
+            sig: dict = {}
+            for h in s.hits:                      # one line per signal, repeats counted
+                e = sig.setdefault(h.title, {"title": h.title, "kind": h.kind, "n": 0})
+                e["n"] += 1
+            try:
+                tl = [[int(t), m] for t, m in self.usb.since(att.started_mono)[-12:]]
+            except Exception:  # noqa: BLE001
+                tl = []
+            job.update({"attempt": att.n, "stage": s.stage, "max_stage": s.max_stage,
+                        "step": s.step_plain or s.step, "activity": s.activity,
+                        "outcome": s.outcome, "ipsw": Path(str(att.ipsw)).name,
+                        "signals": list(sig.values())[:20], "usb_tl": tl,
+                        "log": list(self._log)[-80:]})
         return {
             "station": self.sid, "name": self.name, "version": __version__,
             "platform": platform.system().lower(), "sim": bool(self.sim_id),
@@ -249,7 +272,46 @@ class Station:
             "builds_note": self.builds_note,
             "job": job,
             "firmware": self._firmware_body(),
+            "usb": {"mode": getattr(self.usb, "current", None) or d.mode,
+                    "count": getattr(self.usb, "phone_count", 0)},
+            "dfu": self._dfu_body(),
+            "parts": self._parts(),
+            "lookup": self.lookup,
         }
+
+    def _dfu_body(self) -> dict:
+        from .models import dfu_steps, recovery_steps
+        m = getattr(self.session.device, "model", None)
+        return {"name": getattr(m, "name", None) or "this iPhone",
+                "dfu": dfu_steps(m), "recovery": recovery_steps(m)}
+
+    def _parts(self) -> list:
+        if not hasattr(self, "_parts_cache"):
+            try:
+                from .kb import get_kb
+                self._parts_cache = [[k, v.get("label", k)] for k, v in get_kb().components.items()][:80]
+            except Exception:  # noqa: BLE001
+                self._parts_cache = []
+        return self._parts_cache
+
+    def _lookup(self, code) -> None:
+        """Apple error code -> the knowledge base's notes (the app's Code lookup tab)."""
+        try:
+            n = int(str(code).strip())
+        except ValueError:
+            self.lookup = {"code": str(code)[:12], "found": False,
+                           "msg": "Type the number Apple showed, e.g. 4013."}
+            return
+        from .kb import get_kb
+        kb = get_kb()
+        e = kb.lookup_apple_code(n)
+        if not e:
+            self.lookup = {"code": n, "found": False,
+                           "msg": "No notes for error %d yet. Run the restore here to see the step it fails on." % n}
+            return
+        self.lookup = {"code": n, "found": True, "kind": e.get("kind"), "meaning": e.get("meaning"),
+                       "parts": [kb.part_label(p["part"]) for p in sorted(e.get("parts") or [], key=lambda x: -x["w"])],
+                       "notes": e.get("notes") or [], "sources": e.get("sources") or []}
 
     def _firmware_body(self) -> dict:
         files = self._inventory()
@@ -298,6 +360,23 @@ class Station:
             if self.state == "idle":
                 self.session.probe()
                 self._refresh_builds(force=True)
+        elif op == "lookup":
+            self._lookup(cmd.get("code"))
+        elif op == "new_phone":
+            if self.state == "idle":
+                self.session.new_case()
+                self._log.clear()
+                with self._lock:
+                    self.job = {}
+        elif op == "record_fix":
+            # only a case of THIS station's own store, matched by its bench key
+            key = str(cmd.get("key") or "")
+            try:
+                row = self.store.get(int(key.rsplit("-", 1)[1]))
+            except (ValueError, IndexError):
+                row = None
+            if row is not None and bench.case_key(dict(row)) == key and cmd.get("part"):
+                self.store.record_fix(row["id"], str(cmd["part"])[:60], str(cmd.get("notes") or "")[:1000])
         elif op == "fw_open":
             self.open_folder()
         elif op == "fw_policy":

@@ -179,3 +179,66 @@ def test_firmware_is_reported_and_managed_by_order(bench, tmp_path):
     assert Station._load_policy() == "keep_newest"
     st.handle({"id": "fw-4", "op": "fw_policy", "policy": "nonsense"})
     assert st.policy == "keep_newest"
+
+
+def test_store_apple_devices_without_a_driver_yet_is_not_an_error(monkeypatch):
+    """Apple Devices (Store) installed, no iPhone ever plugged in: the driver
+    package is not there yet - a hint, not a red check telling the tech to
+    install the app they already have."""
+    import subprocess
+    from restore_doctor import engine
+
+    class P:
+        stdout = "Published Name: oem1.inf\nProvider Name: Intel\n"
+
+    class Sock:
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    monkeypatch.setattr(engine.paths, "IS_WINDOWS", True)
+    monkeypatch.setattr(engine, "NO_WINDOW", 0, raising=False)
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: P())
+    monkeypatch.setattr(engine.socket, "create_connection", lambda *a, **k: Sock())
+    r = engine.check_driver()
+    assert r.ok is None and "first time an iPhone is plugged in" in r.detail and "Plug an iPhone in" in r.fix
+
+    def refuse(*a, **k):
+        raise OSError("refused")
+    monkeypatch.setattr(engine.socket, "create_connection", refuse)
+    assert engine.check_driver().ok is False               # no Apple software at all: still red
+    P.stdout = "Provider Name:      Apple, Inc.\n"
+    assert engine.check_driver().ok is True
+
+
+def test_beat_carries_what_the_dashboards_app_layout_shows(bench):
+    """Stages, signals, USB timeline, engine log, the DFU helper and the parts
+    list - the panels of the desktop app's Restore tab, for the dashboard."""
+    st = _station("battery_veridian")
+    st.tick()
+    b = bench.beats[-1]
+    assert b["dfu"]["dfu"] and b["dfu"]["recovery"] and b["usb"]["mode"]
+    assert b["parts"] and all(len(p) == 2 for p in b["parts"])
+    build = b["builds"][0]["build"]
+    bench.order = {"id": "ord-9", "op": "restore", "build": build, "erase": False, "notes": "from the dashboard"}
+    assert _run_until(st, lambda: st.job.get("phase") in ("done", "failed")), st.job
+    st.tick()
+    j = bench.beats[-1]["job"]
+    assert j["attempt"] == 1 and j["stage"] and j["max_stage"] and j["log"] and j["ipsw"]
+    assert isinstance(j["signals"], list) and isinstance(j["usb_tl"], list)
+    assert st.session.notes == "from the dashboard"
+    key = st.job["case_key"]
+    # record the fix by order: only this station's own case, matched by its key
+    part = b["parts"][0][0]
+    st.handle({"id": "fix-bad", "op": "record_fix", "key": "NOPE-999", "part": part})
+    st.handle({"id": "fix-1", "op": "record_fix", "key": key, "part": part, "notes": "swap"})
+    row = dict(st.store.get(st.session.case_id))
+    assert row["fix_part"] == part and row["fix_notes"] == "swap"
+    # code lookup answers in the beat
+    st.handle({"id": "lk-1", "op": "lookup", "code": "abc"})
+    assert st.lookup["found"] is False
+    st.handle({"id": "lk-2", "op": "lookup", "code": "4013"})
+    st.tick()
+    assert bench.beats[-1]["lookup"]["code"] == 4013
+    # New phone clears the job for the next one
+    st.handle({"id": "np-1", "op": "new_phone"})
+    assert st.job == {} and st.session.case_id is None

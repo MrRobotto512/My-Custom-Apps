@@ -98,8 +98,21 @@ def check_driver() -> CheckResult:
         text = p.stdout
     except (OSError, subprocess.TimeoutExpired) as exc:
         return CheckResult("driver", label, None, f"Could not list drivers: {exc}")
-    if re.search(r"usbaapl|Apple Inc\.|Provider Name:\s*Apple", text, re.I):
+    if re.search(r"usbaapl|Apple,? Inc\.|Provider Name:\s*Apple", text, re.I):
         return CheckResult("driver", label, True, "Apple driver package installed")
+    # The Microsoft Store "Apple Devices" app does not put a driver package in
+    # the store when it installs: Windows fetches Apple's USB driver through
+    # Windows Update the first time an iPhone is plugged in. So with Apple's
+    # service already answering, a missing package is "not yet", not "broken" -
+    # and telling the tech to install an app they already have is no help.
+    try:
+        with socket.create_connection(("127.0.0.1", 27015), timeout=1.5):
+            return CheckResult("driver", label, None,
+                               "Not installed yet - Windows adds it the first time an iPhone is plugged in",
+                               "Plug an iPhone in once and give Windows a minute: it downloads Apple's USB "
+                               "driver by itself (Windows Update). Then refresh - nothing else to install.")
+    except OSError:
+        pass
     return CheckResult("driver", label, False, "No Apple driver package found",
                        "Install the Apple Devices app (Microsoft Store) or iTunes. Phones in DFU and "
                        "Recovery mode are reached through Apple's driver.")

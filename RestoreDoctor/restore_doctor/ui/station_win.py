@@ -13,7 +13,7 @@ from .. import APP_NAME, __version__
 def show(st) -> None:
     root = tk.Tk()
     root.title("%s %s - Restore station" % (APP_NAME, __version__))
-    root.geometry("560x210")
+    root.geometry("560x270")
     root.configure(bg="#1e1e20")
     fg, dim = "#f5f5f7", "#a1a1a8"
 
@@ -32,18 +32,25 @@ def show(st) -> None:
     tk.Button(root, text="Stop the station", command=root.destroy).pack(anchor="e", padx=16, pady=10)
 
     def refresh():
-        d = st.session.device
         link.configure(text=st.status_line)
-        phone.configure(text="Phone: %s" % (("%s (%s)" % (d.name or d.product or "iPhone", d.mode))
-                                            if d.connected else "none on USB"))
-        j = st.job or {}
-        txt = st.state
-        if j.get("phase"):
+        slots = [p for p in list(st.phones.values())]
+        here = [p for p in slots if p.device.connected]
+        if not here:
+            phone.configure(text="Phones: none on USB")
+        else:
+            phone.configure(text="Phones (%d): %s" % (len(here), ", ".join(
+                "%s (%s)" % (p.device.name or p.device.product or "iPhone", p.device.mode) for p in here[:4])
+                + (" ..." if len(here) > 4 else "")))
+        lines = []
+        for p in slots:
+            j = p.job or {}
+            if not j.get("phase"):
+                continue
             pct = j.get("pct")
-            txt = "%s - %s%s %s" % (st.state, j["phase"],
-                                    (" %d%%" % round(pct * 100)) if isinstance(pct, (int, float)) else "",
-                                    j.get("msg") or j.get("headline") or "")
-        work.configure(text="Now: " + txt)
+            lines.append("%s: %s%s %s" % (p.device.name or p.device.product or "iPhone", j["phase"],
+                                          (" %d%%" % round(pct * 100)) if isinstance(pct, (int, float)) else "",
+                                          j.get("msg") or j.get("headline") or ""))
+        work.configure(text="Now: " + ("\n".join(lines[:4]) if lines else "idle"))
         root.after(1000, refresh)
 
     refresh()

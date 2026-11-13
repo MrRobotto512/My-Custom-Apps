@@ -82,6 +82,20 @@ verdict with its suspect parts, the recorded fix and the HTML report are
 posted to `http://<bench>/restoredoctor`, with a live strip while a restore
 runs.
 
+**Several phones at once (0.4).** Plug more than one phone into a station
+(a powered hub is fine) and each gets its own slot on the dashboard: its own
+firmware list, Start / Stop, progress, log and verdict. Restores run side by
+side. Phones are told apart by ECID, read passively from the USB device list
+(`usbwatch.usb_phone`), and every engine run is pinned to its phone with
+`-i <ECID>`. A phone that is mid-restore is never probed; while any restore
+runs, irecovery is not run at all, and an older phone whose UDID cannot be
+matched to an ECID waits to be identified until the restore ends. Two phones
+needing the same firmware share one download. An order always names its
+phone - one for a phone that has left is refused, never redirected. If the
+station cannot read ids from USB (Station tab > "What this computer sees on
+USB"), it behaves as before 0.4: one phone at a time. Simulate it with
+`--scenario=battery_veridian,success_update`.
+
 A station also keeps its firmware folder in hand, since IPSWs are 6-9 GB
 each: the dashboard lists the files with a Delete button, can open the
 folder on the station's own screen, and sets the keep-clean policy - keep

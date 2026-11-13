@@ -128,7 +128,8 @@ class Session:
         else:
             cache = paths.data_dir() / "engine-cache"
             cache.mkdir(exist_ok=True)
-            job = RestoreJob(Path(ipsw), erase, self.device.ecid, folder, on_line, on_exit, cache_dir=cache)
+            job = RestoreJob(Path(ipsw), erase, self.device.ecid, folder, on_line, on_exit, cache_dir=cache,
+                             udid=self.device.udid)
         att.job = job
         # Announce first so the UI resets its tracker before the engine's first lines arrive.
         self.notify("attempt_started", {"attempt": n, "erase": erase, "ipsw": str(ipsw)})

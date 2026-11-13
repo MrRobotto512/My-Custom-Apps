@@ -222,53 +222,82 @@ def parse_irecovery(text: str) -> dict:
     return out
 
 
-def probe_device() -> DeviceInfo:
-    """Find a phone in DFU/Recovery (irecovery) or normal mode (lockdown)."""
-    code, out, _ = run_tool("irecovery", ["-q"], timeout=6)
+def _info_from_irecovery(q: dict) -> DeviceInfo:
+    info = DeviceInfo(raw=q)
+    mode = q.get("MODE", "")
+    info.mode = "DFU" if "DFU" in mode.upper() else ("Recovery" if "RECOVERY" in mode.upper() else mode or "DFU")
+    try:
+        info.ecid = int(q.get("ECID", "0"), 16)
+        info.cpid = int(q.get("CPID", "0"), 16)
+        info.bdid = int(q.get("BDID", "0"), 16)
+    except ValueError:
+        pass
+    info.product = q.get("PRODUCT") or None
+    info.board = q.get("MODEL") or None
+    info.name = q.get("NAME") or None
+    if q.get("SRNM") not in (None, "", "N/A"):
+        info.serial = q["SRNM"]
+    if not info.name and info.model:
+        info.name = info.model.name
+    return info
+
+
+def probe_recovery(ecid: int | None = None) -> DeviceInfo | None:
+    """A phone in DFU/Recovery, asked through irecovery: the first one found,
+    or - with ``ecid`` - that phone and no other."""
+    args = ["-q"] + (["-i", hex(ecid)] if ecid else [])
+    code, out, _ = run_tool("irecovery", args, timeout=6)
     if code == 0 and "ECID" in out:
-        q = parse_irecovery(out)
-        info = DeviceInfo(raw=q)
-        mode = q.get("MODE", "")
-        info.mode = "DFU" if "DFU" in mode.upper() else ("Recovery" if "RECOVERY" in mode.upper() else mode or "DFU")
-        try:
-            info.ecid = int(q.get("ECID", "0"), 16)
-            info.cpid = int(q.get("CPID", "0"), 16)
-            info.bdid = int(q.get("BDID", "0"), 16)
-        except ValueError:
-            pass
-        info.product = q.get("PRODUCT") or None
-        info.board = q.get("MODEL") or None
-        info.name = q.get("NAME") or None
-        if q.get("SRNM") not in (None, "", "N/A"):
-            info.serial = q["SRNM"]
-        if not info.name and info.model:
-            info.name = info.model.name
+        info = _info_from_irecovery(parse_irecovery(out))
+        if ecid and info.ecid and info.ecid != ecid:
+            return None                  # never mistake one phone for another
         return info
+    return None
+
+
+def list_normal_udids() -> list[str] | None:
+    """UDIDs of phones in normal (or restore) mode. Asks the Apple service
+    for its list - it does not talk to any phone. None when it cannot say."""
     code, out, _ = run_tool("idevice_id", ["-l"], timeout=6)
-    udids = [ln.strip() for ln in out.splitlines() if ln.strip()] if code == 0 else []
-    if udids:
-        info = DeviceInfo(mode="Normal", udid=udids[0])
-        for args in (["-u", udids[0]], ["-s", "-u", udids[0]]):
-            code, out, _ = run_tool("ideviceinfo", args, timeout=10)
-            if code == 0 and out.strip():
-                kv = {}
-                for line in out.splitlines():
-                    if ": " in line:
-                        k, v = line.split(": ", 1)
-                        kv[k.strip()] = v.strip()
-                info.raw = kv
-                info.product = kv.get("ProductType")
-                info.ios = kv.get("ProductVersion")
-                info.serial = kv.get("SerialNumber")
-                if kv.get("UniqueChipID"):
-                    try:
-                        info.ecid = int(kv["UniqueChipID"])
-                    except ValueError:
-                        pass
-                break
-        if info.model:
-            info.name = info.model.name
+    if code != 0:
+        return None
+    return [ln.strip() for ln in out.splitlines() if ln.strip()]
+
+
+def probe_normal(udid: str) -> DeviceInfo:
+    info = DeviceInfo(mode="Normal", udid=udid)
+    for args in (["-u", udid], ["-s", "-u", udid]):
+        code, out, _ = run_tool("ideviceinfo", args, timeout=10)
+        if code == 0 and out.strip():
+            kv = {}
+            for line in out.splitlines():
+                if ": " in line:
+                    k, v = line.split(": ", 1)
+                    kv[k.strip()] = v.strip()
+            info.raw = kv
+            info.product = kv.get("ProductType")
+            info.ios = kv.get("ProductVersion")
+            info.serial = kv.get("SerialNumber")
+            if kv.get("UniqueChipID"):
+                try:
+                    info.ecid = int(kv["UniqueChipID"])
+                except ValueError:
+                    pass
+            break
+    if info.model:
+        info.name = info.model.name
+    return info
+
+
+def probe_device() -> DeviceInfo:
+    """Find a phone in DFU/Recovery (irecovery) or normal mode (lockdown).
+    One phone: the desktop app's view. The station lists them all itself."""
+    info = probe_recovery()
+    if info is not None:
         return info
+    udids = list_normal_udids()
+    if udids:
+        return probe_normal(udids[0])
     return DeviceInfo()
 
 
@@ -280,8 +309,9 @@ class RestoreJob:
 
     def __init__(self, ipsw: Path, erase: bool, ecid: int | None, workdir: Path,
                  on_line: Callable[[str, str], None], on_exit: Callable[[int, bool], None],
-                 cache_dir: Path | None = None):
+                 cache_dir: Path | None = None, udid: str | None = None):
         self.ipsw, self.erase, self.ecid, self.workdir = Path(ipsw), erase, ecid, Path(workdir)
+        self.udid = udid
         self.on_line, self.on_exit = on_line, on_exit
         self.cache_dir = cache_dir
         self._proc: subprocess.Popen | None = None
@@ -295,6 +325,8 @@ class RestoreJob:
             cmd.append("-e")
         if self.ecid:
             cmd += ["-i", hex(self.ecid)]
+        elif self.udid:
+            cmd += ["-u", self.udid]     # no ECID known: still name the one phone to restore
         if self.cache_dir:
             cmd += ["-C", str(self.cache_dir)]
         cmd.append(str(self.ipsw))

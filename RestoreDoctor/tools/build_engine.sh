@@ -92,7 +92,7 @@ for repo in "${REPOS[@]}"; do
     cd "$src"
     [ -f Makefile ] && make distclean >/dev/null 2>&1 || true
     NOCONFIGURE=1 ./autogen.sh >/dev/null
-    LDFLAGS="$ldflags" ./configure --prefix="$PREFIX" --disable-static --enable-shared "${extra[@]}" >/dev/null
+    LDFLAGS="$ldflags" ./configure --prefix="$PREFIX" --disable-static --enable-shared ${extra[@]+"${extra[@]}"} >/dev/null
     make -j"$JOBS" >/dev/null
     make install >/dev/null
   )

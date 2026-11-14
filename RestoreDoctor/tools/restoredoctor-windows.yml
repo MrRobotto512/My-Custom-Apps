@@ -110,7 +110,8 @@ jobs:
       - name: Build the restore engine
         run: |
           export PKG_CONFIG_PATH="$(brew --prefix openssl@3)/lib/pkgconfig:$(brew --prefix libzip)/lib/pkgconfig"
-          ./tools/build_engine.sh
+          # through bash: the file's executable bit does not survive a commit from Windows
+          bash ./tools/build_engine.sh
           ./engine/idevicerestore -v
           ./engine/irecovery -V
 

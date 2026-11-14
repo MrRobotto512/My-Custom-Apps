@@ -96,9 +96,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14      # Apple Silicon
+          - os: macos-15      # Apple Silicon (macos-14 was retired 2 Nov 2026)
             arch: arm64
-          - os: macos-13      # Intel
+          - os: macos-15-intel  # Intel (macos-13 is gone: its jobs sat queued forever)
             arch: x64
     runs-on: ${{ matrix.os }}
     steps:
